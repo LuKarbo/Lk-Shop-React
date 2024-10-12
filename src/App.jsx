@@ -4,6 +4,7 @@ import Footer from "./components/Footer/Footer";
 import Navbar from "./components/Navbar/Navbar";
 import Login from "./components/Login/Login";
 import Register from "./components/Register/Register";
+import Account from './components/Account/Account';
 import './App.css';
 
 const App = () => {
@@ -19,6 +20,7 @@ const App = () => {
             <Route path="/contact" element={<div>Contact Page</div>} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/account" element={<Account />} />
           </Routes>
         </div>
         <Footer />

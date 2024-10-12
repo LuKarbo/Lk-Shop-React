@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import '../Login/Login.css';
 import { Link, useNavigate } from 'react-router-dom';
+import bcrypt from 'bcryptjs';
 
 const Register = () => {
     const [name, setName] = useState('');
@@ -10,15 +11,17 @@ const Register = () => {
     const [error, setError] = useState('');
     const navigate = useNavigate();
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         if (password !== confirmPassword) {
-            setError('Las contraseñas deben de ser iguales');
+            setError('Las contraseñas no coinciden');
             return;
         }
 
+        const hashedPassword = await bcrypt.hash(password, 10);
+
         localStorage.setItem('email', email);
-        localStorage.setItem('password', password);
+        localStorage.setItem('password', hashedPassword);
 
         navigate('/login');
     };

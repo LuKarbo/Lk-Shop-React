@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import './Login.css';
 import { Link, useNavigate } from 'react-router-dom';
+import bcrypt from 'bcryptjs';
 
 const Login = () => {
     const [email, setEmail] = useState('');
@@ -8,14 +9,19 @@ const Login = () => {
     const [error, setError] = useState('');
     const navigate = useNavigate();
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
 
         const storedEmail = localStorage.getItem('email');
         const storedPassword = localStorage.getItem('password');
 
-        if (email === storedEmail && password === storedPassword) {
-            navigate('/');
+        if (email === storedEmail) {
+            const match = await bcrypt.compare(password, storedPassword);
+            if (match) {
+                navigate('/');
+            } else {
+                setError('Credenciales inválidas');
+            }
         } else {
             setError('Credenciales inválidas');
         }

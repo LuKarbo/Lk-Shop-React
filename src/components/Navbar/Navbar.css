@@ -72,3 +72,31 @@ a{
     padding: 5px;
     border-radius: 10%;
 }
+
+.headerNavbar .navbar .BTN-Account:hover{
+    color: white !important;
+}
+
+.headerNavbar .navbar .BTN-Account::before{
+    content: "";
+    position: absolute;
+    height: 3px;
+    background-color: #3A506B;
+    top:100%;
+    left:0;
+    width: 0;
+    transition: 0.5s;
+}
+
+.headerNavbar .navbar .BTN-Account:hover::before{
+    width: 100%;
+    background-color: white;
+}
+
+.headerNavbar .navbar .BTN-CloseAccount{
+    color: white !important;
+}
+
+.headerNavbar .navbar .BTN-CloseAccount:hover{
+    color: red !important;
+}

@@ -1,0 +1,16 @@
+.account {
+    padding: 32px;
+    background-color: #f4f4f4;
+    border-radius: 5px;
+    max-width: 400px;
+    margin: 32px auto;
+}
+
+.account h1 {
+    color: #1C2541;
+    margin-bottom: 16px;
+}
+
+.account p {
+    color: #333;
+}

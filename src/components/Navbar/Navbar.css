@@ -1,0 +1,74 @@
+a{
+    text-decoration: none;
+}
+
+.headerNavbar{
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    padding: 5px 5%;
+    background-color: #0B132B;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 1000;
+}
+
+.headerNavbar .logo{
+    font-size: 25px;
+    color: #6FFFE9;
+    font-weight: 600;
+}
+
+.headerNavbar .logo:hover{
+    font-size: 25px;
+    color: white;
+    font-weight: 600;
+}
+
+.headerNavbar .navbar a{
+    position: relative;
+    font-size: 20px;
+    color: #6FFFE9;
+    font-weight: 400;
+    margin-left: 25px;
+}
+
+.headerNavbar .navbar .BTN-Pages:hover{
+    position: relative;
+    color: #5BC0BE;
+    font-weight: 500;
+}
+
+
+.headerNavbar .navbar .BTN-Pages::before{
+    content: "";
+    position: absolute;
+    height: 3px;
+    background-color: #3A506B;
+    top:100%;
+    left:0;
+    width: 0;
+    transition: 0.5s;
+}
+
+.headerNavbar .navbar .BTN-Pages:hover::before{
+    width: 100%;
+    background-color: #5BC0BE;
+}
+
+.headerNavbar .navbar .BTN-Login{
+    background-color: #3A506B;
+    color: white !important;
+    padding: 5px;
+    border-radius: 7%;
+    transition: 0.5s;
+}
+
+.headerNavbar .navbar .BTN-Login:hover{
+    background-color: #5BC0BE;
+    color: black !important;
+    padding: 5px;
+    border-radius: 10%;
+}

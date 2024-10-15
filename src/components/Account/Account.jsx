@@ -7,11 +7,13 @@ const Account = () => {
     const { isLoggedIn } = useAuth();
     const navigate = useNavigate();
 
+    // REVEER LA CLASE ÚLTIMOS MINUTOS PARA MEJOR IMPLEMENTACIÓN
     useEffect(() => {
         if (!isLoggedIn) {
             navigate('/login');
         }
     }, [isLoggedIn, navigate]);
+    // -----------------------------------------------------
 
     return (
         <div className="account">

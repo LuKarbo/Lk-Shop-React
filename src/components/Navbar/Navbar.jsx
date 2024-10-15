@@ -1,12 +1,14 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../BackEnd/Auth/AuthContext';
 import "./Navbar.css";
 
 const Navbar = () => {
     const { isLoggedIn, logout } = useAuth();
-
-    const handleLogout = () => {
+    const navigate = useNavigate();
+    const handleLogout = (e) => {
+        e.preventDefault();
         logout();
+        navigate('/');
     };
 
     return (

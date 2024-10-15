@@ -2,12 +2,14 @@ import { useState } from 'react';
 import './Login.css';
 import { Link, useNavigate } from 'react-router-dom';
 import bcrypt from 'bcryptjs';
+import { useAuth } from '../../BackEnd/Auth/AuthContext';
 
 const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const navigate = useNavigate();
+    const { login } = useAuth();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -18,6 +20,7 @@ const Login = () => {
         if (email === storedEmail) {
             const match = await bcrypt.compare(password, storedPassword);
             if (match) {
+                login(email); 
                 navigate('/');
             } else {
                 setError('Credenciales inválidas');

@@ -1,13 +1,23 @@
+import { useEffect } from 'react';
+import { useAuth } from '../../BackEnd/Auth/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import './Account.css';
 
 const Account = () => {
-    const email = localStorage.getItem('email');
+    const { isLoggedIn } = useAuth();
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        if (!isLoggedIn) {
+            navigate('/login');
+        }
+    }, [isLoggedIn, navigate]);
 
     return (
         <div className="account">
             <h1>Mi Cuenta</h1>
-            {email ? (
-                <p>Tu email: {email}</p>
+            {isLoggedIn ? (
+                <p>Tu email: {localStorage.getItem('email')}</p>
             ) : (
                 <p>No has iniciado sesión.</p>
             )}

@@ -15,9 +15,9 @@ const Navbar = () => {
         <div className="headerNavbar">
             <Link to="/" className="logo">LK-Shop</Link>
             <nav className="navbar">
-                <Link to="/" className="BTN-Pages">Home</Link>
-                <Link to="/products" className="BTN-Pages">Products</Link>
-                <Link to="/services" className="BTN-Pages">Services</Link>
+                <Link to="/" className="BTN-Pages">Inicio</Link>
+                <Link to="/products" className="BTN-Pages">Productos</Link>
+                <Link to="/groups" className="BTN-Pages">Grupos</Link>
                 <Link to="/contact" className="BTN-Pages">Contact</Link>
                 {isLoggedIn ? (
                     <>

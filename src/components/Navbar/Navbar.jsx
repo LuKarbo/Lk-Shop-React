@@ -3,7 +3,7 @@ import { useAuth } from '../../BackEnd/Auth/AuthContext';
 import "./Navbar.css";
 
 const Navbar = () => {
-    const { isLoggedIn, logout } = useAuth();
+    const { isLoggedIn, isAdmin, logout } = useAuth();
     const navigate = useNavigate();
     const handleLogout = (e) => {
         e.preventDefault();
@@ -21,6 +21,11 @@ const Navbar = () => {
                 <Link to="/contact" className="BTN-Pages">Contact</Link>
                 {isLoggedIn ? (
                     <>
+                        {isAdmin ? (
+                            <Link to="/admin" className="BTN-Admin">Admin</Link>
+                        ) : (
+                            <></>
+                        )}
                         <Link to="/account" className="BTN-Account">Mi Cuenta</Link>
                         <Link to="#" onClick={handleLogout} className="BTN-CloseAccount">
                             <i className="fa-solid fa-door-open"></i>

@@ -4,10 +4,12 @@ const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
     const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem('email'));
+    const [isAdmin, setIsAdmin] = useState(false);
 
     const login = (email, password) => {
         localStorage.setItem('email', email);
         localStorage.setItem('password', password);
+        setIsAdmin(true)
         setIsLoggedIn(true);
     };
 
@@ -18,7 +20,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     return (
-        <AuthContext.Provider value={{ isLoggedIn, login, logout }}>
+        <AuthContext.Provider value={{ isLoggedIn, isAdmin, login, logout }}>
             {children}
         </AuthContext.Provider>
     );

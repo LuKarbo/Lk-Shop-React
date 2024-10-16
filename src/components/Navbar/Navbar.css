@@ -73,11 +73,13 @@ a{
     border-radius: 10%;
 }
 
-.headerNavbar .navbar .BTN-Account:hover{
+.headerNavbar .navbar .BTN-Account:hover,
+.headerNavbar .navbar .BTN-Admin:hover{
     color: white !important;
 }
 
-.headerNavbar .navbar .BTN-Account::before{
+.headerNavbar .navbar .BTN-Account::before,
+.headerNavbar .navbar .BTN-Admin::before{
     content: "";
     position: absolute;
     height: 3px;
@@ -88,7 +90,8 @@ a{
     transition: 0.5s;
 }
 
-.headerNavbar .navbar .BTN-Account:hover::before{
+.headerNavbar .navbar .BTN-Account:hover::before,
+.headerNavbar .navbar .BTN-Admin:hover::before{
     width: 100%;
     background-color: white;
 }
@@ -100,3 +103,4 @@ a{
 .headerNavbar .navbar .BTN-CloseAccount:hover{
     color: red !important;
 }
+

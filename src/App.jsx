@@ -5,6 +5,9 @@ import Navbar from "./components/Navbar/Navbar";
 import Login from "./components/Login/Login";
 import Register from "./components/Register/Register";
 import Account from './Pages/Account/Account';
+import Contact from './Pages/Contact/Contact';
+import Products from './Pages/Products/Products';
+import Groups from './Pages/Groups/Groups';
 import { AuthProvider } from './BackEnd/Auth/AuthContext';
 import './App.css';
 
@@ -18,9 +21,9 @@ const App = () => {
             <Routes>
               <Route path="/" element={<Main />} />
               <Route path="*" element={<Main />} />
-              <Route path="/products" element={<div>Products Page</div>} />
-              <Route path="/groups" element={<div>Grupos Page</div>} />
-              <Route path="/contact" element={<div>Contact Page</div>} />
+              <Route path="/products" element={<Products />} />
+              <Route path="/groups" element={<Groups />} />
+              <Route path="/contact" element={<Contact />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route path="/account" element={<Account />} />

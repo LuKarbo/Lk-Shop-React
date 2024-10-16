@@ -1,0 +1,23 @@
+
+.products-container {
+    padding-top: 20px;
+}
+
+.search-bar {
+    margin-bottom: 20px;
+}
+
+.filters {
+    margin-bottom: 30px;
+}
+
+.filters .form-select,
+.filters .form-control {
+    margin-bottom: 10px;
+}
+
+.product-card-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+}

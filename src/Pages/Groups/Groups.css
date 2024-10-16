@@ -1,0 +1,27 @@
+
+.groups-container {
+    padding-top: 20px;
+}
+
+.search-group {
+    margin-bottom: 20px;
+}
+
+.create-group {
+    background-color: #f8f9fa;
+    padding: 20px;
+    border-radius: 5px;
+}
+
+.create-group h3 {
+    margin-bottom: 20px;
+    color: #343a40;
+}
+
+.listado-de-grupos {
+    margin-top: 30px;
+}
+
+.listado-de-grupos .card {
+    margin-bottom: 20px;
+}

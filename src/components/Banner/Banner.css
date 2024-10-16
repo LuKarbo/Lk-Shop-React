@@ -1,0 +1,21 @@
+
+.banner img {
+    height: 400px;
+    object-fit: cover;
+}
+
+.banner .carousel-caption {
+    background: rgba(0, 0, 0, 0.5);
+    padding: 10px;
+    border-radius: 5px;
+}
+
+.banner .carousel-caption h3 {
+    font-size: 2rem;
+    color: #fff;
+}
+
+.banner .carousel-caption p {
+    font-size: 1.2rem;
+    color: #ddd;
+}

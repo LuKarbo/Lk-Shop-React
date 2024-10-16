@@ -1,0 +1,22 @@
+[
+    { "id": 1, "title": "Juego 1", "price": 59.99, "category": "Aventura" },
+    { "id": 2, "title": "Juego 2", "price": 49.99, "category": "Estrategia" },
+    { "id": 3, "title": "Juego 3", "price": 39.99, "category": "Accion" },
+    { "id": 4, "title": "Juego 4", "price": 69.99, "category": "Pelea" },
+    { "id": 5, "title": "Juego 5", "price": 29.99, "category": "Aventura" },
+    { "id": 6, "title": "Juego 6", "price": 19.99, "category": "Accion" },
+    { "id": 7, "title": "Juego 7", "price": 89.99, "category": "Pelea" },
+    { "id": 8, "title": "Juego 8", "price": 99.99, "category": "Estrategia" },
+    { "id": 9, "title": "Juego 9", "price": 15.99, "category": "Accion" },
+    { "id": 10, "title": "Juego 10", "price": 29.99, "category": "Aventura" },
+    { "id": 11, "title": "Juego 11", "price": 45.00, "category": "Aventura" },
+    { "id": 12, "title": "Juego 12", "price": 55.00, "category": "Accion" },
+    { "id": 13, "title": "Juego 13", "price": 65.00, "category": "Estrategia" },
+    { "id": 14, "title": "Juego 14", "price": 75.00, "category": "Pelea" },
+    { "id": 15, "title": "Juego 15", "price": 85.00, "category": "Aventura" },
+    { "id": 16, "title": "Juego 16", "price": 95.00, "category": "Accion" },
+    { "id": 17, "title": "Juego 17", "price": 105.00, "category": "Estrategia" },
+    { "id": 18, "title": "Juego 18", "price": 115.00, "category": "Pelea" },
+    { "id": 19, "title": "Juego 19", "price": 125.00, "category": "Aventura" },
+    { "id": 20, "title": "Juego 20", "price": 135.00, "category": "Accion" }
+]

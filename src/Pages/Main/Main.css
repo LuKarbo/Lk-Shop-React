@@ -1,5 +1,24 @@
-.main{
-    background-color: #333;
-    color: white; 
-    padding: 5px;
+.home-container {
+    padding-top: 20px;
+}
+
+.featured-games {
+    text-align: center;
+}
+
+.featured-games h2 {
+    margin-bottom: 30px;
+    color: #343a40;
+}
+
+.game-card-list {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px;
+}
+
+.game-card {
+    flex: 0 1 300px;
+    max-width: 100%;
 }

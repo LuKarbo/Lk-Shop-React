@@ -7,8 +7,8 @@
     overflow: hidden;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     background-color: #ffffff; 
-    width: fit-content;
-    max-width: 100%;
+    width: 250px;
+    flex-shrink: 0; 
 }
 
 .game-card:hover {

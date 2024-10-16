@@ -1,6 +1,5 @@
 import Banner from '../../components/Banner/Banner';
 import GameCard from '../../components/GameCard/GameCard';
-import ParentComponent from '../../components/ParentComponent/ParentComponent';
 import './Main.css';
 
 const Main = () => {
@@ -13,9 +12,10 @@ const Main = () => {
                     <GameCard />
                     <GameCard />
                     <GameCard />
+                    <GameCard />
+                    <GameCard />
                 </div>
             </div>
-            <ParentComponent />
         </div>
     );
 };

@@ -135,6 +135,10 @@
     color: white;
 }
 
+.seeGameIcon{
+    cursor: pointer;
+}
+
 @media (max-width: 1200px) {
     .game-card.featured {
         flex-basis: calc(50% - 1rem);

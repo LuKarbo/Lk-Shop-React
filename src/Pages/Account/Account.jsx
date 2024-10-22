@@ -50,7 +50,7 @@ const Account = () => {
     ];
 
 return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-gray-100 margin-perso">
         {/* Banner y Foto de Perfil */}
         <div className="relative">
             <div className="h-64 overflow-hidden fondo-banner">
@@ -60,7 +60,7 @@ return (
                     className="w-full h-full object-cover"
                 />
             </div>
-            <div className="absolute -bottom-16 left-8 user-avatar">
+            <div className="absolute -bottom-16 left-8 user-avatar user-avatar-margin">
                 <div className="relative">
                     <img 
                         src={user.profileImage} 

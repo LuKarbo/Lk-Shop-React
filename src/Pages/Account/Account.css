@@ -2,6 +2,14 @@
     max-width: 2336px !important;
 }
 
+.user-avatar-margin{
+    margin-left: 60px;
+}
+
+.margin-perso{
+    margin-bottom: 50px;
+}
+
 /* .fondo-banner{
     background-color: red;
 }

@@ -1,20 +1,19 @@
 import Banner from '../../components/Banner/Banner';
-import GameCard from '../../components/GameCard/GameCard';
+import DescuentoGame from './Main-Components/DescuentoGame';
+import TopGame from './Main-Components/TopGame';
+import TopGroup from './Main-Components/TopGroup';
+import GraficVentas from './Main-Components/GraficVentas';
 import './Main.css';
 
 const Main = () => {
     return (
         <div className="home-container">
             <Banner />
-            <div className="featured-games">
-                <h2 className='titulo' >Juegos Destacados</h2>
-                <div className="game-card-list">
-                    <GameCard />
-                    <GameCard />
-                    <GameCard />
-                    <GameCard />
-                    <GameCard />
-                </div>
+            <div className="home-content">
+                <DescuentoGame />
+                <TopGame />
+                <TopGroup />
+                <GraficVentas />
             </div>
         </div>
     );

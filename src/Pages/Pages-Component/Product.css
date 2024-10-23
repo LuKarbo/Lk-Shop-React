@@ -21,6 +21,7 @@
     height: fit-content;
     display: flex;
     flex-direction: column;
+    min-height: 150px;
 }
 
 
@@ -48,6 +49,7 @@
     position: relative;
     width: 100%;
     height: auto;
+    padding: 0.4rem !important;
 }
 
 .game-image {
@@ -63,7 +65,7 @@
     display: flex;
     flex-direction: column;
     justify-content: flex-end;
-    padding: 1rem;
+    padding: 0.7rem;
     color: white;
     opacity: 0;
     transition: opacity 0.3s ease;

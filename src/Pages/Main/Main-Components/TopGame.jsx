@@ -31,7 +31,7 @@ const TopGame = () => {
                         <div className="game-info">
                             <div className="game-title">
                                 {game.title}
-                                <i className="fa-regular fa-eye seeGameIcon" onClick={() => handleGoGame(game.title)}></i>
+                                <i className="fa-solid fa-magnifying-glass seeGameIcon" onClick={() => handleGoGame(game.title)}></i>
                             </div>
                             <p>{game.sales} ventas</p>
                             <div className="price-info">

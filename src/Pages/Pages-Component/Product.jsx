@@ -20,7 +20,7 @@ const Product = ({ games = [], onBuy = () => {}, onFavorite = () => {}, goGame =
                                     <span className="price-tag">{game.price}</span>
                                     <span className="rating-tag">★ {game.rating}</span>
                                 </div>
-                                <h2>{game.title} <i className="fa-regular fa-eye seeGameIcon" onClick={() => goGame(game.title)}></i></h2>
+                                <h2>{game.title} <i className="fa-solid fa-magnifying-glass seeGameIcon" onClick={() => goGame(game.title)}></i></h2>
                                 <p>{game.description}</p>
                                 <div className="card-buttons">
                                     <button

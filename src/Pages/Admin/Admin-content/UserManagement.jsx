@@ -61,6 +61,7 @@ const UserManagement = () => {
             status: 'banned',
         },
     ];
+
     const pendingTickets = [
         {
             id: 1,

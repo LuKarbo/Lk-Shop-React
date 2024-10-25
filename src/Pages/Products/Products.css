@@ -1,27 +1,430 @@
-
-.products-container {
-    padding-top: 20px;
+.product-container {
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 24px;
+    background-color: transparent;
 }
 
-.search-bar {
-    margin-bottom: 20px;
+.product-search-container {
+    position: relative;
+    margin-bottom: 32px;
 }
 
-.filters {
-    margin-bottom: 30px;
+.product-search-icon {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #666;
 }
 
-.filters .form-select,
-.filters .form-control {
-    margin-bottom: 10px;
+.product-search-input {
+    width: 100%;
+    padding: 16px 48px;
+    border: 2px solid #e5e5e5;
+    border-radius: 12px;
+    font-size: 16px;
+    transition: border-color 0.2s ease;
 }
 
-.product-card-list {
+.product-search-input:focus {
+    outline: none;
+    border-color: #000;
+}
+
+.product-filters-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 32px;
+}
+
+.product-filter-select,
+.product-filter-input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid #e5e5e5;
+    border-radius: 8px;
+    font-size: 14px;
+    background-color: white;
+    transition: border-color 0.2s ease;
+}
+
+.product-filter-select:focus,
+.product-filter-input:focus {
+    outline: none;
+    border-color: #000;
+}
+
+.product-filter-checkbox {
     display: flex;
-    flex-wrap: wrap;
-    gap: 20px;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
 }
 
-.content{
-    padding: 0px !important;
+.checkbox-label {
+    font-size: 14px;
+    user-select: none;
+}
+
+.product-games-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 24px;
+}
+
+.product-game-card {
+    border: 2px solid #e5e5e5;
+    border-radius: 12px;
+    overflow: hidden;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    background-color: white;
+}
+
+.product-game-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.product-game-image-container {
+    position: relative;
+    width: 100%;
+    height: 200px;
+    overflow: hidden;
+}
+
+.product-game-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.product-game-card:hover .product-game-image {
+    transform: scale(1.05);
+}
+
+.product-game-content {
+    padding: 20px;
+}
+
+.product-game-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+}
+
+.product-game-title {
+    font-size: 20px;
+    font-weight: bold;
+    margin: 0;
+    color: #000;
+}
+
+.product-game-rating {
+    padding: 4px 8px;
+    background-color: #f5f5f5;
+    border-radius: 6px;
+    font-size: 14px;
+    color: #666;
+}
+
+.product-game-description {
+    font-size: 14px;
+    color: #666;
+    margin: 0 0 16px 0;
+    line-height: 1.5;
+}
+
+.product-game-details {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.product-game-publisher,
+.product-game-category {
+    font-size: 12px;
+    color: #666;
+    padding: 4px 8px;
+    background-color: #f5f5f5;
+    border-radius: 4px;
+}
+
+.product-game-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.product-game-price-container {
+    display: flex;
+    flex-direction: column;
+}
+
+.product-game-price {
+    font-size: 24px;
+    font-weight: bold;
+    color: #000;
+}
+
+.product-game-original-price {
+    font-size: 14px;
+    color: #666;
+    text-decoration: line-through;
+}
+
+.product-button-group {
+    display: flex;
+    gap: 8px;
+}
+
+.product-button {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.product-button-favorite {
+    background: none;
+    border: 2px solid #e5e5e5;
+    padding: 8px;
+    color: #666;
+}
+
+.product-button-favorite:hover {
+    background-color: #f5f5f5;
+}
+
+.product-button-favorite.active {
+    color: #000;
+    border-color: #000;
+    background-color: #f5f5f5;
+}
+
+.product-button-buy {
+    background-color: #000;
+    color: white;
+    padding: 8px 24px;
+}
+
+.product-button-buy:hover {
+    background-color: #333;
+}
+
+.product-button-secondary {
+    background-color: #f5f5f5;
+    color: #666;
+}
+
+.product-button-secondary:hover {
+    background-color: #e5e5e5;
+}
+
+.product-discount-badge {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    padding: 6px 12px;
+    background-color: #000;
+    color: white;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.product-no-results {
+    text-align: center;
+    padding: 48px;
+    color: #666;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+}
+
+@media (max-width: 768px) {
+    .product-container {
+        padding: 16px;
+    }
+    
+    .product-games-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .product-game-footer {
+        flex-direction: column;
+        gap: 16px;
+    }
+    
+    .product-button-group {
+        width: 100%;
+    }
+    
+    .product-button-buy {
+        flex: 1;
+    }
+}
+
+.product-button-buy {
+    background-color: #0B132B;
+    color: white;
+    padding: 8px 24px;
+}
+
+.product-button-buy:hover {
+    background-color: #1C2541;
+}
+
+.product-button-favorite {
+    background: none;
+    border: 2px solid #FFD700;
+    padding: 8px;
+    color: #FFD700;
+}
+
+.product-button-favorite:hover {
+    background-color: rgba(255, 215, 0, 0.1);
+}
+
+.product-button-favorite.active {
+    color: #FFD700;
+    border-color: #FFD700;
+    background-color: rgba(255, 215, 0, 0.1);
+}
+
+.product-discount-badge {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    padding: 6px 12px;
+    background-color: #0B132B;
+    color: white;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+/* New styles for modal */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: white;
+    padding: 24px;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 500px;
+    position: relative;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.modal-title {
+    font-size: 24px;
+    font-weight: bold;
+    margin: 0;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 24px;
+    padding: 4px;
+}
+
+.modal-body {
+    margin-bottom: 24px;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+/* Toast styles */
+.toast {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #333;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 8px;
+    opacity: 0;
+    transition: opacity 0.5s ease-in-out;
+    z-index: 1000;
+}
+
+.toast-show {
+    opacity: 1;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+.search-icon {
+    cursor: pointer;
+    color: #666;
+    margin-left: 8px;
+    transition: color 0.2s ease;
+}
+
+.search-icon:hover {
+    color: #000;
+}
+
+.modal-game-info {
+    display: grid;
+    gap: 16px;
+}
+
+.modal-game-image {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+.modal-game-details {
+    display: grid;
+    gap: 8px;
+}
+
+.modal-game-price {
+    font-size: 24px;
+    font-weight: bold;
+    color: #0B132B;
 }

@@ -1,28 +1,86 @@
-const TopGroup = () => {
+import { Users } from 'lucide-react';
+import { useState } from 'react';
+import './TopGroups.css';
+
+const TopGroups = () => {
+    const [toast, setToast] = useState(null);
+
     const topGroups = [
-        { id: 1, name: "Gaming Masters", members: 15000, image: "https://via.placeholder.com/100x100" },
-        { id: 2, name: "Pro Gamers", members: 12000, image: "https://via.placeholder.com/100x100" },
-        { id: 3, name: "Casual Players", members: 10000, image: "https://via.placeholder.com/100x100" }
+        {
+            id: 1,
+            name: "Gaming Masters",
+            description: "Comunidad de jugadores expertos",
+            members: 15000,
+            image: "https://via.placeholder.com/400x400"
+        },
+        {
+            id: 2,
+            name: "Pro Gamers",
+            description: "Para gamers competitivos",
+            members: 12000,
+            image: "https://via.placeholder.com/400x400"
+        },
+        {
+            id: 3,
+            name: "Casual Players",
+            description: "Diversión sin presiones",
+            members: 10000,
+            image: "https://via.placeholder.com/400x400"
+        }
     ];
 
+    const handleJoinGroup = (group) => {
+        console.log('Unido al grupo:', group.name);
+        showToast(`Te has unido al grupo ${group.name}`);
+    };
+
+    const showToast = (message) => {
+        setToast(message);
+        setTimeout(() => setToast(null), 3000);
+    };
+
     return (
-        <div className="section-card">
+        <div className="top-groups-container">
             <div className="section-header">
-                <h2>Grupos Más Populares</h2>
+                <h2 className="group-title">Grupos Más Populares</h2>
             </div>
+            
             <div className="top-groups-grid">
                 {topGroups.map(group => (
                     <div key={group.id} className="group-card">
-                        <img src={group.image} alt={group.name} className="group-image" />
-                        <div className="group-info">
-                            <h3 className="group-name">{group.name}</h3>
-                            <p className="group-members">{group.members.toLocaleString()} miembros</p>
+                        <div className="group-image-container">
+                            <img
+                                src={group.image}
+                                alt={group.name}
+                                className="group-image"
+                            />
+                        </div>
+                        <div className="group-content">
+                            <div className="group-header">
+                                <h3 className="group-title">{group.name}</h3>
+                                <span className="group-members">
+                                    <Users size={14} />
+                                    {group.members.toLocaleString()}
+                                </span>
+                            </div>
+                            <p className="group-description">{group.description}</p>
+                            <button
+                                className="group-button"
+                                onClick={() => handleJoinGroup(group)}
+                            >
+                                Unirse al Grupo
+                            </button>
                         </div>
                     </div>
                 ))}
             </div>
+            {toast && (
+                <div className={`contact-toast ${toast ? 'contact-toast-show' : ''}`}>
+                    {toast}
+                </div>
+            )}
         </div>
     );
 };
 
-export default TopGroup;
+export default TopGroups;

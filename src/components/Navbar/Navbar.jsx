@@ -18,7 +18,7 @@ const Navbar = () => {
                 <Link to="/" className="BTN-Pages">Inicio</Link>
                 <Link to="/products" className="BTN-Pages">Productos</Link>
                 <Link to="/groups" className="BTN-Pages">Grupos</Link>
-                <Link to="/contact" className="BTN-Pages">Contact</Link>
+                <Link to="/suport" className="BTN-Pages">Soporte</Link>
                 {isLoggedIn ? (
                     <>
                         {isAdmin ? (

@@ -1,34 +1,48 @@
-import { useState } from 'react';
-import { Users, Image as ImageIcon } from 'lucide-react';
-import Modal from './Modal/Modal';
+import { useState, useEffect } from 'react';
+import { Search, Users, X, Image as ImageIcon } from 'lucide-react';
 import './Groups.css';
 
 const Groups = () => {
-    const [isModalOpen, setIsModalOpen] = useState(false);
     const [search, setSearch] = useState('');
+    const [showModal, setShowModal] = useState(false);
+    const [toast, setToast] = useState(null);
     const [newGroup, setNewGroup] = useState({
         name: '',
         description: '',
         image: null,
-        imagePreview: null
+        imagePreview: null,
+        categories: []
     });
+    const [filteredGroups, setFilteredGroups] = useState([]);
+    const [showCategoryOptions, setShowCategoryOptions] = useState(false);
+
+    const categories = [
+        "Acción", "Aventura", "RPG", "Estrategia", "Deportes",
+        "Carreras", "Shooter", "Puzzle", "Arcade", "Simulación"
+    ];
 
     const groups = [
         {
             id: 1,
             name: "Gamers Elite",
             description: "Grupo dedicado a jugadores competitivos de diversos géneros",
-            image: "https://via.placeholder.com/600x400",
-            members: 156
+            image: "https://via.placeholder.com/800x600",
+            members: 156,
+            categories: ["Acción", "Shooter"]
         },
         {
             id: 2,
             name: "Casual Gaming",
             description: "Para jugadores que disfrutan de sesiones relajadas y amistosas",
-            image: "https://via.placeholder.com/600x400",
-            members: 89
+            image: "https://via.placeholder.com/800x600",
+            members: 89,
+            categories: ["Aventura", "Puzzle"]
         }
     ];
+
+    useEffect(() => {
+        setFilteredGroups(groups);
+    }, []);
 
     const handleImageChange = (e) => {
         const file = e.target.files[0];
@@ -45,136 +59,239 @@ const Groups = () => {
         }
     };
 
+    const showToast = (message) => {
+        setToast(message);
+        setTimeout(() => setToast(null), 3000);
+    };
+
     const handleCreateGroup = () => {
-        console.log('Grupo Creado:', newGroup);
-        setIsModalOpen(false);
-        setNewGroup({ name: '', description: '', image: null, imagePreview: null });
+        console.log('Nuevo grupo creado:', newGroup);
+        showToast(`Grupo ${newGroup.name} creado exitosamente`);
+        setShowModal(false);
+        setNewGroup({
+            name: '',
+            description: '',
+            image: null,
+            imagePreview: null,
+            categories: []
+        });
     };
 
-    const handleJoinGroup = (id, nombre) => {
-        console.log('Te uniste al grupo:', nombre);
+    const handleJoinGroup = (group) => {
+        console.log('Unido al grupo:', group.name);
+        showToast(`Te has unido al grupo ${group.name}`);
     };
 
-    const handleModalClose = () => {
-        setIsModalOpen(false);
-        setNewGroup({ name: '', description: '', image: null, imagePreview: null });
+    const toggleCategory = (category) => {
+        setNewGroup(prev => {
+            const categories = prev.categories.includes(category)
+                ? prev.categories.filter(c => c !== category)
+                : [...prev.categories, category];
+            return { ...prev, categories };
+        });
     };
 
-    const filteredGroups = groups.filter(group =>
-        group.name.toLowerCase().includes(search.toLowerCase()) ||
-        group.description.toLowerCase().includes(search.toLowerCase())
-    );
+    const removeCategory = (categoryToRemove) => {
+        setNewGroup(prev => ({
+            ...prev,
+            categories: prev.categories.filter(category => category !== categoryToRemove)
+        }));
+    };
+
+    useEffect(() => {
+        const filtered = groups.filter(group =>
+            group.name.toLowerCase().includes(search.toLowerCase()) ||
+            group.description.toLowerCase().includes(search.toLowerCase())
+        );
+        setFilteredGroups(filtered);
+    }, [search]);
 
     return (
         <div className="groups-container">
-            <div className="container">
-                <div className="search-bar">
+            <div className="row">
+                <div className="groups-search-container col-lg-10">
+                    <Search className="groups-search-icon" size={25} />
                     <input
                         type="text"
                         placeholder="Buscar grupos..."
-                        className="search-input"
+                        className="groups-search-input"
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                     />
-                    <button 
-                        className="create-button"
-                        onClick={() => setIsModalOpen(true)}
+                </div>
+                <div className="col-lg-2">
+                    <button
+                        className="group-button"
+                        style={{ marginBottom: '32px', maxWidth: '200px' }}
+                        onClick={() => setShowModal(true)}
                     >
                         Crear Grupo
                     </button>
                 </div>
+            </div>
 
-                <div className="groups-grid">
-                    {filteredGroups.map((group) => (
-                        <div key={group.id} className="group-card">
+
+            <div className="groups-grid">
+                {filteredGroups.map((group) => (
+                    <div key={group.id} className="group-card">
+                        <div className="group-image-container">
                             <img
                                 src={group.image}
                                 alt={group.name}
                                 className="group-image"
                             />
-                            <div className="card-content">
-                                <div className="card-header">
-                                    <h3 className="group-title">{group.name}</h3>
-                                    <div className="members-count">
-                                        <Users size={16} className="members-icon" />
-                                        <span>{group.members}</span>
-                                    </div>
-                                </div>
-                                <p className="group-description">{group.description}</p>
-                                <button className="join-button" onClick={() => handleJoinGroup(group.id, group.name)}>
-                                    Unirse al Grupo
-                                </button>
+                        </div>
+                        <div className="group-content">
+                            <div className="group-header">
+                                <h3 className="group-title">{group.name}</h3>
+                                <span className="group-members">
+                                    <Users size={16} />
+                                    {group.members}
+                                </span>
                             </div>
-                        </div>
-                    ))}
-                </div>
-
-                <Modal 
-                    isOpen={isModalOpen} 
-                    onClose={handleModalClose}
-                    title="Crear Nuevo Grupo"
-                >
-                    <div className="modal-content">
-                        <div className="form-group">
-                            <label>Nombre del Grupo</label>
-                            <input
-                                type="text"
-                                className="form-input"
-                                value={newGroup.name}
-                                onChange={(e) => setNewGroup({...newGroup, name: e.target.value})}
-                            />
-                        </div>
-                        <div className="form-group">
-                            <label>Imagen del Grupo</label>
-                            <div className="image-upload">
-                                {newGroup.imagePreview ? (
-                                    <div className="image-preview-container">
-                                        <img 
-                                            src={newGroup.imagePreview} 
-                                            alt="Preview" 
-                                            className="image-preview"
-                                        />
-                                        <button 
-                                            className="change-image-button"
-                                            onClick={() => setNewGroup({...newGroup, image: null, imagePreview: null})}
-                                        >
-                                            Cambiar imagen
-                                        </button>
-                                    </div>
-                                ) : (
-                                    <label className="upload-area">
-                                        <ImageIcon className="upload-icon" />
-                                        <p>Haz click o arrastra una imagen</p>
-                                        <input 
-                                            type="file" 
-                                            className="hidden"
-                                            onChange={handleImageChange}
-                                            accept="image/*"
-                                        />
-                                    </label>
-                                )}
+                            <p className="group-description">{group.description}</p>
+                            <div style={{ marginBottom: '16px', display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                                {group.categories.map((category) => (
+                                    <span key={category} className="category-tag">
+                                        {category}
+                                    </span>
+                                ))}
                             </div>
-                        </div>
-                        <div className="form-group">
-                            <label>Descripción</label>
-                            <textarea
-                                className="form-textarea"
-                                rows={4}
-                                value={newGroup.description}
-                                onChange={(e) => setNewGroup({...newGroup, description: e.target.value})}
-                            />
-                        </div>
-                        <div className="modal-actions">
-                            <button className="cancel-button" onClick={handleModalClose}>
-                                Cancelar
-                            </button>
-                            <button className="submit-button" onClick={handleCreateGroup}>
-                                Crear Grupo
+                            <button
+                                className="group-button"
+                                onClick={() => handleJoinGroup(group)}
+                            >
+                                Unirse al Grupo
                             </button>
                         </div>
                     </div>
-                </Modal>
+                ))}
             </div>
+
+            {/* Modal para crear grupo */}
+            {showModal && (
+                <div className="modal-overlay">
+                    <div className="modal-content">
+                        <div className="modal-header">
+                            <h2 className="modal-title">Crear Nuevo Grupo</h2>
+                            <button
+                                className="modal-close"
+                                onClick={() => setShowModal(false)}
+                            >
+                                <X size={24} />
+                            </button>
+                        </div>
+                        <div className="modal-body">
+                            <div className="form-group">
+                                <label className="form-label">Nombre del Grupo</label>
+                                <input
+                                    type="text"
+                                    className="form-input"
+                                    value={newGroup.name}
+                                    onChange={(e) => setNewGroup({ ...newGroup, name: e.target.value })}
+                                    placeholder="Ingresa el nombre del grupo"
+                                />
+                            </div>
+
+                            <div className="form-group">
+                                <label className="form-label">Imagen del Grupo</label>
+                                <div
+                                    className="image-upload-container"
+                                    onClick={() => document.getElementById('imageInput').click()}
+                                >
+                                    {newGroup.imagePreview ? (
+                                        <img
+                                            src={newGroup.imagePreview}
+                                            alt="Preview"
+                                            className="image-preview"
+                                        />
+                                    ) : (
+                                        <div style={{ color: '#666', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+                                            <ImageIcon size={48} />
+                                            <span>Click para subir imagen</span>
+                                        </div>
+                                    )}
+                                    <input
+                                        id="imageInput"
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={handleImageChange}
+                                        style={{ display: 'none' }}
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="form-group">
+                                <label className="form-label">Descripción</label>
+                                <textarea
+                                    className="form-textarea"
+                                    value={newGroup.description}
+                                    onChange={(e) => setNewGroup({ ...newGroup, description: e.target.value })}
+                                    placeholder="Describe tu grupo"
+                                    rows={4}
+                                />
+                            </div>
+
+                            <div className="form-group">
+                                <label className="form-label">Categorías</label>
+                                <div
+                                    className="categories-select"
+                                    onClick={() => setShowCategoryOptions(!showCategoryOptions)}
+                                >
+                                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                                        {newGroup.categories.map((category) => (
+                                            <span key={category} className="category-tag">
+                                                {category}
+                                                <button onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    removeCategory(category);
+                                                }}>
+                                                    <X size={14} />
+                                                </button>
+                                            </span>
+                                        ))}
+                                    </div>
+                                </div>
+                                {showCategoryOptions && (
+                                    <div className="category-options">
+                                        {categories.filter(category => !newGroup.categories.includes(category)).map((category) => (
+                                            <div
+                                                key={category}
+                                                className="category-option"
+                                                onClick={() => toggleCategory(category)}
+                                            >
+                                                {category}
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                        <div className="modal-footer">
+                            <button
+                                className="group-button"
+                                style={{ backgroundColor: '#666', maxWidth: '120px' }}
+                                onClick={() => setShowModal(false)}
+                            >
+                                Cancelar
+                            </button>
+                            <button
+                                className="group-button"
+                                style={{ maxWidth: '100px' }}
+                                onClick={handleCreateGroup}
+                            >
+                                Crear
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {toast && (
+                <div className={`toast ${toast ? 'toast-show' : ''}`}>
+                    {toast}
+                </div>
+            )}
         </div>
     );
 };

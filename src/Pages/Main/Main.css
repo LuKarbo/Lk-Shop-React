@@ -135,47 +135,6 @@
     cursor: pointer;
 }
 
-.top-groups-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 1rem;
-    padding: 1rem;
-}
-
-.group-card {
-    display: flex;
-    align-items: center;
-    padding: 1rem;
-    background: #575757;
-    border-radius: 0.75rem;
-    transition: transform 0.3s ease;
-}
-
-.group-card:hover {
-    transform: translateY(-3px);
-}
-
-.group-image {
-    width: 4rem;
-    height: 4rem;
-    border-radius: 10%;
-    object-fit: cover;
-}
-
-.group-info {
-    margin-left: 1rem;
-}
-
-.group-name {
-    font-weight: 600;
-    color: #ffffff;
-    margin-bottom: 0.25rem;
-}
-
-.group-members {
-    font-size: 0.875rem;
-    color: #9ca3af;
-}
 
 .chart-container {
     height: 400px;
@@ -194,10 +153,6 @@
 @media (max-width: 768px) {
     .discounted-games-grid {
         grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-    }
-
-    .top-groups-grid {
-        grid-template-columns: 1fr;
     }
 }
 

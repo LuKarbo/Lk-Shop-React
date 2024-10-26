@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Search, Bookmark, BookmarkCheck, X, Maximize } from 'lucide-react';
 import './Products.css';
 
@@ -14,8 +13,6 @@ const Products = () => {
     const [selectedGame, setSelectedGame] = useState(null);
     const [showModal, setShowModal] = useState(false);
     const [toast, setToast] = useState(null);
-
-    const navigate = useNavigate();
 
     const games_list = [
         {
@@ -328,7 +325,7 @@ const Products = () => {
             )}
 
             {toast && (
-                <div className="toast toast-show">
+                <div className={`contact-toast ${toast ? 'contact-toast-show' : ''}`}>
                     {toast}
                 </div>
             )}

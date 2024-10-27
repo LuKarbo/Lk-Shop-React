@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { Pencil, Trash2, ChevronLeft, ChevronRight, ChevronUp, ChevronDown } from 'lucide-react';
-import './UserManagement.css';
 
 const UserManagement = () => {
     const [isViewTicketOpen, setIsViewTicketOpen] = useState(false);
@@ -295,8 +294,8 @@ const UserManagement = () => {
 
 
     return (
-        <div className="p-5">
-            <h2 className="text-2xl font-bold mb-6">Gestión de Usuarios</h2>
+        <div className="">
+            <h2 className="text-2xl font-bold mb-6 sectionTitle">Gestión de Usuarios</h2>
 
                 {/* LISTAS */}
 
@@ -416,16 +415,16 @@ const UserManagement = () => {
                                 <td className="px-6 py-4">{ticket.date}</td>
                                 <td className="px-6 py-4 space-x-2">
                                     <button 
-                                    onClick={() => handleOpenViewTicket(ticket)}
-                                    className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
-                                    >
-                                    Ver
+                                        onClick={() => handleOpenViewTicket(ticket)}
+                                        className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
+                                        >
+                                        Ver
                                     </button>
                                     <button 
-                                    onClick={() => handleOpenReplyTicket(ticket)}
-                                    className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
-                                    >
-                                    Responder
+                                        onClick={() => handleOpenReplyTicket(ticket)}
+                                        className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+                                        >
+                                        Responder
                                     </button>
                                 </td>
                             </tr>

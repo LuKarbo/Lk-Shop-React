@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Pencil, Trash2 } from 'lucide-react';
+import { Pencil, Trash2, ChevronLeft, ChevronRight, ChevronUp, ChevronDown } from 'lucide-react';
 import './UserManagement.css';
 
 const UserManagement = () => {
@@ -13,6 +13,17 @@ const UserManagement = () => {
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [selectedUser, setSelectedUser] = useState(null);
+
+    const [sortConfig, setSortConfig] = useState({
+        key: null,
+        direction: 'asc'
+    });
+
+    const [userPage, setUserPage] = useState(1);
+    const [pendingPage, setPendingPage] = useState(1);
+    const [answeredPage, setAnsweredPage] = useState(1);
+    const ITEMS_PER_PAGE = 10;
+
     const [editForm, setEditForm] = useState({
         name: '',
         email: '',
@@ -83,11 +94,70 @@ const UserManagement = () => {
         },
     ];
 
+    // filtro de header
+    const handleSort = (key) => {
+        let direction = 'asc';
+        if (sortConfig.key === key && sortConfig.direction === 'asc') {
+            direction = 'desc';
+        }
+        setSortConfig({ key, direction });
+        setUserPage(1);
+    };
+
+    // filtro de header
+    const sortUsers = (usersToSort) => {
+        if (!sortConfig.key) return usersToSort;
+
+        return [...usersToSort].sort((a, b) => {
+            if (a[sortConfig.key] === null) return 1;
+            if (b[sortConfig.key] === null) return -1;
+
+            let aValue = a[sortConfig.key];
+            let bValue = b[sortConfig.key];
+
+            if (typeof aValue === 'string') {
+                aValue = aValue.toLowerCase();
+                bValue = bValue.toLowerCase();
+            }
+
+            if (aValue < bValue) {
+                return sortConfig.direction === 'asc' ? -1 : 1;
+            }
+            if (aValue > bValue) {
+                return sortConfig.direction === 'asc' ? 1 : -1;
+            }
+            return 0;
+        });
+    };
+
     // Filtros
-    const filteredUsers = users.filter(user => 
-        user.name.toLowerCase().includes(userSearch.toLowerCase()) ||
-        user.email.toLowerCase().includes(userSearch.toLowerCase()) ||
-        user.role.toLowerCase().includes(userSearch.toLowerCase())
+    const filteredUsers = sortUsers(
+        users.filter(user => 
+            user.name.toLowerCase().includes(userSearch.toLowerCase()) ||
+            user.email.toLowerCase().includes(userSearch.toLowerCase()) ||
+            user.role.toLowerCase().includes(userSearch.toLowerCase())
+        )
+    );
+
+    const SortIndicator = ({ columnKey }) => {
+        if (sortConfig.key !== columnKey) {
+            return <ChevronUp className="opacity-0 group-hover:opacity-50 w-4 h-4 inline-block ml-1" />;
+        }
+        return sortConfig.direction === 'asc' 
+            ? <ChevronUp className="w-4 h-4 inline-block ml-1 text-blue-500" />
+            : <ChevronDown className="w-4 h-4 inline-block ml-1 text-blue-500" />;
+    };
+
+    const SortableHeader = ({ column, label }) => (
+        <th 
+            className="px-6 py-3 text-left text-gray-600 cursor-pointer group hover:bg-gray-100"
+            onClick={() => handleSort(column)}
+        >
+            <div className="flex items-center">
+                {label}
+                <SortIndicator columnKey={column} />
+            </div>
+        </th>
     );
 
     const filteredPendingTickets = pendingTickets.filter(ticket =>
@@ -140,6 +210,89 @@ const UserManagement = () => {
         setIsReplyTicketOpen(false);
     };
 
+    // paginado y filtros del paginado
+    const Pagination = ({ currentPage, totalItems, setPage }) => {
+        const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
+        
+        return (
+            <div className="flex items-center justify-between px-4 py-3 bg-white border-t">
+                <div className="flex items-center">
+                    <p className="text-sm text-gray-700">
+                        Mostrando{' '}
+                        <span className="font-medium">
+                            {Math.min((currentPage - 1) * ITEMS_PER_PAGE + 1, totalItems)}
+                        </span>
+                        {' '}a{' '}
+                        <span className="font-medium">
+                            {Math.min(currentPage * ITEMS_PER_PAGE, totalItems)}
+                        </span>
+                        {' '}de{' '}
+                        <span className="font-medium">{totalItems}</span>
+                        {' '}resultados
+                    </p>
+                </div>
+                <div className="flex items-center space-x-2">
+                    <button
+                        onClick={() => setPage(prev => Math.max(1, prev - 1))}
+                        disabled={currentPage === 1}
+                        className={`p-2 rounded-lg ${
+                            currentPage === 1
+                            ? 'text-gray-400 bg-gray-100'
+                            : 'text-gray-700 hover:bg-gray-100'
+                        }`}
+                    >
+                        <ChevronLeft size={20} />
+                    </button>
+                    <span className="px-4 py-2 text-sm text-gray-700">
+                        Página {currentPage} de {totalPages}
+                    </span>
+                    <button
+                        onClick={() => setPage(prev => Math.min(totalPages, prev + 1))}
+                        disabled={currentPage === totalPages}
+                        className={`p-2 rounded-lg ${
+                            currentPage === totalPages
+                            ? 'text-gray-400 bg-gray-100'
+                            : 'text-gray-700 hover:bg-gray-100'
+                        }`}
+                    >
+                        <ChevronRight size={20} />
+                    </button>
+                </div>
+            </div>
+        );
+    };
+    
+    const paginatedUsers = filteredUsers.slice(
+        (userPage - 1) * ITEMS_PER_PAGE,
+        userPage * ITEMS_PER_PAGE
+    );
+
+    const paginatedPendingTickets = filteredPendingTickets.slice(
+        (pendingPage - 1) * ITEMS_PER_PAGE,
+        pendingPage * ITEMS_PER_PAGE
+    );
+
+    const paginatedAnsweredTickets = filteredAnsweredTickets.slice(
+        (answeredPage - 1) * ITEMS_PER_PAGE,
+        answeredPage * ITEMS_PER_PAGE
+    );
+
+    const handleUserSearch = (value) => {
+        setUserSearch(value);
+        setUserPage(1);
+    };
+
+    const handlePendingSearch = (value) => {
+        setPendingSearch(value);
+        setPendingPage(1);
+    };
+
+    const handleAnsweredSearch = (value) => {
+        setAnsweredSearch(value);
+        setAnsweredPage(1);
+    };
+
+
     return (
         <div className="p-5">
             <h2 className="text-2xl font-bold mb-6">Gestión de Usuarios</h2>
@@ -154,7 +307,7 @@ const UserManagement = () => {
                         type="text"
                         placeholder="Buscar usuarios..."
                         value={userSearch}
-                        onChange={(e) => setUserSearch(e.target.value)}
+                        onChange={(e) => handleUserSearch(e.target.value)}
                         className="px-4 py-2 border rounded-lg w-72 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                 </div>
@@ -164,68 +317,73 @@ const UserManagement = () => {
                             <thead className="bg-gray-50">
                                 <tr>
                                     <th className="px-6 py-3 text-left text-gray-600">ID</th>
-                                    <th className="px-6 py-3 text-left text-gray-600">Nombre</th>
-                                    <th className="px-6 py-3 text-left text-gray-600">Email</th>
-                                    <th className="px-6 py-3 text-left text-gray-600">Juegos</th>
-                                    <th className="px-6 py-3 text-left text-gray-600">Grupos</th>
-                                    <th className="px-6 py-3 text-left text-gray-600">Compras</th>
-                                    <th className="px-6 py-3 text-left text-gray-600">Rol</th>
-                                    <th className="px-6 py-3 text-left text-gray-600">Estado</th>
+                                    <SortableHeader column="name" label="Nombre" />
+                                    <SortableHeader column="email" label="Email" />
+                                    <SortableHeader column="gamesCount" label="Juegos" />
+                                    <SortableHeader column="groupsCount" label="Grupos" />
+                                    <SortableHeader column="purchasesCount" label="Compras" />
+                                    <SortableHeader column="role" label="Rol" />
+                                    <SortableHeader column="status" label="Estado" />
                                     <th className="px-6 py-3 text-left text-gray-600">Acciones</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-200">
-                                {filteredUsers.map((user) => (
+                                {paginatedUsers.map((user) => (
                                     <tr key={user.id} className="hover:bg-gray-50">
-                                        <td className="px-6 py-4">{user.id}</td>
-                                        <td className="px-6 py-4">{user.name}</td>
-                                        <td className="px-6 py-4">{user.email}</td>
-                                        <td className="px-6 py-4">{user.gamesCount}</td>
-                                        <td className="px-6 py-4">{user.groupsCount}</td>
-                                        <td className="px-6 py-4">{user.purchasesCount}</td>
-                                        <td className="px-6 py-4">
-                                            <span className={`px-2 py-1 rounded-full text-sm font-medium ${
-                                                user.role === 'admin' 
-                                                ? 'bg-blue-100 text-blue-800'
-                                                : user.role === 'soporte' 
-                                                ? 'bg-yellow-100 text-yellow-800'
-                                                :'bg-gray-100 text-gray-800'
-                                            }`}>
-                                                {user.role}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <span className={`px-2 py-1 rounded-full text-sm font-medium ${
-                                                user.status === 'online' 
-                                                ? 'bg-green-100 text-green-800'
-                                                : user.status === 'banned' 
-                                                ? 'bg-red-100 text-red-800'
-                                                :'bg-gray-100 text-gray-800'
-                                            }`}>
-                                                {user.status}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <div className="flex space-x-2">
-                                                <button
-                                                    onClick={() => handleOpenEditModal(user)}
-                                                    className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg"
-                                                >
-                                                    <Pencil size={20} />
-                                                </button>
-                                                <button
-                                                    onClick={() => handleOpenDeleteModal(user)}
-                                                    className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
-                                                >
-                                                    <Trash2 size={20} />
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
+                                    <td className="px-6 py-4">{user.id}</td>
+                                    <td className="px-6 py-4">{user.name}</td>
+                                    <td className="px-6 py-4">{user.email}</td>
+                                    <td className="px-6 py-4">{user.gamesCount}</td>
+                                    <td className="px-6 py-4">{user.groupsCount}</td>
+                                    <td className="px-6 py-4">{user.purchasesCount}</td>
+                                    <td className="px-6 py-4">
+                                        <span className={`px-2 py-1 rounded-full text-sm font-medium ${
+                                            user.role === 'admin' 
+                                            ? 'bg-blue-100 text-blue-800'
+                                            : user.role === 'soporte' 
+                                            ? 'bg-yellow-100 text-yellow-800'
+                                            :'bg-gray-100 text-gray-800'
+                                        }`}>
+                                            {user.role}
+                                        </span>
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        <span className={`px-2 py-1 rounded-full text-sm font-medium ${
+                                            user.status === 'online' 
+                                            ? 'bg-green-100 text-green-800'
+                                            : user.status === 'banned' 
+                                            ? 'bg-red-100 text-red-800'
+                                            :'bg-gray-100 text-gray-800'
+                                        }`}>
+                                            {user.status}
+                                        </span>
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        <div className="flex space-x-2">
+                                            <button
+                                                onClick={() => handleOpenEditModal(user)}
+                                                className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg"
+                                            >
+                                                <Pencil size={20} />
+                                            </button>
+                                            <button
+                                                onClick={() => handleOpenDeleteModal(user)}
+                                                className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
+                                            >
+                                                <Trash2 size={20} />
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
                                 ))}
                             </tbody>
                         </table>
                     </div>
+                    <Pagination
+                        currentPage={userPage}
+                        totalItems={filteredUsers.length}
+                        setPage={setUserPage}
+                    />
                 </div>
             </div>
 
@@ -237,7 +395,7 @@ const UserManagement = () => {
                         type="text"
                         placeholder="Buscar consultas pendientes..."
                         value={pendingSearch}
-                        onChange={(e) => setPendingSearch(e.target.value)}
+                        onChange={(e) => handlePendingSearch(e.target.value)}
                         className="px-4 py-2 border rounded-lg w-72 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                 </div>
@@ -251,28 +409,33 @@ const UserManagement = () => {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-200">
-                            {filteredPendingTickets.map((ticket) => (
+                            {paginatedPendingTickets.map((ticket) => (
                                 <tr key={ticket.id} className="hover:bg-gray-50">
-                                    <td className="px-6 py-4">{ticket.userName}</td>
-                                    <td className="px-6 py-4">{ticket.date}</td>
-                                    <td className="px-6 py-4 space-x-2">
-                                        <button 
-                                        onClick={() => handleOpenViewTicket(ticket)}
-                                        className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
-                                        >
-                                        Ver
-                                        </button>
-                                        <button 
-                                        onClick={() => handleOpenReplyTicket(ticket)}
-                                        className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
-                                        >
-                                        Responder
-                                        </button>
-                                    </td>
-                                </tr>
+                                <td className="px-6 py-4">{ticket.userName}</td>
+                                <td className="px-6 py-4">{ticket.date}</td>
+                                <td className="px-6 py-4 space-x-2">
+                                    <button 
+                                    onClick={() => handleOpenViewTicket(ticket)}
+                                    className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
+                                    >
+                                    Ver
+                                    </button>
+                                    <button 
+                                    onClick={() => handleOpenReplyTicket(ticket)}
+                                    className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+                                    >
+                                    Responder
+                                    </button>
+                                </td>
+                            </tr>
                             ))}
                         </tbody>
                     </table>
+                    <Pagination
+                        currentPage={pendingPage}
+                        totalItems={filteredPendingTickets.length}
+                        setPage={setPendingPage}
+                    />
                 </div>
             </div>
 
@@ -284,7 +447,7 @@ const UserManagement = () => {
                         type="text"
                         placeholder="Buscar consultas respondidas..."
                         value={answeredSearch}
-                        onChange={(e) => setAnsweredSearch(e.target.value)}
+                        onChange={(e) => handleAnsweredSearch(e.target.value)}
                         className="px-4 py-2 border rounded-lg w-72 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                 </div>
@@ -300,24 +463,29 @@ const UserManagement = () => {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-200">
-                            {filteredAnsweredTickets.map((ticket) => (
+                            {paginatedAnsweredTickets.map((ticket) => (
                                 <tr key={ticket.id} className="hover:bg-gray-50">
-                                    <td className="px-6 py-4">{ticket.userName}</td>
-                                    <td className="px-6 py-4">{ticket.date}</td>
-                                    <td className="px-6 py-4">{ticket.answeredBy}</td>
-                                    <td className="px-6 py-4">{ticket.answeredDate}</td>
-                                    <td className="px-6 py-4">
-                                        <button 
-                                        onClick={() => handleOpenViewTicket(ticket)}
-                                        className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
-                                        >
-                                        Ver
-                                        </button>
-                                    </td>
-                                </tr>
+                                <td className="px-6 py-4">{ticket.userName}</td>
+                                <td className="px-6 py-4">{ticket.date}</td>
+                                <td className="px-6 py-4">{ticket.answeredBy}</td>
+                                <td className="px-6 py-4">{ticket.answeredDate}</td>
+                                <td className="px-6 py-4">
+                                    <button 
+                                    onClick={() => handleOpenViewTicket(ticket)}
+                                    className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
+                                    >
+                                    Ver
+                                    </button>
+                                </td>
+                            </tr>
                             ))}
                         </tbody>
                     </table>
+                    <Pagination
+                        currentPage={answeredPage}
+                        totalItems={filteredAnsweredTickets.length}
+                        setPage={setAnsweredPage}
+                    />
                 </div>
             </div>
 

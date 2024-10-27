@@ -1,8 +1,10 @@
 import { Users } from 'lucide-react';
 import { useState } from 'react';
+import { useAuth } from '../../../BackEnd/Auth/AuthContext';
 import './TopGroups.css';
 
 const TopGroups = () => {
+    const { isLoggedIn } = useAuth();
     const [toast, setToast] = useState(null);
 
     const topGroups = [
@@ -64,12 +66,21 @@ const TopGroups = () => {
                                 </span>
                             </div>
                             <p className="group-description">{group.description}</p>
-                            <button
-                                className="group-button"
-                                onClick={() => handleJoinGroup(group)}
-                            >
-                                Unirse al Grupo
-                            </button>
+                            {isLoggedIn? (
+                                <button
+                                    className="group-button"
+                                    onClick={() => handleJoinGroup(group)}
+                                >
+                                    Unirse al Grupo
+                                </button>
+                            ):(
+                                <button
+                                    className="group-button"
+                                    onClick={() => showToast('Debe de estar Logeado para unirse')}
+                                >
+                                    Unirse al Grupo
+                                </button>
+                            )}
                         </div>
                     </div>
                 ))}

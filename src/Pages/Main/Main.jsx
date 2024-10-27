@@ -2,7 +2,6 @@ import Banner from '../../components/Banner/Banner';
 import DescuentoGame from './Main-Components/DescuentoGame';
 import TopGame from './Main-Components/TopGame';
 import TopGroup from './Main-Components/TopGroup';
-import GraficVentas from './Main-Components/GraficVentas';
 import './Main.css';
 
 const Main = () => {
@@ -13,7 +12,6 @@ const Main = () => {
                 <DescuentoGame />
                 <TopGame />
                 <TopGroup />
-                <GraficVentas />
             </div>
         </div>
     );

@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Maximize, Bookmark, BookmarkCheck, X } from 'lucide-react';
+import { useAuth } from '../../../BackEnd/Auth/AuthContext';
 import './CardsStyle.css';
 
 const DescuentoGame = () => {
+    const { isLoggedIn } = useAuth();
     const [favorites, setFavorites] = useState([]);
     const [selectedGame, setSelectedGame] = useState(null);
     const [showModal, setShowModal] = useState(false);
@@ -90,23 +92,47 @@ const DescuentoGame = () => {
                                     <span className="descuento-game-original-price">${game.originalPrice}</span>
                                 </div>
                                 <div className="descuento-button-group">
-                                    <button
-                                        onClick={() => toggleFavorite(game.id)}
-                                        className={`descuento-button descuento-button-favorite ${favorites.includes(game.id) ? 'active' : ''}`}
-                                        aria-label={favorites.includes(game.id) ? "Quitar de favoritos" : "Añadir a favoritos"}
-                                    >
-                                        {favorites.includes(game.id) ? (
-                                            <BookmarkCheck size={20} />
-                                        ) : (
-                                            <Bookmark size={20} />
-                                        )}
-                                    </button>
-                                    <button 
-                                        className="descuento-button descuento-button-buy"
-                                        onClick={() => handleBuy(game)}
-                                    >
-                                        Comprar
-                                    </button>
+                                    {isLoggedIn? (
+                                        <>
+                                            <button
+                                                onClick={() => toggleFavorite(game.id)}
+                                                className={`product-button product-button-favorite ${favorites.includes(game.id) ? 'active' : ''}`}
+                                                aria-label={favorites.includes(game.id) ? "Quitar de favoritos" : "Añadir a favoritos"}
+                                            >
+                                                {favorites.includes(game.id) ? (
+                                                    <BookmarkCheck size={20} />
+                                                ) : (
+                                                    <Bookmark size={20} />
+                                                )}
+                                            </button>
+                                            <button 
+                                                className="product-button product-button-buy"
+                                                onClick={() => handleBuy(game)}
+                                            >
+                                                Comprar
+                                            </button>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <button
+                                                onClick={() => showToast('Debe de estar Logeado para agregar a Favoritos')}
+                                                className={`product-button product-button-favorite ${favorites.includes(game.id) ? 'active' : ''}`}
+                                                aria-label={favorites.includes(game.id) ? "Quitar de favoritos" : "Añadir a favoritos"}
+                                            >
+                                                {favorites.includes(game.id) ? (
+                                                    <BookmarkCheck size={20} />
+                                                ) : (
+                                                    <Bookmark size={20} />
+                                                )}
+                                            </button>
+                                            <button 
+                                                className="product-button product-button-buy"
+                                                onClick={() => showToast('Debe de estar Logeado para comprar')}
+                                            >
+                                                Comprar
+                                            </button>
+                                        </>
+                                    )}
                                 </div>
                             </div>
                         </div>

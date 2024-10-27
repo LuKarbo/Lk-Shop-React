@@ -2,24 +2,24 @@
     display: flex;
     flex-wrap: wrap;
     gap: 1rem;
-    padding: 1rem;
     width: 100%;
+    background-color: transparent;
 }
 
 .stat-card {
     flex: 1;
     min-width: 250px;
     background: white;
-    border-radius: 0.5rem;
-    padding: 1rem;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    border: 1px solid #f0f0f0;
+    border-radius: 1rem;
+    padding: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    border: 1px solid #F3F4F6;
 }
 
 .stat-header {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 1rem;
+    align-items: flex-start;
 }
 
 .stat-content {
@@ -28,7 +28,7 @@
 }
 
 .stat-title {
-    color: #6b7280;
+    color: #6B7280;
     font-size: 0.875rem;
     font-weight: 500;
     margin-bottom: 0.5rem;
@@ -36,8 +36,9 @@
 
 .stat-value {
     color: #111827;
-    font-size: 1.25rem;
+    font-size: 1.5rem;
     font-weight: 600;
+    line-height: 1.25;
 }
 
 .stat-icon {
@@ -46,11 +47,14 @@
     justify-content: center;
     width: 2.5rem;
     height: 2.5rem;
-    border-radius: 9999px;
+    border-radius: 0.75rem;
 }
 
 .stat-footer {
-    margin-top: 0.5rem;
+    margin-top: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 
 .stat-increment {
@@ -59,11 +63,13 @@
 }
 
 .stat-subtitle {
-    color: #6b7280;
+    color: #6B7280;
+    font-size: 0.875rem;
 }
 
+/* Clases de iconos */
 .icon-blue {
-    background-color: #DBEAFE;
+    background-color: #EFF6FF;
 }
 
 .icon-blue svg {
@@ -71,7 +77,7 @@
 }
 
 .icon-orange {
-    background-color: #FFEDD5;
+    background-color: #FFF7ED;
 }
 
 .icon-orange svg {
@@ -79,7 +85,7 @@
 }
 
 .icon-cyan {
-    background-color: #CFFAFE;
+    background-color: #ECFEFF;
 }
 
 .icon-cyan svg {
@@ -87,13 +93,45 @@
 }
 
 .icon-purple {
-    background-color: #F3E8FF;
+    background-color: #F5F3FF;
 }
 
 .icon-purple svg {
     color: #9333EA;
 }
 
+/* Estilos para el gráfico */
+.chart-card {
+    flex: 100%;
+    margin-top: 1rem;
+    background: white;
+    padding: 1.5rem;
+}
+
+.chart-header {
+    margin-bottom: 1.5rem;
+}
+
+.chart-header h3 {
+    color: #111827;
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+.chart-header p {
+    color: #6B7280;
+    font-size: 0.875rem;
+    margin: 0.25rem 0 0 0;
+}
+
+.chart-container {
+    width: 100%;
+    height: 400px;
+    background: white;
+}
+
+/* Media queries */
 @media (max-width: 1024px) {
     .stats-container {
         gap: 0.75rem;
@@ -102,10 +140,18 @@
     .stat-card {
         min-width: 200px;
     }
+
+    .chart-container {
+        height: 350px;
+    }
 }
 
 @media (max-width: 768px) {
     .stat-card {
         min-width: 100%;
+    }
+
+    .chart-container {
+        height: 300px;
     }
 }

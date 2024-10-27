@@ -1,4 +1,5 @@
 import { Users, ShoppingBag, UsersRound, GamepadIcon } from 'lucide-react';
+import GraficVentas from './GraficVentas';
 import './Dashboard.css';
 
 const statsData = [
@@ -56,11 +57,14 @@ const StatCard = ({ stat }) => (
 
 const Dashboard = () => {
     return (
-        <div className="stats-container">
-            {statsData.map((stat, index) => (
-                <StatCard key={index} stat={stat} />
-            ))}
-        </div>
+        <>
+            <div className="stats-container">
+                {statsData.map((stat, index) => (
+                    <StatCard key={index} stat={stat} />
+                ))}
+            </div>
+            <GraficVentas/>
+        </>
     );
 };
 

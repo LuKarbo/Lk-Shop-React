@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Search, Users, X, Image as ImageIcon } from 'lucide-react';
+import { useAuth } from '../../BackEnd/Auth/AuthContext';
 import './Groups.css';
 
 const Groups = () => {
+    const { isLoggedIn } = useAuth();
     const [search, setSearch] = useState('');
     const [showModal, setShowModal] = useState(false);
     const [toast, setToast] = useState(null);
@@ -120,13 +122,15 @@ const Groups = () => {
                     />
                 </div>
                 <div className="col-lg-2">
-                    <button
-                        className="group-button"
-                        style={{ marginBottom: '32px', maxWidth: '200px' }}
-                        onClick={() => setShowModal(true)}
-                    >
-                        Crear Grupo
-                    </button>
+                    {isLoggedIn? (
+                        <button
+                            className="group-button"
+                            style={{ marginBottom: '32px', maxWidth: '200px' }}
+                            onClick={() => setShowModal(true)}
+                        >
+                            Crear Grupo
+                        </button>
+                    ):(<></>)}
                 </div>
             </div>
 
@@ -157,12 +161,21 @@ const Groups = () => {
                                     </span>
                                 ))}
                             </div>
-                            <button
-                                className="group-button"
-                                onClick={() => handleJoinGroup(group)}
-                            >
-                                Unirse al Grupo
-                            </button>
+                            {isLoggedIn?(
+                                <button
+                                    className="group-button"
+                                    onClick={() => handleJoinGroup(group)}
+                                >
+                                    Unirse al Grupo
+                                </button>
+                            ):(
+                                <button
+                                    className="group-button"
+                                    onClick={() => showToast('Debe de estar Logeado para unirse')}
+                                >
+                                    Unirse al Grupo
+                                </button>
+                            )}
                         </div>
                     </div>
                 ))}
@@ -288,7 +301,7 @@ const Groups = () => {
             )}
 
             {toast && (
-                <div className={`toast ${toast ? 'toast-show' : ''}`}>
+                <div className={`contact-toast ${toast ? 'contact-toast-show' : ''}`}>
                     {toast}
                 </div>
             )}

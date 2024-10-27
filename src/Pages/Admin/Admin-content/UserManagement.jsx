@@ -135,7 +135,8 @@ const UserManagement = () => {
         users.filter(user => 
             user.name.toLowerCase().includes(userSearch.toLowerCase()) ||
             user.email.toLowerCase().includes(userSearch.toLowerCase()) ||
-            user.role.toLowerCase().includes(userSearch.toLowerCase())
+            user.role.toLowerCase().includes(userSearch.toLowerCase()) ||
+            user.status.toLowerCase().includes(userSearch.toLowerCase())
         )
     );
 

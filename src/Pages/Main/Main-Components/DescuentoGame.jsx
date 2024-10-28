@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Maximize, Bookmark, BookmarkCheck, X } from 'lucide-react';
 import { useAuth } from '../../../BackEnd/Auth/AuthContext';
 import './CardsStyle.css';
@@ -9,13 +10,79 @@ const DescuentoGame = () => {
     const [selectedGame, setSelectedGame] = useState(null);
     const [showModal, setShowModal] = useState(false);
     const [toast, setToast] = useState(null);
+    const navigate = useNavigate();
 
     const discountedGames = [
-        { id: 1, title: "The Witcher 3", originalPrice: 59.99, price: 29.99, image: "https://via.placeholder.com/280x160", description: "Un épico juego de rol de mundo abierto", rating: 4.9, publisher: "CD Projekt Red", category: "RPG" },
-        { id: 2, title: "Red Dead Redemption 2", originalPrice: 69.99, price: 45.99, image: "https://via.placeholder.com/280x160", description: "Una aventura en el salvaje oeste", rating: 4.8, publisher: "Rockstar Games", category: "Acción/Aventura" },
-        { id: 3, title: "Cyberpunk 2077", originalPrice: 59.99, price: 39.99, image: "https://via.placeholder.com/280x160", description: "Una aventura futurista en Night City", rating: 4.5, publisher: "CD Projekt Red", category: "RPG" },
-        { id: 4, title: "God of War", originalPrice: 49.99, price: 29.99, image: "https://via.placeholder.com/280x160", description: "Una épica aventura nórdica", rating: 4.9, publisher: "Sony", category: "Acción" },
-        { id: 5, title: "Elden Ring", originalPrice: 59.99, price: 44.99, image: "https://via.placeholder.com/280x160", description: "Un desafiante juego de rol de acción", rating: 4.7, publisher: "FromSoftware", category: "RPG" }
+        {
+            id: 1,
+            title: "The Witcher 3",
+            description: "Un épico juego de rol de mundo abierto",
+            price: "29.99",
+            rating: 4.9,
+            image: "https://via.placeholder.com/280x160",
+            category: "RPG",
+            publisher: "CD Projekt Red",
+            discounted: true,
+            originalPrice: "59.99",
+            copies: 0,
+            discountId: 4
+        },
+        {
+            id: 2,
+            title: "Red Dead Redemption 2",
+            description: "Una aventura en el salvaje oeste",
+            price: "45.99",
+            rating: 4.8,
+            image: "https://via.placeholder.com/280x160",
+            category: "Acción/Aventura",
+            publisher: "Rockstar Games",
+            discounted: true,
+            originalPrice: "69.99",
+            copies: 0,
+            discountId: 5
+        },
+        {
+            id: 3,
+            title: "Cyberpunk 2077",
+            description: "Una aventura futurista en Night City",
+            price: "39.99",
+            rating: 4.5,
+            image: "https://via.placeholder.com/280x160",
+            category: "RPG",
+            publisher: "CD Projekt Red",
+            discounted: true,
+            originalPrice: "59.99",
+            copies: 0,
+            discountId: 6
+        },
+        {
+            id: 4,
+            title: "God of War",
+            description: "Una épica aventura nórdica",
+            price: "29.99",
+            rating: 4.9,
+            image: "https://via.placeholder.com/280x160",
+            category: "Acción",
+            publisher: "Sony",
+            discounted: true,
+            originalPrice: "49.99",
+            copies: 0,
+            discountId: 7
+        },
+        {
+            id: 5,
+            title: "Elden Ring",
+            description: "Un desafiante juego de rol de acción",
+            price: "44.99",
+            rating: 4.7,
+            image: "https://via.placeholder.com/280x160",
+            category: "RPG",
+            publisher: "FromSoftware",
+            discounted: true,
+            originalPrice: "59.99",
+            copies: 0,
+            discountId: 8
+        }
     ];
 
     useEffect(() => {
@@ -50,7 +117,7 @@ const DescuentoGame = () => {
     };
 
     const handleGameInfo = (game) => {
-        setSelectedGame(game);
+        navigate(`/game/${game.id}`);
     };
 
     return (

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Maximize, Bookmark, BookmarkCheck, X } from 'lucide-react';
 import { useAuth } from '../../../BackEnd/Auth/AuthContext';
 import './CardsStyle.css';
@@ -9,13 +10,79 @@ const TopGame = () => {
     const [selectedGame, setSelectedGame] = useState(null);
     const [showModal, setShowModal] = useState(false);
     const [toast, setToast] = useState(null);
+    const navigate = useNavigate();
 
     const topGames = [
-        { id: 1, title: "GTA V", sales: 1250, image: "https://via.placeholder.com/280x160", price: 29.99, rating: 4.8, description: "Acción y aventura en Los Santos", publisher: "Rockstar Games", category: "Acción/Aventura" },
-        { id: 2, title: "FIFA 24", sales: 980, image: "https://via.placeholder.com/280x160", price: 59.99, rating: 4.5, description: "El mejor juego de fútbol", publisher: "EA Sports", category: "Deportes" },
-        { id: 3, title: "Minecraft", sales: 850, image: "https://via.placeholder.com/280x160", price: 26.99, rating: 4.9, description: "Construye tu propio mundo", publisher: "Mojang", category: "Aventura" },
-        { id: 4, title: "Call of Duty", sales: 780, image: "https://via.placeholder.com/280x160", price: 69.99, rating: 4.6, description: "Acción militar en primera persona", publisher: "Activision", category: "FPS" },
-        { id: 5, title: "Spider-Man 2", sales: 720, image: "https://via.placeholder.com/280x160", price: 69.99, rating: 4.7, description: "Aventuras del hombre araña", publisher: "Sony", category: "Acción" }
+        {
+            id: 1,
+            title: "GTA V",
+            description: "Acción y aventura en Los Santos",
+            price: "29.99",
+            rating: 4.8,
+            image: "https://via.placeholder.com/280x160",
+            category: "Acción/Aventura",
+            publisher: "Rockstar Games",
+            discounted: false,
+            originalPrice: "29.99",
+            copies: 1250,
+            discountId: null
+        },
+        {
+            id: 2,
+            title: "FIFA 24",
+            description: "El mejor juego de fútbol",
+            price: "59.99",
+            rating: 4.5,
+            image: "https://via.placeholder.com/280x160",
+            category: "Deportes",
+            publisher: "EA Sports",
+            discounted: false,
+            originalPrice: "59.99",
+            copies: 980,
+            discountId: null
+        },
+        {
+            id: 3,
+            title: "Minecraft",
+            description: "Construye tu propio mundo",
+            price: "26.99",
+            rating: 4.9,
+            image: "https://via.placeholder.com/280x160",
+            category: "Aventura",
+            publisher: "Mojang",
+            discounted: false,
+            originalPrice: "26.99",
+            copies: 850,
+            discountId: null
+        },
+        {
+            id: 4,
+            title: "Call of Duty",
+            description: "Acción militar en primera persona",
+            price: "69.99",
+            rating: 4.6,
+            image: "https://via.placeholder.com/280x160",
+            category: "FPS",
+            publisher: "Activision",
+            discounted: false,
+            originalPrice: "69.99",
+            copies: 780,
+            discountId: null
+        },
+        {
+            id: 5,
+            title: "Spider-Man 2",
+            description: "Aventuras del hombre araña",
+            price: "69.99",
+            rating: 4.7,
+            image: "https://via.placeholder.com/280x160",
+            category: "Acción",
+            publisher: "Sony",
+            discounted: false,
+            originalPrice: "69.99",
+            copies: 720,
+            discountId: null
+        }
     ];
 
     useEffect(() => {
@@ -50,7 +117,7 @@ const TopGame = () => {
     };
 
     const handleGameInfo = (game) => {
-        setSelectedGame(game);
+        navigate(`/game/${game.id}`);
     };
 
     return (

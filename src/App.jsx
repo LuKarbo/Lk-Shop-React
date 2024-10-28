@@ -9,6 +9,7 @@ import Contact from './Pages/Contact/Contact';
 import Products from './Pages/Products/Products';
 import Groups from './Pages/Groups/Groups';
 import Admin from './Pages/Admin/Admin';
+import Game from './Pages/Game/Game';
 import { AuthProvider } from './BackEnd/Auth/AuthContext';
 import './App.css';
 
@@ -29,6 +30,7 @@ const App = () => {
               <Route path="/register" element={<Register />} />
               <Route path="/account" element={<Account />} />
               <Route path="/admin" element={<Admin/>} />
+              <Route path="/game/:id" element={<Game/>} />
             </Routes>
           </div>
           <Footer />

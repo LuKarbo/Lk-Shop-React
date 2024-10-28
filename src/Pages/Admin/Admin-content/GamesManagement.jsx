@@ -11,6 +11,17 @@ const GamesManagement = () => {
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [selectedGame, setSelectedGame] = useState(null);
 
+    const [discountPage, setDiscountPage] = useState(1);
+    const [discountSearch, setDiscountSearch] = useState('');
+    const [isEditDiscountModalOpen, setIsEditDiscountModalOpen] = useState(false);
+    const [isDeleteDiscountModalOpen, setIsDeleteDiscountModalOpen] = useState(false);
+    const [selectedDiscount, setSelectedDiscount] = useState(null);
+    const [editDiscountForm, setEditDiscountForm] = useState({
+        code: '',
+        endDate: '',
+        discountPercentage: ''
+    });
+
     const [sortConfig, setSortConfig] = useState({
         key: null,
         direction: 'asc'
@@ -24,10 +35,32 @@ const GamesManagement = () => {
         title: '',
         description: '',
         price: '',
+        originalPrice: '',
         category: '',
         publisher: '',
         discounted: false,
-        originalPrice: ''
+        selectedDiscountId: '',
+        copies: 0
+    });
+
+    const [isAddGameModalOpen, setIsAddGameModalOpen] = useState(false);
+    const [isAddDiscountModalOpen, setIsAddDiscountModalOpen] = useState(false);
+    const [newGameForm, setNewGameForm] = useState({
+        title: '',
+        description: '',
+        price: '',
+        originalPrice: '',
+        category: '',
+        publisher: '',
+        discounted: false,
+        selectedDiscountId: '',
+        copies: 0,
+        image: null
+    });
+    const [newDiscountForm, setNewDiscountForm] = useState({
+        code: '',
+        discountPercentage: '',
+        endDate: ''
     });
 
     const games = [
@@ -41,7 +74,36 @@ const GamesManagement = () => {
             category: "Aventura",
             publisher: "EA",
             discounted: true,
-            originalPrice: "79.99"
+            originalPrice: "79.99",
+            copies: 150,
+            discountId: 1
+        }
+    ];
+
+    const discountCodes = [
+        {
+            id: 1,
+            code: "SUMMER2024",
+            createdAt: "2024-03-15",
+            discountPercentage: 25,
+            endDate: "2024-06-15",
+            status: "Activo"
+        },
+        {
+            id: 2,
+            code: "SPRING50",
+            createdAt: "2024-03-01",
+            discountPercentage: 50,
+            endDate: "2024-03-31",
+            status: "Caducado"
+        },
+        {
+            id: 3,
+            code: "NEWGAME30",
+            createdAt: "2024-03-25",
+            discountPercentage: 30,
+            endDate: "2024-04-25",
+            status: "Espera"
         }
     ];
 
@@ -134,6 +196,35 @@ const GamesManagement = () => {
         </th>
     );
 
+    const getStatusColor = (status) => {
+        switch (status) {
+            case 'Activo':
+                return 'bg-green-100 text-green-800';
+            case 'Caducado':
+                return 'bg-red-100 text-red-800';
+            case 'Espera':
+                return 'bg-yellow-100 text-yellow-800';
+            default:
+                return 'bg-gray-100 text-gray-800';
+        }
+    };
+
+    const activeDiscounts = discountCodes.filter(discount => discount.status === 'Activo');
+
+    const calculateDiscountedPrice = (originalPrice, discountId) => {
+        const discount = discountCodes.find(d => d.id === parseInt(discountId));
+        if (discount) {
+            const discountAmount = (parseFloat(originalPrice) * discount.discountPercentage) / 100;
+            return (parseFloat(originalPrice) - discountAmount).toFixed(2);
+        }
+        return originalPrice;
+    };
+
+    const getDiscountInfo = (discountId) => {
+        const discount = discountCodes.find(d => d.id === parseInt(discountId));
+        return discount ? `${discount.code} (${discount.discountPercentage}%)` : 'Sin descuento';
+    };
+
     const handleOpenEditModal = (game) => {
         setSelectedGame(game);
         setEditForm({
@@ -143,7 +234,9 @@ const GamesManagement = () => {
             category: game.category,
             publisher: game.publisher,
             discounted: game.discounted,
-            originalPrice: game.originalPrice
+            originalPrice: game.originalPrice,
+            selectedDiscountId: game.discountId || '',
+            copies: game.copies
         });
         setIsEditModalOpen(true);
     };
@@ -154,7 +247,12 @@ const GamesManagement = () => {
     };
     
     const handleEditSubmit = () => {
-        console.log('Juego editado:', { ...selectedGame, ...editForm });
+        const updatedGame = {
+            ...selectedGame,
+            ...editForm,
+            discountId: editForm.selectedDiscountId || null
+        };
+        console.log('Juego editado:', updatedGame);
         setIsEditModalOpen(false);
     };
     
@@ -181,6 +279,85 @@ const GamesManagement = () => {
             };
             reader.readAsDataURL(file);
         }
+    };
+
+    const handleOpenEditDiscountModal = (discount) => {
+        setSelectedDiscount(discount);
+        setEditDiscountForm({
+            code: discount.code,
+            endDate: discount.endDate,
+            discountPercentage: discount.discountPercentage
+        });
+        setIsEditDiscountModalOpen(true);
+    };
+
+    const handleOpenDeleteDiscountModal = (discount) => {
+        setSelectedDiscount(discount);
+        setIsDeleteDiscountModalOpen(true);
+    };
+
+    const handleEditDiscountSubmit = () => {
+        console.log('Descuento editado:', { ...selectedDiscount, ...editDiscountForm });
+        setIsEditDiscountModalOpen(false);
+    };
+
+    const handleDeleteDiscountSubmit = () => {
+        console.log('Descuento eliminado:', selectedDiscount);
+        setIsDeleteDiscountModalOpen(false);
+    };
+
+    const handlePriceChange = (e) => {
+        const newPrice = e.target.value;
+        setEditForm(prev => ({
+            ...prev,
+            originalPrice: newPrice,
+            price: prev.selectedDiscountId ? 
+                calculateDiscountedPrice(newPrice, prev.selectedDiscountId) : 
+                newPrice
+        }));
+    };
+
+    const handleDiscountChange = (e) => {
+        const discountId = e.target.value;
+        setEditForm(prev => ({
+            ...prev,
+            selectedDiscountId: discountId,
+            discounted: discountId !== '',
+            price: discountId ? 
+                calculateDiscountedPrice(prev.originalPrice, discountId) : 
+                prev.originalPrice
+        }));
+    };
+
+    const handleAddGameSubmit = () => {
+        const newGame = {
+            ...newGameForm,
+            discountId: newGameForm.selectedDiscountId || null
+        };
+        console.log('Nuevo juego creado:', newGame);
+        setIsAddGameModalOpen(false);
+        setNewGameForm({
+            title: '',
+            description: '',
+            price: '',
+            originalPrice: '',
+            category: '',
+            publisher: '',
+            discounted: false,
+            selectedDiscountId: '',
+            copies: 0,
+            image: null
+        });
+    };
+    
+    const handleAddDiscountSubmit = () => {
+        console.log('Nuevo descuento creado:', newDiscountForm);
+        setIsAddDiscountModalOpen(false);
+        setNewDiscountForm({
+            code: '',
+            discountPercentage: '',
+            endDate: ''
+        });
     };
 
     const Pagination = ({ currentPage, totalItems, setPage }) => {
@@ -244,6 +421,17 @@ const GamesManagement = () => {
         reviewPage * ITEMS_PER_PAGE
     );
 
+    const filteredDiscountCodes = sortItems(
+        discountCodes.filter(discount =>
+            discount.code.toLowerCase().includes(discountSearch.toLowerCase())
+        )
+    );
+
+    const paginatedDiscountCodes = filteredDiscountCodes.slice(
+        (discountPage - 1) * ITEMS_PER_PAGE,
+        discountPage * ITEMS_PER_PAGE
+    );
+
     return (
         <div className="">
             <h2 className="text-2xl font-bold mb-6 sectionTitle">Gestión de Juegos</h2>
@@ -251,7 +439,15 @@ const GamesManagement = () => {
             {/* Lista de Juegos */}
             <div className="mb-10">
                 <div className="flex justify-between items-center mb-4">
-                    <h3 className="text-xl font-semibold">Juegos</h3>
+                    <div className="flex items-center gap-4">
+                        <h3 className="text-xl font-semibold">Juegos</h3>
+                        <button
+                            onClick={() => setIsAddGameModalOpen(true)}
+                            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                        >
+                            Juego Nuevo
+                        </button>
+                    </div>
                     <input
                         type="text"
                         placeholder="Buscar juegos..."
@@ -267,13 +463,13 @@ const GamesManagement = () => {
                                 <tr>
                                     <th className="px-6 py-3 text-left text-gray-600">ID</th>
                                     <SortableHeader column="title" label="Título" />
-                                    <SortableHeader column="description" label="Descripción" />
                                     <SortableHeader column="price" label="Precio" />
+                                    <SortableHeader column="originalPrice" label="Precio Original" />
                                     <SortableHeader column="rating" label="Valoración" />
                                     <SortableHeader column="category" label="Categoría" />
                                     <SortableHeader column="publisher" label="Editorial" />
-                                    <th className="px-6 py-3 text-left text-gray-600">Descuento</th>
-                                    <th className="px-6 py-3 text-left text-gray-600">Precio Original</th>
+                                    <SortableHeader column="copies" label="Cantidad de Copias" />
+                                    <th className="px-6 py-3 text-left text-gray-600">Descuento Aplicado</th>
                                     <th className="px-6 py-3 text-left text-gray-600">Acciones</th>
                                 </tr>
                             </thead>
@@ -282,21 +478,23 @@ const GamesManagement = () => {
                                     <tr key={game.id} className="hover:bg-gray-50">
                                         <td className="px-6 py-4">{game.id}</td>
                                         <td className="px-6 py-4">{game.title}</td>
-                                        <td className="px-6 py-4">{game.description}</td>
                                         <td className="px-6 py-4">${game.price}</td>
+                                        <td className="px-6 py-4">${game.originalPrice}</td>
                                         <td className="px-6 py-4">{game.rating}/5</td>
                                         <td className="px-6 py-4">{game.category}</td>
                                         <td className="px-6 py-4">{game.publisher}</td>
+                                        <td className="px-6 py-4">{game.copies}</td>
                                         <td className="px-6 py-4">
-                                            <span className={`px-2 py-1 rounded-full text-sm font-medium ${
-                                                game.discounted 
-                                                ? 'bg-green-100 text-green-800'
-                                                : 'bg-gray-100 text-gray-800'
-                                            }`}>
-                                                {game.discounted ? 'Sí' : 'No'}
-                                            </span>
+                                            {game.discountId ? (
+                                                <span className="px-2 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                                                    {getDiscountInfo(game.discountId)}
+                                                </span>
+                                            ) : (
+                                                <span className="px-2 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800">
+                                                    Sin descuento
+                                                </span>
+                                            )}
                                         </td>
-                                        <td className="px-6 py-4">${game.originalPrice}</td>
                                         <td className="px-6 py-4">
                                             <div className="flex space-x-2">
                                                 <button
@@ -322,6 +520,81 @@ const GamesManagement = () => {
                         currentPage={gamePage}
                         totalItems={filteredGames.length}
                         setPage={setGamePage}
+                    />
+                </div>
+            </div>
+
+            {/* Lista de Descuentos */}
+            <div className="mb-10">
+                <div className="flex justify-between items-center mb-4">
+                    <div className="flex items-center gap-4">
+                        <h3 className="text-xl font-semibold">Códigos de Descuento</h3>
+                        <button
+                            onClick={() => setIsAddDiscountModalOpen(true)}
+                            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                        >
+                            Descuento Nuevo
+                        </button>
+                    </div>
+                    <input
+                        type="text"
+                        placeholder="Buscar códigos..."
+                        value={discountSearch}
+                        onChange={(e) => setDiscountSearch(e.target.value)}
+                        className="px-4 py-2 border rounded-lg w-72 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                </div>
+                <div className="bg-white rounded-lg shadow overflow-hidden">
+                    <div className="overflow-x-auto">
+                        <table className="w-full">
+                            <thead className="bg-gray-50">
+                                <tr>
+                                    <th className="px-6 py-3 text-left text-gray-600">ID</th>
+                                    <SortableHeader column="code" label="Código" />
+                                    <SortableHeader column="createdAt" label="Fecha Creación" />
+                                    <SortableHeader column="discountPercentage" label="% de Descuento" />
+                                    <SortableHeader column="endDate" label="Fecha de Finalización" />
+                                    <SortableHeader column="status" label="Status" />
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-gray-200">
+                                {paginatedDiscountCodes.map((discount) => (
+                                    <tr key={discount.id} className="hover:bg-gray-50">
+                                    <td className="px-6 py-4">{discount.id}</td>
+                                    <td className="px-6 py-4">{discount.code}</td>
+                                    <td className="px-6 py-4">{discount.createdAt}</td>
+                                    <td className="px-6 py-4">{discount.discountPercentage}%</td>
+                                    <td className="px-6 py-4">{discount.endDate}</td>
+                                    <td className="px-6 py-4">
+                                        <span className={`px-2 py-1 rounded-full text-sm font-medium ${getStatusColor(discount.status)}`}>
+                                            {discount.status}
+                                        </span>
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        <div className="flex space-x-2">
+                                            <button
+                                                onClick={() => handleOpenEditDiscountModal(discount)}
+                                                className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg"
+                                            >
+                                                <Pencil size={20} />
+                                            </button>
+                                            <button
+                                                onClick={() => handleOpenDeleteDiscountModal(discount)}
+                                                className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
+                                            >
+                                                <Trash2 size={20} />
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                    <Pagination
+                        currentPage={discountPage}
+                        totalItems={filteredDiscountCodes.length}
+                        setPage={setDiscountPage}
                     />
                 </div>
             </div>
@@ -405,12 +678,51 @@ const GamesManagement = () => {
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Precio
+                                        Precio Original
+                                    </label>
+                                    <input
+                                        type="number"
+                                        value={editForm.originalPrice}
+                                        onChange={handlePriceChange}
+                                        className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Descuento Aplicable
+                                    </label>
+                                    <select
+                                        value={editForm.selectedDiscountId}
+                                        onChange={handleDiscountChange}
+                                        className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    >
+                                        <option value="">Sin descuento</option>
+                                        {activeDiscounts.map(discount => (
+                                            <option key={discount.id} value={discount.id}>
+                                                {discount.code} ({discount.discountPercentage}% off)
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Precio Final
                                     </label>
                                     <input
                                         type="number"
                                         value={editForm.price}
-                                        onChange={(e) => setEditForm({...editForm, price: e.target.value})}
+                                        readOnly
+                                        className="w-full px-3 py-2 border rounded-lg bg-gray-50"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Cantidad de Copias
+                                    </label>
+                                    <input
+                                        type="number"
+                                        value={editForm.copies}
+                                        onChange={(e) => setEditForm({...editForm, copies: parseInt(e.target.value)})}
                                         className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                                     />
                                 </div>
@@ -482,30 +794,6 @@ const GamesManagement = () => {
                                         className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                                     />
                                 </div>
-                                <div>
-                                    <label className="flex items-center space-x-2">
-                                        <input
-                                            type="checkbox"
-                                            checked={editForm.discounted}
-                                            onChange={(e) => setEditForm({...editForm, discounted: e.target.checked})}
-                                            className="rounded text-blue-600 focus:ring-blue-500"
-                                        />
-                                        <span className="text-sm font-medium text-gray-700">En descuento</span>
-                                    </label>
-                                </div>
-                                {editForm.discounted && (
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                                            Precio Original
-                                        </label>
-                                        <input
-                                            type="number"
-                                            value={editForm.originalPrice}
-                                            onChange={(e) => setEditForm({...editForm, originalPrice: e.target.value})}
-                                            className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                        />
-                                    </div>
-                                )}
                             </div>
                             <div className="flex justify-end space-x-3 mt-6">
                                 <button
@@ -587,6 +875,317 @@ const GamesManagement = () => {
                                 Cerrar
                             </button>
                         </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Modal de Edición de Descuento */}
+            {isEditDiscountModalOpen && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+                    <div className="bg-white p-6 rounded-lg w-full max-w-md">
+                        <h3 className="text-xl font-semibold mb-4">Editar Código de Descuento</h3>
+                        <form onSubmit={(e) => {
+                            e.preventDefault();
+                            handleEditDiscountSubmit();
+                        }}>
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Código
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={editDiscountForm.code}
+                                        onChange={(e) => setEditDiscountForm({...editDiscountForm, code: e.target.value})}
+                                        className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Porcentaje de Descuento
+                                    </label>
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        max="100"
+                                        value={editDiscountForm.discountPercentage}
+                                        onChange={(e) => setEditDiscountForm({...editDiscountForm, discountPercentage: e.target.value})}
+                                        className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Fecha de Finalización
+                                    </label>
+                                    <input
+                                        type="date"
+                                        value={editDiscountForm.endDate}
+                                        onChange={(e) => setEditDiscountForm({...editDiscountForm, endDate: e.target.value})}
+                                        className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    />
+                                </div>
+                            </div>
+                            <div className="flex justify-end space-x-3 mt-6">
+                                <button
+                                    type="button"
+                                    onClick={() => setIsEditDiscountModalOpen(false)}
+                                    className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg"
+                                >
+                                    Cancelar
+                                </button>
+                                <button
+                                    type="submit"
+                                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                                >
+                                    Guardar Cambios
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Modal de Eliminación de Descuento */}
+            {isDeleteDiscountModalOpen && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+                    <div className="bg-white p-6 rounded-lg w-full max-w-md">
+                        <h3 className="text-xl font-semibold mb-4">Confirmar Eliminación</h3>
+                        <p className="text-gray-600 mb-6">
+                            ¿Está seguro que desea eliminar el código de descuento `{selectedDiscount?.code}`? Esta acción no se puede deshacer.
+                        </p>
+                        <div className="flex justify-end space-x-3">
+                            <button
+                                onClick={() => setIsDeleteDiscountModalOpen(false)}
+                                className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg"
+                            >
+                                Cancelar
+                            </button>
+                            <button
+                                onClick={handleDeleteDiscountSubmit}
+                                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+                            >
+                                Eliminar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Modal de Agregar Juego */}
+            {isAddGameModalOpen && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+                    <div className="bg-white p-6 rounded-lg w-full max-w-2xl">
+                        <h3 className="text-xl font-semibold mb-4">Agregar Nuevo Juego</h3>
+                        <form onSubmit={(e) => {
+                            e.preventDefault();
+                            handleAddGameSubmit();
+                        }}>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Título
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={newGameForm.title}
+                                        onChange={(e) => setNewGameForm({...newGameForm, title: e.target.value})}
+                                        className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        required
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Precio Original
+                                    </label>
+                                    <input
+                                        type="number"
+                                        value={newGameForm.originalPrice}
+                                        onChange={(e) => {
+                                            const newPrice = e.target.value;
+                                            setNewGameForm({
+                                                ...newGameForm,
+                                                originalPrice: newPrice,
+                                                price: newGameForm.selectedDiscountId ? 
+                                                    calculateDiscountedPrice(newPrice, newGameForm.selectedDiscountId) : 
+                                                    newPrice
+                                            });
+                                        }}
+                                        className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        required
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Descuento Aplicable
+                                    </label>
+                                    <select
+                                        value={newGameForm.selectedDiscountId}
+                                        onChange={(e) => {
+                                            const discountId = e.target.value;
+                                            setNewGameForm({
+                                                ...newGameForm,
+                                                selectedDiscountId: discountId,
+                                                discounted: discountId !== '',
+                                                price: discountId ? 
+                                                    calculateDiscountedPrice(newGameForm.originalPrice, discountId) : 
+                                                    newGameForm.originalPrice
+                                            });
+                                        }}
+                                        className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    >
+                                        <option value="">Sin descuento</option>
+                                        {activeDiscounts.map(discount => (
+                                            <option key={discount.id} value={discount.id}>
+                                                {discount.code} ({discount.discountPercentage}% off)
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Precio Final
+                                    </label>
+                                    <input
+                                        type="number"
+                                        value={newGameForm.price}
+                                        readOnly
+                                        className="w-full px-3 py-2 border rounded-lg bg-gray-50"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Cantidad de Copias
+                                    </label>
+                                    <input
+                                        type="number"
+                                        value={newGameForm.copies}
+                                        onChange={(e) => setNewGameForm({...newGameForm, copies: parseInt(e.target.value)})}
+                                        className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        required
+                                    />
+                                </div>
+                                <div className="col-span-2">
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Descripción
+                                    </label>
+                                    <textarea
+                                        value={newGameForm.description}
+                                        onChange={(e) => setNewGameForm({...newGameForm, description: e.target.value})}
+                                        className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        rows="3"
+                                        required
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Categoría
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={newGameForm.category}
+                                        onChange={(e) => setNewGameForm({...newGameForm, category: e.target.value})}
+                                        className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        required
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Editorial
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={newGameForm.publisher}
+                                        onChange={(e) => setNewGameForm({...newGameForm, publisher: e.target.value})}
+                                        className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        required
+                                    />
+                                </div>
+                            </div>
+                            <div className="flex justify-end space-x-3 mt-6">
+                                <button
+                                    type="button"
+                                    onClick={() => setIsAddGameModalOpen(false)}
+                                    className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg"
+                                >
+                                    Cancelar
+                                </button>
+                                <button
+                                    type="submit"
+                                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                                >
+                                    Crear Juego
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Modal de Agregar Descuento */}
+            {isAddDiscountModalOpen && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+                    <div className="bg-white p-6 rounded-lg w-full max-w-md">
+                        <h3 className="text-xl font-semibold mb-4">Agregar Nuevo Descuento</h3>
+                        <form onSubmit={(e) => {
+                            e.preventDefault();
+                            handleAddDiscountSubmit();
+                        }}>
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Código
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={newDiscountForm.code}
+                                        onChange={(e) => setNewDiscountForm({...newDiscountForm, code: e.target.value})}
+                                        className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        required
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Porcentaje de Descuento
+                                    </label>
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        max="100"
+                                        value={newDiscountForm.discountPercentage}
+                                        onChange={(e) => setNewDiscountForm({...newDiscountForm, discountPercentage: e.target.value})}
+                                        className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        required
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Fecha de Finalización
+                                    </label>
+                                    <input
+                                        type="date"
+                                        value={newDiscountForm.endDate}
+                                        onChange={(e) => setNewDiscountForm({...newDiscountForm, endDate: e.target.value})}
+                                        className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        required
+                                    />
+                                </div>
+                            </div>
+                            <div className="flex justify-end space-x-3 mt-6">
+                                <button
+                                    type="button"
+                                    onClick={() => setIsAddDiscountModalOpen(false)}
+                                    className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg"
+                                >
+                                    Cancelar
+                                </button>
+                                <button
+                                    type="submit"
+                                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                                >
+                                    Crear Descuento
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             )}

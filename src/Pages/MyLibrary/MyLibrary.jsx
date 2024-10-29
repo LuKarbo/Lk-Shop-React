@@ -225,7 +225,18 @@ const MyLibrary = () => {
         <div className="product-container">
             {/* Sección de Juegos Comprados */}
             <h2 className="text-2xl font-bold mb-6">Mis Juegos</h2>
-            <div className="product-games-grid mb-12">
+            {purchasedGames.length === 0 ? (
+                <div className="text-center p-8 bg-gray-50 rounded-lg mb-12">
+                    <p className="text-gray-600 text-lg">No tienes juegos comprados todavía.</p>
+                    <button
+                        onClick={() => navigate('/products')}
+                        className="mt-4 product-button product-button-secondary"
+                    >
+                        Explorar tienda
+                    </button>
+                </div>
+            ):(
+                <div className="product-games-grid mb-12">
                 {purchasedGames.map((game) => (
                     <div key={game.id} className="product-game-card">
                         <div className="product-game-image-container">
@@ -266,44 +277,57 @@ const MyLibrary = () => {
                         </div>
                     </div>
                 ))}
-            </div>
+                </div>
+            )}
 
             {/* Sección de Favoritos */}
             <h2 className="text-2xl font-bold mb-6">Mis Favoritos</h2>
-            <div className="product-games-grid">
-                {getFavoriteGames().map((game) => (
-                    <div key={game.id} className="product-game-card">
-                        <div className="product-game-image-container">
-                            <img
-                                src={game.image}
-                                alt={game.title}
-                                className="product-game-image"
-                            />
-                        </div>
-                        <div className="product-game-content">
-                            <div className="product-game-header">
-                                <h3 className="product-game-title">{game.title}</h3>
-                                <span className="product-game-rating">★ {game.rating}</span>
+            {getFavoriteGames().length===0 ? (
+                <div className="text-center p-8 bg-gray-50 rounded-lg">
+                    <p className="text-gray-600 text-lg">No tienes juegos en tu lista de favoritos.</p>
+                    <button
+                        onClick={() => navigate('/products')}
+                        className="mt-4 product-button product-button-secondary"
+                    >
+                        Descubrir juegos
+                    </button>
+                </div>
+            ):(
+                <div className="product-games-grid">
+                    {getFavoriteGames().map((game) => (
+                        <div key={game.id} className="product-game-card">
+                            <div className="product-game-image-container">
+                                <img
+                                    src={game.image}
+                                    alt={game.title}
+                                    className="product-game-image"
+                                />
                             </div>
-                            <p className="product-game-description">{game.description}</p>
-                            <div className="product-game-details">
-                                <span className="product-game-publisher">{game.publisher}</span>
-                                <span className="product-game-category">{game.category}</span>
-                            </div>
-                            <div className="product-game-footer">
-                                <div className="product-button-group" style={{ width: '100%' }}>
-                                    <button
-                                        className="product-button product-button-buy"
-                                        onClick={() => navigateToStore(game.title)}
-                                    >
-                                        Comprar
-                                    </button>
+                            <div className="product-game-content">
+                                <div className="product-game-header">
+                                    <h3 className="product-game-title">{game.title}</h3>
+                                    <span className="product-game-rating">★ {game.rating}</span>
+                                </div>
+                                <p className="product-game-description">{game.description}</p>
+                                <div className="product-game-details">
+                                    <span className="product-game-publisher">{game.publisher}</span>
+                                    <span className="product-game-category">{game.category}</span>
+                                </div>
+                                <div className="product-game-footer">
+                                    <div className="product-button-group" style={{ width: '100%' }}>
+                                        <button
+                                            className="product-button product-button-buy"
+                                            onClick={() => navigateToStore(game.title)}
+                                        >
+                                            Comprar
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                ))}
-            </div>
+                    ))}
+                </div>
+            )}
 
             {/* Modal de Información de Compra */}
             {showPurchaseModal && selectedGame && (

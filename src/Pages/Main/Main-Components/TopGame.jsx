@@ -250,7 +250,7 @@ const TopGame = () => {
                                 className="topgame-game-image"
                             />
                             <div className="topgame-sales-badge">
-                                {game.sales} ventas
+                                Top en ventas!
                             </div>
                         </div>
                         <div className="topgame-game-content">

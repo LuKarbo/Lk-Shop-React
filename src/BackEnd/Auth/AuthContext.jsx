@@ -1,4 +1,5 @@
 import { createContext, useContext, useState } from 'react';
+import User from '../Model/User';
 
 const AuthContext = createContext();
 
@@ -12,6 +13,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     const login = (email, password) => {
+        // Save in localStorage
         localStorage.setItem('email', email);
         localStorage.setItem('password', password);
         
@@ -21,17 +23,35 @@ export const AuthProvider = ({ children }) => {
             setIsAdmin(true);
         }
         
+        // Create User instance
+        User.createInstance({
+            email,
+            isAdmin: userIsAdmin
+        });
+        
         setIsLoggedIn(true);
     };
 
     const logout = () => {
+        // Clear localStorage
         localStorage.clear();
+        
+        // Destroy User instance
+        User.destroyInstance();
+        
         setIsAdmin(false);
         setIsLoggedIn(false);
     };
 
     return (
-        <AuthContext.Provider value={{ isLoggedIn, isAdmin, login, logout }}>
+        <AuthContext.Provider value={{ 
+            isLoggedIn, 
+            isAdmin, 
+            login, 
+            logout,
+            // Also expose the current user instance
+            currentUser: User.getInstance()
+        }}>
             {children}
         </AuthContext.Provider>
     );

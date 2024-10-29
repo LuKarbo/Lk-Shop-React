@@ -10,7 +10,7 @@ import Products from './Pages/Products/Products';
 import Groups from './Pages/Groups/Groups';
 import Admin from './Pages/Admin/Admin';
 import Game from './Pages/Game/Game';
-// import MyGroups from '';
+import MyGroups from './Pages/MyGroups/MyGroups';
 // import MyLibrary from '';
 import { AuthProvider } from './BackEnd/Auth/AuthContext';
 import './App.css';
@@ -31,7 +31,7 @@ const App = () => {
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route path="/account" element={<Account />} />
-              <Route path="/mygroups" element={<></>} />
+              <Route path="/mygroups" element={<MyGroups />} />
               <Route path="/mylibrary" element={<></>} />
               <Route path="/admin" element={<Admin/>} />
               <Route path="/game/:id" element={<Game/>} />

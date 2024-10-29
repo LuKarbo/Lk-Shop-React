@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Bookmark, BookmarkCheck, ArrowLeft } from 'lucide-react';
 import { useAuth } from '../../BackEnd/Auth/AuthContext';
 
@@ -9,35 +9,140 @@ const Game = () => {
     const { isLoggedIn } = useAuth();
     const [game, setGame] = useState(null);
     const [favorites, setFavorites] = useState([]);
+    const [purchases, setPurchases] = useState([]);
     const [showModal, setShowModal] = useState(false);
     const [toast, setToast] = useState(null);
 
     const games = [
         {
             id: 1,
-            title: "The Last Journey",
-            description: "Un épico juego de aventuras que te llevará a través de mundos inexplorados",
-            price: "59.99",
+            title: "GTA V",
+            description: "Acción y aventura en Los Santos",
+            price: "29.99",
             rating: 4.8,
             image: "https://via.placeholder.com/800x600",
-            category: "Aventura",
-            publisher: "EA",
+            category: "Acción/Aventura",
+            publisher: "Rockstar Games",
+            discounted: false,
+            originalPrice: "29.99",
+            copies: 1250000
+        },
+        {
+            id: 2,
+            title: "FIFA 24",
+            description: "El mejor juego de fútbol",
+            price: "39.99",
+            rating: 4.5,
+            image: "https://via.placeholder.com/800x600",
+            category: "Deportes",
+            publisher: "EA Sports",
             discounted: true,
-            originalPrice: "79.99",
-            copies: 150,
-            discountId: 1
+            originalPrice: "59.99",
+            copies: 980000
+        },
+        {
+            id: 3,
+            title: "Minecraft",
+            description: "Construye tu propio mundo",
+            price: "26.99",
+            rating: 4.9,
+            image: "https://via.placeholder.com/800x600",
+            category: "Aventura",
+            publisher: "Mojang",
+            discounted: false,
+            originalPrice: "26.99",
+            copies: 850000
+        },
+        {
+            id: 4,
+            title: "Call of Duty: Modern Warfare III",
+            description: "Acción militar en primera persona",
+            price: "39.99",
+            rating: 4.6,
+            image: "https://via.placeholder.com/800x600",
+            category: "FPS",
+            publisher: "Activision",
+            discounted: true,
+            originalPrice: "69.99",
+            copies: 780000
         },
         {
             id: 5,
-            title: "Ninja Warriors",
-            description: "Combates ninja con mecánicas únicas de sigilo",
-            price: "54.99",
-            rating: 4.6,
+            title: "Spider-Man 2",
+            description: "Aventuras del hombre araña",
+            price: "49.99",
+            rating: 4.7,
             image: "https://via.placeholder.com/800x600",
             category: "Acción",
-            publisher: "Ubisoft",
+            publisher: "Sony",
+            discounted: true,
+            originalPrice: "69.99",
+            copies: 720000
+        },
+        {
+            id: 6,
+            title: "The Last of Us Part I",
+            description: "Aventura post-apocalíptica",
+            price: "29.99",
+            rating: 4.9,
+            image: "https://via.placeholder.com/800x600",
+            category: "Acción/Aventura",
+            publisher: "Sony",
+            discounted: true,
+            originalPrice: "59.99",
+            copies: 450000
+        },
+        {
+            id: 7,
+            title: "Red Dead Redemption 2",
+            description: "Una aventura en el salvaje oeste",
+            price: "45.99",
+            rating: 4.8,
+            image: "https://via.placeholder.com/800x600",
+            category: "Acción/Aventura",
+            publisher: "Rockstar Games",
+            discounted: true,
+            originalPrice: "69.99",
+            copies: 680000
+        },
+        {
+            id: 8,
+            title: "League of Legends",
+            description: "El MOBA más popular del mundo",
+            price: "0.00",
+            rating: 4.5,
+            image: "https://via.placeholder.com/800x600",
+            category: "MOBA",
+            publisher: "Riot Games",
             discounted: false,
-            originalPrice: "54.99"
+            originalPrice: "0.00",
+            copies: 1100000
+        },
+        {
+            id: 9,
+            title: "Fortnite",
+            description: "Battle Royale popular",
+            price: "0.00",
+            rating: 4.4,
+            image: "https://via.placeholder.com/800x600",
+            category: "Battle Royale",
+            publisher: "Epic Games",
+            discounted: false,
+            originalPrice: "0.00",
+            copies: 950000
+        },
+        {
+            id: 10,
+            title: "Cyberpunk 2077",
+            description: "RPG futurista de mundo abierto",
+            price: "39.99",
+            rating: 4.5,
+            image: "https://via.placeholder.com/800x600",
+            category: "RPG",
+            publisher: "CD Projekt Red",
+            discounted: true,
+            originalPrice: "59.99",
+            copies: 350000
         }
     ];
 
@@ -45,6 +150,16 @@ const Game = () => {
         const savedFavorites = localStorage.getItem('gameFavorites');
         if (savedFavorites) {
             setFavorites(JSON.parse(savedFavorites));
+        }
+
+        const savedPurchases = localStorage.getItem('gameBuy');
+        if (savedPurchases) {
+            try {
+                const parsedPurchases = JSON.parse(savedPurchases);
+                setPurchases(Array.isArray(parsedPurchases) ? parsedPurchases : []);
+            } catch (e) {
+                setPurchases([]);
+            }
         }
 
         const foundGame = games.find(g => g.id === parseInt(id));
@@ -84,6 +199,38 @@ const Game = () => {
             return;
         }
         setShowModal(true);
+    };
+
+    const handlePurchaseConfirmation = () => {
+        try {
+            let existingPurchases = [];
+            const savedPurchases = localStorage.getItem('gameBuy');
+            
+            if (savedPurchases) {
+                try {
+                    const parsed = JSON.parse(savedPurchases);
+                    existingPurchases = Array.isArray(parsed) ? parsed : [];
+                } catch (e) {
+                    existingPurchases = [];
+                }
+            }
+    
+            if (!existingPurchases.includes(game.id)) {
+                existingPurchases.push(game.id);
+                
+                localStorage.setItem('gameBuy', JSON.stringify(existingPurchases));
+                setPurchases(existingPurchases);
+                showToast('¡Compra confirmada!');
+            } else {
+                showToast('¡Ya has comprado este juego!');
+            }
+            
+            setShowModal(false);
+        } catch (error) {
+            console.error('Error al procesar la compra:', error);
+            showToast('Error al procesar la compra. Por favor, intenta nuevamente.');
+            setShowModal(false);
+        }
     };
 
     if (!game) return null;
@@ -133,27 +280,55 @@ const Game = () => {
                         </div>
 
                         <div className="flex gap-2">
-                            <button
-                                onClick={() => toggleFavorite(game.id)}
-                                className={`p-2 rounded-lg border ${
-                                    favorites.includes(game.id) 
-                                        ? 'bg-primary text-white' 
-                                        : 'border-gray-300 hover:bg-gray-50'
-                                }`}
-                                aria-label={favorites.includes(game.id) ? "Quitar de favoritos" : "Añadir a favoritos"}
-                            >
-                                {favorites.includes(game.id) ? (
-                                    <BookmarkCheck size={20} />
+                            {isLoggedIn ? (
+                                purchases.includes(game.id) ? (
+                                    <Link 
+                                        to="/mylibrary"
+                                        className="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
+                                    >
+                                        En la Biblioteca
+                                    </Link>
                                 ) : (
-                                    <Bookmark size={20} />
-                                )}
-                            </button>
-                            <button 
-                                onClick={handleBuy}
-                                className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark"
-                            >
-                                Comprar
-                            </button>
+                                    <>
+                                        <button
+                                            onClick={() => toggleFavorite(game.id)}
+                                            className={`p-2 rounded-lg border ${
+                                                favorites.includes(game.id) 
+                                                    ? 'bg-primary text-white' 
+                                                    : 'border-gray-300 hover:bg-gray-50'
+                                            }`}
+                                            aria-label={favorites.includes(game.id) ? "Quitar de favoritos" : "Añadir a favoritos"}
+                                        >
+                                            {favorites.includes(game.id) ? (
+                                                <BookmarkCheck size={20} />
+                                            ) : (
+                                                <Bookmark size={20} />
+                                            )}
+                                        </button>
+                                        <button 
+                                            onClick={handleBuy}
+                                            className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark"
+                                        >
+                                            Comprar
+                                        </button>
+                                    </>
+                                )
+                            ) : (
+                                <>
+                                    <button
+                                        onClick={() => showToast('Debe de estar Logeado para agregar a Favoritos')}
+                                        className="p-2 rounded-lg border border-gray-300 hover:bg-gray-50"
+                                    >
+                                        <Bookmark size={20} />
+                                    </button>
+                                    <button 
+                                        onClick={() => showToast('Debe de estar Logeado para comprar')}
+                                        className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark"
+                                    >
+                                        Comprar
+                                    </button>
+                                </>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -194,10 +369,7 @@ const Game = () => {
                                 Cancelar
                             </button>
                             <button 
-                                onClick={() => {
-                                    alert('¡Compra confirmada!');
-                                    setShowModal(false);
-                                }}
+                                onClick={handlePurchaseConfirmation}
                                 className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark"
                             >
                                 Confirmar Compra
@@ -207,7 +379,6 @@ const Game = () => {
                 </div>
             )}
 
-            {/* Toast */}
             {toast && (
                 <div className="fixed bottom-4 right-4 bg-gray-800 text-white px-4 py-2 rounded-lg shadow-lg">
                     {toast}

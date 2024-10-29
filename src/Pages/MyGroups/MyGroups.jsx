@@ -10,6 +10,24 @@ const MyGroups = () => {
     const [activeGroup, setActiveGroup] = useState(null);
     const [messages, setMessages] = useState([]);
     const [inputMessage, setInputMessage] = useState("");
+    const [conversations, setConversations] = useState({
+        1: [
+            { id: 1, text: "¡Bienvenidos al grupo de Gamers Elite!", user: "other", name: "Admin", timestamp: "2023-04-01 10:30" },
+            { id: 2, text: "¿Alguien para una partida competitiva?", user: "other", name: "Juan", timestamp: "2023-04-01 10:32" },
+        ],
+        2: [
+            { id: 1, text: "¡Hola a todos los jugadores casuales!", user: "other", name: "María", timestamp: "2023-04-02 15:20" },
+            { id: 2, text: "¿Qué juegos recomiendan para relajarse?", user: "other", name: "Luis", timestamp: "2023-04-02 15:22" },
+        ],
+        3: [
+            { id: 1, text: "¿Alguien jugando el último Final Fantasy?", user: "other", name: "Ana", timestamp: "2023-04-03 09:00" },
+            { id: 2, text: "¡Aquí fan de los RPG clásicos!", user: "other", name: "Carlos", timestamp: "2023-04-03 10:10" },
+        ],
+        4: [
+            { id: 1, text: "Bienvenidos estrategas", user: "other", name: "Admin", timestamp: "2023-04-03 09:00" },
+            { id: 2, text: "¿Civilization o Age of Empires?", user: "other", name: "Elena", timestamp: "2023-04-03 10:10" },
+        ],
+    });
 
     // Lista compartida de grupos
     const allGroups = [
@@ -47,27 +65,7 @@ const MyGroups = () => {
         }
     ];
 
-    // Conversaciones simuladas por grupo
-    const conversations = {
-        1: [
-            { id: 1, text: "¡Bienvenidos al grupo de Gamers Elite!", user: "other", name: "Admin", timestamp: "2023-04-01 10:30" },
-            { id: 2, text: "¿Alguien para una partida competitiva?", user: "other", name: "Juan", timestamp: "2023-04-01 10:32" },
-        ],
-        2: [
-            { id: 1, text: "¡Hola a todos los jugadores casuales!", user: "other", name: "María", timestamp: "2023-04-02 15:20" },
-            { id: 2, text: "¿Qué juegos recomiendan para relajarse?", user: "other", name: "Luis", timestamp: "2023-04-02 15:22" },
-        ],
-        3: [
-            { id: 1, text: "¿Alguien jugando el último Final Fantasy?", user: "other", name: "Ana", timestamp: "2023-04-03 09:00" },
-            { id: 2, text: "¡Aquí fan de los RPG clásicos!", user: "other", name: "Carlos", timestamp: "2023-04-03 10:10" },
-        ],
-        4: [
-            { id: 1, text: "Bienvenidos estrategas", user: "other", name: "Admin", timestamp: "2023-04-03 09:00" },
-            { id: 2, text: "¿Civilization o Age of Empires?", user: "other", name: "Elena", timestamp: "2023-04-03 10:10" },
-        ],
-    };
-
-    // Cargar grupos del usuario desde localStorage
+    // Cargar grupos del usuario y conversaciones desde localStorage
     useEffect(() => {
         if (isLoggedIn) {
             const savedGroups = localStorage.getItem('MisGrupos');
@@ -75,37 +73,55 @@ const MyGroups = () => {
                 const groupIds = JSON.parse(savedGroups);
                 setMyGroupIds(groupIds);
             }
+
+            const savedConversations = localStorage.getItem('GroupConversations');
+            if (savedConversations) {
+                setConversations(JSON.parse(savedConversations));
+            }
         } else {
             navigate('/login');
         }
     }, [isLoggedIn, navigate]);
 
-    // Filtrar solo los grupos a los que pertenece el usuario
-    const myGroups = allGroups.filter(group => myGroupIds.includes(group.id));
+    // Guardar conversaciones en localStorage cuando cambien
+    useEffect(() => {
+        localStorage.setItem('GroupConversations', JSON.stringify(conversations));
+    }, [conversations]);
 
     const loadMessages = (groupId) => {
+        const savedConversations = localStorage.getItem('GroupConversations');
+        if (savedConversations) {
+            const parsedConversations = JSON.parse(savedConversations);
+            return parsedConversations[groupId] || [];
+        }
         return conversations[groupId] || [];
     };
 
     useEffect(() => {
+        if (!activeGroup) return;
+
         const intervalId = setInterval(() => {
-            if (activeGroup) {
-                const messages = loadMessages(activeGroup);
-                setMessages(messages);
+            const updatedMessages = loadMessages(activeGroup);
+            // Solo actualizar si hay nuevos mensajes
+            if (JSON.stringify(updatedMessages) !== JSON.stringify(messages)) {
+                setMessages(updatedMessages);
             }
-        }, 1000);
+        }, 100);
 
         return () => clearInterval(intervalId);
-    }, [activeGroup]);
+    }, [activeGroup, messages]);
+
+    // Filtrar solo los grupos a los que pertenece el usuario
+    const myGroups = allGroups.filter(group => myGroupIds.includes(group.id));
 
     const handleGroupClick = (groupId) => {
         setActiveGroup(groupId);
-        const messages = loadMessages(groupId);
-        setMessages(messages);
+        const groupMessages = loadMessages(groupId);
+        setMessages(groupMessages);
     };
 
     const handleSendMessage = () => {
-        if (inputMessage.trim()) {
+        if (inputMessage.trim() && activeGroup) {
             const currentTime = new Date().toLocaleString();
             const newMessage = {
                 id: messages.length + 1,
@@ -115,7 +131,13 @@ const MyGroups = () => {
                 timestamp: currentTime,
             };
 
-            setMessages([...messages, newMessage]);
+            // Actualizar tanto el estado local como las conversaciones persistentes
+            const updatedMessages = [...messages, newMessage];
+            setMessages(updatedMessages);
+            setConversations(prevConversations => ({
+                ...prevConversations,
+                [activeGroup]: updatedMessages
+            }));
             setInputMessage("");
         }
     };

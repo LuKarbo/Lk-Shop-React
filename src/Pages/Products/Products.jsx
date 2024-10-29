@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Search, Bookmark, BookmarkCheck, X, Maximize } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../BackEnd/Auth/AuthContext';
 import './Products.css';
 
@@ -13,6 +13,7 @@ const Products = () => {
     const [onlyDiscounted, setOnlyDiscounted] = useState(false);
     const [filteredGames, setFilteredGames] = useState([]);
     const [favorites, setFavorites] = useState([]);
+    const [purchases, setPurchases] = useState([]);
     const [selectedGame, setSelectedGame] = useState(null);
     const [showModal, setShowModal] = useState(false);
     const [toast, setToast] = useState(null);
@@ -153,8 +154,18 @@ const Products = () => {
 
     useEffect(() => {
         const savedFavorites = localStorage.getItem('gameFavorites');
+        const savedPurchases = localStorage.getItem('gameBuy');
+        
         if (savedFavorites) {
             setFavorites(JSON.parse(savedFavorites));
+        }
+        if (savedPurchases) {
+            try {
+                const parsedPurchases = JSON.parse(savedPurchases);
+                setPurchases(Array.isArray(parsedPurchases) ? parsedPurchases : []);
+            } catch (e) {
+                setPurchases([]);
+            }
         }
         setFilteredGames(games_list);
     }, []);
@@ -300,11 +311,11 @@ const Products = () => {
                     <button 
                         className="product-button product-button-secondary"
                         onClick={() => {
-                        setSearch('');
-                        setCategory('');
-                        setPublisher('');
-                        setMaxPrice('');
-                        setOnlyDiscounted(false);
+                            setSearch('');
+                            setCategory('');
+                            setPublisher('');
+                            setMaxPrice('');
+                            setOnlyDiscounted(false);
                         }}
                     >
                         Limpiar filtros
@@ -351,38 +362,42 @@ const Products = () => {
                                         )}
                                     </div>
                                     <div className="product-button-group">
-                                        {isLoggedIn? (
-                                            <>
-                                                <button
-                                                    onClick={() => toggleFavorite(game.id)}
-                                                    className={`product-button product-button-favorite ${favorites.includes(game.id) ? 'active' : ''}`}
-                                                    aria-label={favorites.includes(game.id) ? "Quitar de favoritos" : "Añadir a favoritos"}
+                                        {isLoggedIn ? (
+                                            purchases.includes(game.id) ? (
+                                                <Link 
+                                                    to="/mylibrary"
+                                                    className="product-button product-button-library"
                                                 >
-                                                    {favorites.includes(game.id) ? (
-                                                        <BookmarkCheck size={20} />
-                                                    ) : (
-                                                        <Bookmark size={20} />
-                                                    )}
-                                                </button>
-                                                <button 
-                                                    className="product-button product-button-buy"
-                                                    onClick={() => handleBuy(game)}
-                                                >
-                                                    Comprar
-                                                </button>
-                                            </>
+                                                    En la Biblioteca
+                                                </Link>
+                                            ) : (
+                                                <>
+                                                    <button
+                                                        onClick={() => toggleFavorite(game.id)}
+                                                        className={`product-button product-button-favorite ${favorites.includes(game.id) ? 'active' : ''}`}
+                                                        aria-label={favorites.includes(game.id) ? "Quitar de favoritos" : "Añadir a favoritos"}
+                                                    >
+                                                        {favorites.includes(game.id) ? (
+                                                            <BookmarkCheck size={20} />
+                                                        ) : (
+                                                            <Bookmark size={20} />
+                                                        )}
+                                                    </button>
+                                                    <button 
+                                                        className="product-button product-button-buy"
+                                                        onClick={() => handleBuy(game)}
+                                                    >
+                                                        Comprar
+                                                    </button>
+                                                </>
+                                            )
                                         ) : (
                                             <>
                                                 <button
                                                     onClick={() => showToast('Debe de estar Logeado para agregar a Favoritos')}
-                                                    className={`product-button product-button-favorite ${favorites.includes(game.id) ? 'active' : ''}`}
-                                                    aria-label={favorites.includes(game.id) ? "Quitar de favoritos" : "Añadir a favoritos"}
+                                                    className="product-button product-button-favorite"
                                                 >
-                                                    {favorites.includes(game.id) ? (
-                                                        <BookmarkCheck size={20} />
-                                                    ) : (
-                                                        <Bookmark size={20} />
-                                                    )}
+                                                    <Bookmark size={20} />
                                                 </button>
                                                 <button 
                                                     className="product-button product-button-buy"

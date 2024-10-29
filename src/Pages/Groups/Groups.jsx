@@ -7,6 +7,8 @@ const Groups = () => {
     const { isLoggedIn } = useAuth();
     const [search, setSearch] = useState('');
     const [showModal, setShowModal] = useState(false);
+    const [showLeaveModal, setShowLeaveModal] = useState(false);
+    const [selectedGroupToLeave, setSelectedGroupToLeave] = useState(null);
     const [toast, setToast] = useState(null);
     const [myGroups, setMyGroups] = useState([]);
     const [newGroup, setNewGroup] = useState({
@@ -117,6 +119,20 @@ const Groups = () => {
         showToast(`Te has unido al grupo ${group.name}`);
     };
 
+    const handleLeaveGroup = (group) => {
+        setSelectedGroupToLeave(group);
+        setShowLeaveModal(true);
+    };
+
+    const confirmLeaveGroup = () => {
+        const updatedMyGroups = myGroups.filter(id => id !== selectedGroupToLeave.id);
+        localStorage.setItem('MisGrupos', JSON.stringify(updatedMyGroups));
+        setMyGroups(updatedMyGroups);
+        showToast(`Has dejado el grupo ${selectedGroupToLeave.name}`);
+        setShowLeaveModal(false);
+        setSelectedGroupToLeave(null);
+    };
+
     const toggleCategory = (category) => {
         setNewGroup(prev => {
             const categories = prev.categories.includes(category)
@@ -196,13 +212,22 @@ const Groups = () => {
                                     </span>
                                 ))}
                             </div>
-                            <button
-                                className="group-button"
-                                onClick={() => handleJoinGroup(group)}
-                                disabled={myGroups.includes(group.id)}
-                            >
-                                {myGroups.includes(group.id) ? 'Ya eres miembro' : 'Unirse al Grupo'}
-                            </button>
+                            {myGroups.includes(group.id) ? (
+                                <button
+                                    className="group-button"
+                                    style={{ backgroundColor: '#dc3545' }}
+                                    onClick={() => handleLeaveGroup(group)}
+                                >
+                                    Salir del Grupo
+                                </button>
+                            ) : (
+                                <button
+                                    className="group-button"
+                                    onClick={() => handleJoinGroup(group)}
+                                >
+                                    Unirse al Grupo
+                                </button>
+                            )}
                         </div>
                     </div>
                 ))}
@@ -321,6 +346,48 @@ const Groups = () => {
                                 onClick={handleCreateGroup}
                             >
                                 Crear
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Modal para confirmar salida del grupo */}
+            {showLeaveModal && selectedGroupToLeave && (
+                <div className="modal-overlay">
+                    <div className="modal-content" style={{ maxWidth: '400px' }}>
+                        <div className="modal-header">
+                            <h2 className="modal-title">Confirmar Salida</h2>
+                            <button
+                                className="modal-close"
+                                onClick={() => {
+                                    setShowLeaveModal(false);
+                                    setSelectedGroupToLeave(null);
+                                }}
+                            >
+                                <X size={24} />
+                            </button>
+                        </div>
+                        <div className="modal-body">
+                            <p>¿Estás seguro que deseas salir del grupo "{selectedGroupToLeave.name}"?</p>
+                        </div>
+                        <div className="modal-footer">
+                            <button
+                                className="group-button"
+                                style={{ backgroundColor: '#666', maxWidth: '120px' }}
+                                onClick={() => {
+                                    setShowLeaveModal(false);
+                                    setSelectedGroupToLeave(null);
+                                }}
+                            >
+                                Cancelar
+                            </button>
+                            <button
+                                className="group-button"
+                                style={{ backgroundColor: '#dc3545', maxWidth: '120px' }}
+                                onClick={confirmLeaveGroup}
+                            >
+                                Confirmar
                             </button>
                         </div>
                     </div>

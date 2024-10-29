@@ -8,15 +8,13 @@ const Account = () => {
     const { isLoggedIn } = useAuth();
     const navigate = useNavigate();
 
-    // REVEER LA CLASE ÚLTIMOS MINUTOS PARA MEJOR IMPLEMENTACIÓN
     useEffect(() => {
         if (!isLoggedIn) {
             navigate('/login');
         }
     }, [isLoggedIn, navigate]);
-    // -----------------------------------------------------
 
-  // Datos de ejemplo
+    // Datos de ejemplo
     const user = {
         name: "Alex González",
         username: "@alexgonzalez",
@@ -104,7 +102,7 @@ return (
                 <div className="bg-white rounded-xl shadow-md p-6">
                     <div className="flex justify-between items-center mb-4">
                         <h2 className="text-xl font-bold">Mis Grupos</h2>
-                        <button className="text-blue-500 hover:text-blue-600">Ver todos</button>
+                        <button className="text-blue-500 hover:text-blue-600" onClick={ () => {navigate("/mygroups")}}>Ver todos</button>
                     </div>
                     <div className="space-y-4">
                         {groups.map(group => (

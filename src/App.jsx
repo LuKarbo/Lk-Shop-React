@@ -11,7 +11,7 @@ import Groups from './Pages/Groups/Groups';
 import Admin from './Pages/Admin/Admin';
 import Game from './Pages/Game/Game';
 import MyGroups from './Pages/MyGroups/MyGroups';
-// import MyLibrary from '';
+import MyLibrary from './Pages/MyLibrary/MyLibrary';
 import { AuthProvider } from './BackEnd/Auth/AuthContext';
 import './App.css';
 
@@ -32,7 +32,7 @@ const App = () => {
               <Route path="/register" element={<Register />} />
               <Route path="/account" element={<Account />} />
               <Route path="/mygroups" element={<MyGroups />} />
-              <Route path="/mylibrary" element={<></>} />
+              <Route path="/mylibrary" element={<MyLibrary/>} />
               <Route path="/admin" element={<Admin/>} />
               <Route path="/game/:id" element={<Game/>} />
             </Routes>

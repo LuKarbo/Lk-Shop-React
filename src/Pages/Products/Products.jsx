@@ -21,63 +21,133 @@ const Products = () => {
     const games_list = [
         {
             id: 1,
-            title: "The Last Journey",
-            description: "Un épico juego de aventuras que te llevará a través de mundos inexplorados",
-            price: "59.99",
+            title: "GTA V",
+            description: "Acción y aventura en Los Santos",
+            price: "29.99",
             rating: 4.8,
             image: "https://via.placeholder.com/800x600",
-            category: "Aventura",
-            publisher: "EA",
-            discounted: true,
-            originalPrice: "79.99"
+            category: "Acción/Aventura",
+            publisher: "Rockstar Games",
+            discounted: false,
+            originalPrice: "29.99",
+            copies: 1250000
         },
         {
             id: 2,
-            title: "Cosmic Wars",
-            description: "Batalla intergaláctica con gráficos espectaculares",
-            price: "49.99",
+            title: "FIFA 24",
+            description: "El mejor juego de fútbol",
+            price: "39.99",
             rating: 4.5,
             image: "https://via.placeholder.com/800x600",
-            category: "Acción",
-            publisher: "Ubisoft",
-            discounted: false,
-            originalPrice: "49.99"
+            category: "Deportes",
+            publisher: "EA Sports",
+            discounted: true,
+            originalPrice: "59.99",
+            copies: 980000
         },
         {
             id: 3,
-            title: "Medieval Quest",
-            description: "Explora un mundo medieval lleno de magia y misterios",
-            price: "39.99",
-            rating: 4.7,
+            title: "Minecraft",
+            description: "Construye tu propio mundo",
+            price: "26.99",
+            rating: 4.9,
             image: "https://via.placeholder.com/800x600",
-            category: "RPG",
-            publisher: "Nintendo",
-            discounted: true,
-            originalPrice: "59.99"
+            category: "Aventura",
+            publisher: "Mojang",
+            discounted: false,
+            originalPrice: "26.99",
+            copies: 850000
         },
         {
             id: 4,
-            title: "Future Racing",
-            description: "Carreras futuristas a velocidades increíbles",
-            price: "29.99",
-            rating: 4.3,
+            title: "Call of Duty: Modern Warfare III",
+            description: "Acción militar en primera persona",
+            price: "39.99",
+            rating: 4.6,
             image: "https://via.placeholder.com/800x600",
-            category: "Deportes",
-            publisher: "EA",
+            category: "FPS",
+            publisher: "Activision",
             discounted: true,
-            originalPrice: "44.99"
+            originalPrice: "69.99",
+            copies: 780000
         },
         {
             id: 5,
-            title: "Ninja Warriors",
-            description: "Combates ninja con mecánicas únicas de sigilo",
-            price: "54.99",
-            rating: 4.6,
+            title: "Spider-Man 2",
+            description: "Aventuras del hombre araña",
+            price: "49.99",
+            rating: 4.7,
             image: "https://via.placeholder.com/800x600",
             category: "Acción",
-            publisher: "Ubisoft",
+            publisher: "Sony",
+            discounted: true,
+            originalPrice: "69.99",
+            copies: 720000
+        },
+        {
+            id: 6,
+            title: "The Last of Us Part I",
+            description: "Aventura post-apocalíptica",
+            price: "29.99",
+            rating: 4.9,
+            image: "https://via.placeholder.com/800x600",
+            category: "Acción/Aventura",
+            publisher: "Sony",
+            discounted: true,
+            originalPrice: "59.99",
+            copies: 450000
+        },
+        {
+            id: 7,
+            title: "Red Dead Redemption 2",
+            description: "Una aventura en el salvaje oeste",
+            price: "45.99",
+            rating: 4.8,
+            image: "https://via.placeholder.com/800x600",
+            category: "Acción/Aventura",
+            publisher: "Rockstar Games",
+            discounted: true,
+            originalPrice: "69.99",
+            copies: 680000
+        },
+        {
+            id: 8,
+            title: "League of Legends",
+            description: "El MOBA más popular del mundo",
+            price: "0.00",
+            rating: 4.5,
+            image: "https://via.placeholder.com/800x600",
+            category: "MOBA",
+            publisher: "Riot Games",
             discounted: false,
-            originalPrice: "54.99"
+            originalPrice: "0.00",
+            copies: 1100000
+        },
+        {
+            id: 9,
+            title: "Fortnite",
+            description: "Battle Royale popular",
+            price: "0.00",
+            rating: 4.4,
+            image: "https://via.placeholder.com/800x600",
+            category: "Battle Royale",
+            publisher: "Epic Games",
+            discounted: false,
+            originalPrice: "0.00",
+            copies: 950000
+        },
+        {
+            id: 10,
+            title: "Cyberpunk 2077",
+            description: "RPG futurista de mundo abierto",
+            price: "39.99",
+            rating: 4.5,
+            image: "https://via.placeholder.com/800x600",
+            category: "RPG",
+            publisher: "CD Projekt Red",
+            discounted: true,
+            originalPrice: "59.99",
+            copies: 350000
         }
     ];
 
@@ -111,6 +181,38 @@ const Products = () => {
     const handleBuy = (game) => {
         setSelectedGame(game);
         setShowModal(true);
+    };
+
+    const handlePurchaseConfirmation = () => {
+        try {
+            let existingPurchases = [];
+            const savedPurchases = localStorage.getItem('gameBuy');
+            
+            if (savedPurchases) {
+                try {
+                    const parsed = JSON.parse(savedPurchases);
+                    existingPurchases = Array.isArray(parsed) ? parsed : [];
+                } catch (e) {
+                    existingPurchases = [];
+                }
+            }
+    
+            if (!existingPurchases.includes(selectedGame.id)) {
+                existingPurchases.push(selectedGame.id);
+                
+                localStorage.setItem('gameBuy', JSON.stringify(existingPurchases));
+                
+                showToast('¡Compra confirmada!');
+            } else {
+                showToast('¡Ya has comprado este juego!');
+            }
+            
+            setShowModal(false);
+        } catch (error) {
+            console.error('Error al procesar la compra:', error);
+            showToast('Error al procesar la compra. Por favor, intenta nuevamente.');
+            setShowModal(false);
+        }
     };
 
     const handleGameInfo = (game) => {
@@ -340,10 +442,7 @@ const Products = () => {
                             </button>
                             <button 
                                 className="product-button product-button-buy"
-                                onClick={() => {
-                                    alert('Compra confirmada!');
-                                    setShowModal(false);
-                                }}
+                                onClick={handlePurchaseConfirmation}
                             >
                                 Confirmar Compra
                             </button>

@@ -25,9 +25,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     const logout = () => {
-        localStorage.removeItem('email');
-        localStorage.removeItem('password');
-        localStorage.removeItem('isAdmin');
+        localStorage.clear();
         setIsAdmin(false);
         setIsLoggedIn(false);
     };

@@ -1,122 +1,109 @@
 .chat-view {
-    margin-top: 40px;
-    display: flex;
-    height: 90vh;
-  }
-  
-  .group-list {
-    width: 250px;
-    background-color: #f4f4f4;
-    padding: 10px;
-    border-right: 1px solid #ddd;
-  }
-  
-  .group-list ul {
-    list-style-type: none;
-    padding: 0;
-  }
-  
-  .group-list li {
-    cursor: pointer;
-    padding: 8px;
-    transition: background 0.3s;
-    display: flex;
-    align-items: center;
-  }
-  
-  .group-icon {
-    width: 30px; /* Ancho del icono */
-    height: 30px; /* Alto del icono */
-    border-radius: 50%; /* Hacer el icono circular */
-    background-size: cover; /* Asegurarse de que la imagen cubra el área */
-    margin-right: 10px;
-  }
-  
-  .group-list li:hover {
-    background-color: #e0e0e0;
-  }
-  
-  .chat-area {
-    flex: 1;
-    padding: 20px;
-  }
-  
-  .messages {
-    height: 85%;
-    overflow-y: auto;
-    border: 1px solid #ddd;
-    margin-bottom: 10px;
-    padding: 10px;
-    display: flex;
-    flex-direction: column;
-  }
-  
-  .my {
-    background-color: #dcf8c6;
-    align-self: flex-end;
-    border-radius: 15px;
-    margin: 5px 0;
-    padding: 15px;
-  }
-  
+  margin-top: 40px;
+  display: flex;
+  height: 90vh;
+}
+
+.group-list {
+  width: 250px;
+  background-color: #f4f4f4;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.group-list ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.group-list li {
+  cursor: pointer;
+  padding: 8px;
+  transition: background 0.3s;
+  display: flex;
+  align-items: center;
+}
+
+.group-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background-size: cover;
+  margin-right: 10px;
+}
+
+.group-list li:hover {
+  background-color: #e0e0e0;
+}
+
+.chat-area {
+  flex: 1;
+  padding: 20px;
+}
+
+.messages {
+  height: 85%;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  margin-bottom: 10px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column; 
+  background-color: rgb(90, 90, 90);
+}
+
+.my {
+  background-color: #dcf8c6;
+  align-self: flex-end;
+  border: 1px solid #ddd;
+  border-radius: 15px;
+  margin: 5px 0;
+  padding: 15px;
+}
+
 .other {
-    background-color: #ffffff;
-    align-self: flex-start;
-    border: 1px solid #ddd;
-    border-radius: 15px;
-    margin: 5px 0;
-    padding: 15px;
-  }
-  
-  .message-user {
-    font-weight: bold;
-  }
-  
-  .message-text {
-    margin-top: 5px;
-  }
-  
-  .message-image {
-    max-width: 100%;
-    border-radius: 15px;
-    margin-top: 5px;
-  }
-  
-  .image-preview {
-    margin-top: 10px;
-  }
-  
-  .preview-image {
-    max-width: 200px;
-    max-height: 200px;
-  }
-  
-  .input-area {
-    display: flex;
-    align-items: center;
-  }
-  
-  input {
-    width: calc(100% - 120px);
-    padding: 10px;
-  }
-  
-  .upload-button {
-    cursor: pointer;
-    margin-left: 10px;
-  }
-  
-  .send-button {
-    padding: 10px;
-    margin-left: 10px;
-    background-color: #4caf50;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background 0.3s;
-  }
-  
-  .send-button:hover {
-    background-color: #45a049;
-  }
+  background-color: #ffffff;
+  align-self: flex-start;
+  border: 1px solid #ddd;
+  border-radius: 15px;
+  margin: 5px 0;
+  padding: 15px;
+}
+
+.message-user {
+  font-weight: bold;
+}
+
+.message-text {
+  margin-top: 5px;
+}
+
+.input-area {
+  display: flex;
+  align-items: center;
+}
+
+input {
+  width: calc(100% - 120px);
+  padding: 10px;
+}
+
+.upload-button {
+  cursor: pointer;
+  margin-left: 10px;
+}
+
+.send-button {
+  padding: 10px;
+  margin-left: 10px;
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.send-button:hover {
+  background-color: #45a049;
+}

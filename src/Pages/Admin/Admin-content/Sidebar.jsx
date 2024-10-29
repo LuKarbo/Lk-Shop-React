@@ -5,7 +5,7 @@ const menuItems = [
     { id: 'users', label: 'Usuarios', icon: <Users size={20} /> },
     { id: 'games', label: 'Juegos', icon: <GamepadIcon size={20} /> },
     { id: 'groups', label: 'Grupos', icon: <UsersRound size={20} /> },
-    { id: 'sales', label: 'Ventas', icon: <ShoppingBag size={20} /> },
+    { id: 'sales', label: 'Compras', icon: <ShoppingBag size={20} /> },
 ];
 
 const Sidebar = ({ activeSection, setActiveSection }) => {

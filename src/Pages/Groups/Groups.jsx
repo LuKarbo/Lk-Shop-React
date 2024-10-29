@@ -8,6 +8,7 @@ const Groups = () => {
     const [search, setSearch] = useState('');
     const [showModal, setShowModal] = useState(false);
     const [toast, setToast] = useState(null);
+    const [myGroups, setMyGroups] = useState([]);
     const [newGroup, setNewGroup] = useState({
         name: '',
         description: '',
@@ -39,11 +40,31 @@ const Groups = () => {
             image: "https://via.placeholder.com/800x600",
             members: 89,
             categories: ["Aventura", "Puzzle"]
+        },
+        {
+            id: 3,
+            name: "RPG Masters",
+            description: "Comunidad dedicada a los amantes de los RPG",
+            image: "https://via.placeholder.com/800x600",
+            members: 120,
+            categories: ["RPG"]
+        },
+        {
+            id: 4,
+            name: "Strategy Pros",
+            description: "Para los expertos en juegos de estrategia",
+            image: "https://via.placeholder.com/800x600",
+            members: 75,
+            categories: ["Estrategia"]
         }
     ];
 
     useEffect(() => {
         setFilteredGroups(groups);
+        const savedGroups = localStorage.getItem('MisGrupos');
+        if (savedGroups) {
+            setMyGroups(JSON.parse(savedGroups));
+        }
     }, []);
 
     const handleImageChange = (e) => {
@@ -67,7 +88,12 @@ const Groups = () => {
     };
 
     const handleCreateGroup = () => {
-        console.log('Nuevo grupo creado:', newGroup);
+        const newGroupData = {
+            ...newGroup,
+            id: groups.length + 1,
+            members: 1,
+        };
+        console.log('Nuevo grupo creado:', newGroupData);
         showToast(`Grupo ${newGroup.name} creado exitosamente`);
         setShowModal(false);
         setNewGroup({
@@ -80,7 +106,14 @@ const Groups = () => {
     };
 
     const handleJoinGroup = (group) => {
-        console.log('Unido al grupo:', group.name);
+        if (!isLoggedIn) {
+            showToast('Debe estar logeado para unirse');
+            return;
+        }
+
+        const updatedMyGroups = [...myGroups, group.id];
+        localStorage.setItem('MisGrupos', JSON.stringify(updatedMyGroups));
+        setMyGroups(updatedMyGroups);
         showToast(`Te has unido al grupo ${group.name}`);
     };
 
@@ -103,7 +136,10 @@ const Groups = () => {
     useEffect(() => {
         const filtered = groups.filter(group =>
             group.name.toLowerCase().includes(search.toLowerCase()) ||
-            group.description.toLowerCase().includes(search.toLowerCase())
+            group.description.toLowerCase().includes(search.toLowerCase()) ||
+            group.categories.some(category => 
+                category.toLowerCase().includes(search.toLowerCase())
+            )
         );
         setFilteredGroups(filtered);
     }, [search]);
@@ -115,14 +151,14 @@ const Groups = () => {
                     <Search className="groups-search-icon" size={25} />
                     <input
                         type="text"
-                        placeholder="Buscar grupos..."
+                        placeholder="Buscar grupos por nombre, descripción o categoría..."
                         className="groups-search-input"
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                     />
                 </div>
                 <div className="col-lg-2">
-                    {isLoggedIn? (
+                    {isLoggedIn && (
                         <button
                             className="group-button"
                             style={{ marginBottom: '32px', maxWidth: '200px' }}
@@ -130,10 +166,9 @@ const Groups = () => {
                         >
                             Crear Grupo
                         </button>
-                    ):(<></>)}
+                    )}
                 </div>
             </div>
-
 
             <div className="groups-grid">
                 {filteredGroups.map((group) => (
@@ -161,21 +196,13 @@ const Groups = () => {
                                     </span>
                                 ))}
                             </div>
-                            {isLoggedIn?(
-                                <button
-                                    className="group-button"
-                                    onClick={() => handleJoinGroup(group)}
-                                >
-                                    Unirse al Grupo
-                                </button>
-                            ):(
-                                <button
-                                    className="group-button"
-                                    onClick={() => showToast('Debe de estar Logeado para unirse')}
-                                >
-                                    Unirse al Grupo
-                                </button>
-                            )}
+                            <button
+                                className="group-button"
+                                onClick={() => handleJoinGroup(group)}
+                                disabled={myGroups.includes(group.id)}
+                            >
+                                {myGroups.includes(group.id) ? 'Ya eres miembro' : 'Unirse al Grupo'}
+                            </button>
                         </div>
                     </div>
                 ))}

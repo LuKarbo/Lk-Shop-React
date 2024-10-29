@@ -1,38 +1,66 @@
 import { Users } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../../../BackEnd/Auth/AuthContext';
 import './TopGroups.css';
 
 const TopGroups = () => {
     const { isLoggedIn } = useAuth();
     const [toast, setToast] = useState(null);
+    const [myGroups, setMyGroups] = useState([]);
 
-    const topGroups = [
+    const groups = [
         {
             id: 1,
-            name: "Gaming Masters",
-            description: "Comunidad de jugadores expertos",
-            members: 15000,
-            image: "https://via.placeholder.com/400x400"
+            name: "Gamers Elite",
+            description: "Grupo dedicado a jugadores competitivos de diversos géneros",
+            image: "https://via.placeholder.com/800x600",
+            members: 156,
+            categories: ["Acción", "Shooter"]
         },
         {
             id: 2,
-            name: "Pro Gamers",
-            description: "Para gamers competitivos",
-            members: 12000,
-            image: "https://via.placeholder.com/400x400"
+            name: "Casual Gaming",
+            description: "Para jugadores que disfrutan de sesiones relajadas y amistosas",
+            image: "https://via.placeholder.com/800x600",
+            members: 89,
+            categories: ["Aventura", "Puzzle"]
         },
         {
             id: 3,
-            name: "Casual Players",
-            description: "Diversión sin presiones",
-            members: 10000,
-            image: "https://via.placeholder.com/400x400"
+            name: "RPG Masters",
+            description: "Comunidad dedicada a los amantes de los RPG",
+            image: "https://via.placeholder.com/800x600",
+            members: 120,
+            categories: ["RPG"]
+        },
+        {
+            id: 4,
+            name: "Strategy Pros",
+            description: "Para los expertos en juegos de estrategia",
+            image: "https://via.placeholder.com/800x600",
+            members: 75,
+            categories: ["Estrategia"]
         }
     ];
 
+    const topGroups = [...groups].sort((a, b) => b.members - a.members).slice(0, 3);
+
+    useEffect(() => {
+        const savedGroups = localStorage.getItem('MisGrupos');
+        if (savedGroups) {
+            setMyGroups(JSON.parse(savedGroups));
+        }
+    }, []);
+
     const handleJoinGroup = (group) => {
-        console.log('Unido al grupo:', group.name);
+        if (!isLoggedIn) {
+            showToast('Debe estar logeado para unirse');
+            return;
+        }
+
+        const updatedMyGroups = [...myGroups, group.id];
+        localStorage.setItem('MisGrupos', JSON.stringify(updatedMyGroups));
+        setMyGroups(updatedMyGroups);
         showToast(`Te has unido al grupo ${group.name}`);
     };
 
@@ -66,21 +94,13 @@ const TopGroups = () => {
                                 </span>
                             </div>
                             <p className="group-description">{group.description}</p>
-                            {isLoggedIn? (
-                                <button
-                                    className="group-button"
-                                    onClick={() => handleJoinGroup(group)}
-                                >
-                                    Unirse al Grupo
-                                </button>
-                            ):(
-                                <button
-                                    className="group-button"
-                                    onClick={() => showToast('Debe de estar Logeado para unirse')}
-                                >
-                                    Unirse al Grupo
-                                </button>
-                            )}
+                            <button
+                                className="group-button"
+                                onClick={() => handleJoinGroup(group)}
+                                disabled={myGroups.includes(group.id)}
+                            >
+                                {myGroups.includes(group.id) ? 'Ya eres miembro' : 'Unirse al Grupo'}
+                            </button>
                         </div>
                     </div>
                 ))}

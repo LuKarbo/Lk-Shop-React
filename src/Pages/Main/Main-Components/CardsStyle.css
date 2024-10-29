@@ -51,6 +51,7 @@
     font-weight: bold;
     margin: 0;
     color: #000;
+    max-width: 244px;
 }
 
 .descuento-game-rating {
@@ -243,6 +244,7 @@
     font-weight: bold;
     margin: 0;
     color: #000;
+    max-width: 244px;
 }
 
 .topgame-game-rating {

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Search, Bookmark, BookmarkCheck, X, Maximize } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../BackEnd/Auth/AuthContext';
 import './Products.css';
 
@@ -15,6 +16,7 @@ const Products = () => {
     const [selectedGame, setSelectedGame] = useState(null);
     const [showModal, setShowModal] = useState(false);
     const [toast, setToast] = useState(null);
+    const navigate = useNavigate();
 
     const games_list = [
         {
@@ -112,7 +114,7 @@ const Products = () => {
     };
 
     const handleGameInfo = (game) => {
-        console.log('Información del juego:', game);
+        navigate(`/game/${game.id}`);
     };
 
     const applyFilters = () => {

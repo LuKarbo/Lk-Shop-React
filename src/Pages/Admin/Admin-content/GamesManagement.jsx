@@ -2,35 +2,11 @@ import { useState } from 'react';
 import { Image as ImageIcon, Pencil, Trash2, ChevronLeft, ChevronRight, ChevronUp, ChevronDown } from 'lucide-react';
 
 const GamesManagement = () => {
-    const [isViewReviewOpen, setIsViewReviewOpen] = useState(false);
-    const [selectedReview, setSelectedReview] = useState(null);
-    const [imagePreview, setImagePreview] = useState(null);
+    //#region Juegos estados, handlers y lista
     const [gameSearch, setGameSearch] = useState('');
-    const [reviewSearch, setReviewSearch] = useState('');
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [selectedGame, setSelectedGame] = useState(null);
-
-    const [discountPage, setDiscountPage] = useState(1);
-    const [discountSearch, setDiscountSearch] = useState('');
-    const [isEditDiscountModalOpen, setIsEditDiscountModalOpen] = useState(false);
-    const [isDeleteDiscountModalOpen, setIsDeleteDiscountModalOpen] = useState(false);
-    const [selectedDiscount, setSelectedDiscount] = useState(null);
-    const [editDiscountForm, setEditDiscountForm] = useState({
-        code: '',
-        endDate: '',
-        discountPercentage: ''
-    });
-
-    const [sortConfig, setSortConfig] = useState({
-        key: null,
-        direction: 'asc'
-    });
-
-    const [gamePage, setGamePage] = useState(1);
-    const [reviewPage, setReviewPage] = useState(1);
-    const ITEMS_PER_PAGE = 10;
-
     const [editForm, setEditForm] = useState({
         title: '',
         description: '',
@@ -42,9 +18,7 @@ const GamesManagement = () => {
         selectedDiscountId: '',
         copies: 0
     });
-
     const [isAddGameModalOpen, setIsAddGameModalOpen] = useState(false);
-    const [isAddDiscountModalOpen, setIsAddDiscountModalOpen] = useState(false);
     const [newGameForm, setNewGameForm] = useState({
         title: '',
         description: '',
@@ -56,11 +30,6 @@ const GamesManagement = () => {
         selectedDiscountId: '',
         copies: 0,
         image: null
-    });
-    const [newDiscountForm, setNewDiscountForm] = useState({
-        code: '',
-        discountPercentage: '',
-        endDate: ''
     });
 
     const games = [
@@ -79,6 +48,106 @@ const GamesManagement = () => {
             discountId: 1
         }
     ];
+
+    const handleOpenEditModal = (game) => {
+        setSelectedGame(game);
+        setEditForm({
+            title: game.title,
+            description: game.description,
+            price: game.price,
+            category: game.category,
+            publisher: game.publisher,
+            discounted: game.discounted,
+            originalPrice: game.originalPrice,
+            selectedDiscountId: game.discountId || '',
+            copies: game.copies
+        });
+        setIsEditModalOpen(true);
+    };
+
+    const handleOpenDeleteModal = (game) => {
+        setSelectedGame(game);
+        setIsDeleteModalOpen(true);
+    };
+
+    const handleEditSubmit = () => {
+        const updatedGame = {
+            ...selectedGame,
+            ...editForm,
+            discountId: editForm.selectedDiscountId || null
+        };
+        console.log('Juego editado:', updatedGame);
+        setIsEditModalOpen(false);
+    };
+    
+    const handleDeleteSubmit = () => {
+        console.log('Juego eliminado:', selectedGame);
+        setIsDeleteModalOpen(false);
+    };
+
+    const handleAddGameSubmit = () => {
+        const newGame = {
+            ...newGameForm,
+            discountId: newGameForm.selectedDiscountId || null
+        };
+        console.log('Nuevo juego creado:', newGame);
+        setIsAddGameModalOpen(false);
+        setNewGameForm({
+            title: '',
+            description: '',
+            price: '',
+            originalPrice: '',
+            category: '',
+            publisher: '',
+            discounted: false,
+            selectedDiscountId: '',
+            copies: 0,
+            image: null
+        });
+    };
+
+    const handlePriceChange = (e) => {
+        const newPrice = e.target.value;
+        setEditForm(prev => ({
+            ...prev,
+            originalPrice: newPrice,
+            price: prev.selectedDiscountId ? 
+                calculateDiscountedPrice(newPrice, prev.selectedDiscountId) : 
+                newPrice
+        }));
+    };
+
+    const handleDiscountChange = (e) => {
+        const discountId = e.target.value;
+        setEditForm(prev => ({
+            ...prev,
+            selectedDiscountId: discountId,
+            discounted: discountId !== '',
+            price: discountId ? 
+                calculateDiscountedPrice(prev.originalPrice, discountId) : 
+                prev.originalPrice
+        }));
+    };
+
+    //#endregion
+
+    //#region Descuentos estados, handlers y lista
+    const [discountPage, setDiscountPage] = useState(1);
+    const [discountSearch, setDiscountSearch] = useState('');
+    const [isEditDiscountModalOpen, setIsEditDiscountModalOpen] = useState(false);
+    const [isDeleteDiscountModalOpen, setIsDeleteDiscountModalOpen] = useState(false);
+    const [selectedDiscount, setSelectedDiscount] = useState(null);
+    const [editDiscountForm, setEditDiscountForm] = useState({
+        code: '',
+        endDate: '',
+        discountPercentage: ''
+    });
+    const [isAddDiscountModalOpen, setIsAddDiscountModalOpen] = useState(false);
+    const [newDiscountForm, setNewDiscountForm] = useState({
+        code: '',
+        discountPercentage: '',
+        endDate: ''
+    });
 
     const discountCodes = [
         {
@@ -107,6 +176,64 @@ const GamesManagement = () => {
         }
     ];
 
+    const activeDiscounts = discountCodes.filter(discount => discount.status === 'Activo');
+
+    const handleOpenEditDiscountModal = (discount) => {
+        setSelectedDiscount(discount);
+        setEditDiscountForm({
+            code: discount.code,
+            endDate: discount.endDate,
+            discountPercentage: discount.discountPercentage
+        });
+        setIsEditDiscountModalOpen(true);
+    };
+
+    const handleOpenDeleteDiscountModal = (discount) => {
+        setSelectedDiscount(discount);
+        setIsDeleteDiscountModalOpen(true);
+    };
+
+    const handleEditDiscountSubmit = () => {
+        console.log('Descuento editado:', { ...selectedDiscount, ...editDiscountForm });
+        setIsEditDiscountModalOpen(false);
+    };
+
+    const handleDeleteDiscountSubmit = () => {
+        console.log('Descuento eliminado:', selectedDiscount);
+        setIsDeleteDiscountModalOpen(false);
+    };
+
+    const handleAddDiscountSubmit = () => {
+        console.log('Nuevo descuento creado:', newDiscountForm);
+        setIsAddDiscountModalOpen(false);
+        setNewDiscountForm({
+            code: '',
+            discountPercentage: '',
+            endDate: ''
+        });
+    };
+
+    const calculateDiscountedPrice = (originalPrice, discountId) => {
+        const discount = discountCodes.find(d => d.id === parseInt(discountId));
+        if (discount) {
+            const discountAmount = (parseFloat(originalPrice) * discount.discountPercentage) / 100;
+            return (parseFloat(originalPrice) - discountAmount).toFixed(2);
+        }
+        return originalPrice;
+    };
+
+    const getDiscountInfo = (discountId) => {
+        const discount = discountCodes.find(d => d.id === parseInt(discountId));
+        return discount ? `${discount.code} (${discount.discountPercentage}%)` : 'Sin descuento';
+    };
+
+    //#endregion
+
+    //#region Reseñas estados, handlers y lista
+    const [isViewReviewOpen, setIsViewReviewOpen] = useState(false);
+    const [selectedReview, setSelectedReview] = useState(null);
+    const [reviewSearch, setReviewSearch] = useState('');
+
     const reviews = [
         {
             id: 1,
@@ -126,14 +253,21 @@ const GamesManagement = () => {
         }
     ];
 
-    const handleSort = (key) => {
-        let direction = 'asc';
-        if (sortConfig.key === key && sortConfig.direction === 'asc') {
-            direction = 'desc';
-        }
-        setSortConfig({ key, direction });
-        setGamePage(1);
+    const handleOpenViewReview = (review) => {
+        setSelectedReview(review);
+        setIsViewReviewOpen(true);
     };
+
+    //#endregion
+
+    //#region Funciones, Filtros y Ordenadores
+    const [sortConfig, setSortConfig] = useState({
+        key: null,
+        direction: 'asc'
+    });
+    const [gamePage, setGamePage] = useState(1);
+    const [reviewPage, setReviewPage] = useState(1);
+    const ITEMS_PER_PAGE = 10;
 
     const sortItems = (itemsToSort) => {
         if (!sortConfig.key) return itemsToSort;
@@ -160,20 +294,14 @@ const GamesManagement = () => {
         });
     };
 
-    const filteredGames = sortItems(
-        games.filter(game => 
-            game.title.toLowerCase().includes(gameSearch.toLowerCase()) ||
-            game.publisher.toLowerCase().includes(gameSearch.toLowerCase()) ||
-            game.category.toLowerCase().includes(gameSearch.toLowerCase())
-        )
-    );
-
-    const filteredReviews = sortItems(
-        reviews.filter(review =>
-            review.gameTitle.toLowerCase().includes(reviewSearch.toLowerCase()) ||
-            review.userName.toLowerCase().includes(reviewSearch.toLowerCase())
-        )
-    );
+    const handleSort = (key) => {
+        let direction = 'asc';
+        if (sortConfig.key === key && sortConfig.direction === 'asc') {
+            direction = 'desc';
+        }
+        setSortConfig({ key, direction });
+        setGamePage(1);
+    };
 
     const SortIndicator = ({ columnKey }) => {
         if (sortConfig.key !== columnKey) {
@@ -209,62 +337,33 @@ const GamesManagement = () => {
         }
     };
 
-    const activeDiscounts = discountCodes.filter(discount => discount.status === 'Activo');
+    //#region Filtros de lista
+    const filteredGames = sortItems(
+        games.filter(game => 
+            game.title.toLowerCase().includes(gameSearch.toLowerCase()) ||
+            game.publisher.toLowerCase().includes(gameSearch.toLowerCase()) ||
+            game.category.toLowerCase().includes(gameSearch.toLowerCase())
+        )
+    );
 
-    const calculateDiscountedPrice = (originalPrice, discountId) => {
-        const discount = discountCodes.find(d => d.id === parseInt(discountId));
-        if (discount) {
-            const discountAmount = (parseFloat(originalPrice) * discount.discountPercentage) / 100;
-            return (parseFloat(originalPrice) - discountAmount).toFixed(2);
-        }
-        return originalPrice;
-    };
+    const filteredReviews = sortItems(
+        reviews.filter(review =>
+            review.gameTitle.toLowerCase().includes(reviewSearch.toLowerCase()) ||
+            review.userName.toLowerCase().includes(reviewSearch.toLowerCase())
+        )
+    );
 
-    const getDiscountInfo = (discountId) => {
-        const discount = discountCodes.find(d => d.id === parseInt(discountId));
-        return discount ? `${discount.code} (${discount.discountPercentage}%)` : 'Sin descuento';
-    };
+    const filteredDiscountCodes = sortItems(
+        discountCodes.filter(discount =>
+            discount.code.toLowerCase().includes(discountSearch.toLowerCase())
+        )
+    );
+    //#endregion
 
-    const handleOpenEditModal = (game) => {
-        setSelectedGame(game);
-        setEditForm({
-            title: game.title,
-            description: game.description,
-            price: game.price,
-            category: game.category,
-            publisher: game.publisher,
-            discounted: game.discounted,
-            originalPrice: game.originalPrice,
-            selectedDiscountId: game.discountId || '',
-            copies: game.copies
-        });
-        setIsEditModalOpen(true);
-    };
-    
-    const handleOpenDeleteModal = (game) => {
-        setSelectedGame(game);
-        setIsDeleteModalOpen(true);
-    };
-    
-    const handleEditSubmit = () => {
-        const updatedGame = {
-            ...selectedGame,
-            ...editForm,
-            discountId: editForm.selectedDiscountId || null
-        };
-        console.log('Juego editado:', updatedGame);
-        setIsEditModalOpen(false);
-    };
-    
-    const handleDeleteSubmit = () => {
-        console.log('Juego eliminado:', selectedGame);
-        setIsDeleteModalOpen(false);
-    };
+    //#endregion
 
-    const handleOpenViewReview = (review) => {
-        setSelectedReview(review);
-        setIsViewReviewOpen(true);
-    };
+    //#region Imagen PreView
+    const [imagePreview, setImagePreview] = useState(null);
 
     const handleImageChange = (e) => {
         const file = e.target.files[0];
@@ -280,86 +379,9 @@ const GamesManagement = () => {
             reader.readAsDataURL(file);
         }
     };
+    //#endregion
 
-    const handleOpenEditDiscountModal = (discount) => {
-        setSelectedDiscount(discount);
-        setEditDiscountForm({
-            code: discount.code,
-            endDate: discount.endDate,
-            discountPercentage: discount.discountPercentage
-        });
-        setIsEditDiscountModalOpen(true);
-    };
-
-    const handleOpenDeleteDiscountModal = (discount) => {
-        setSelectedDiscount(discount);
-        setIsDeleteDiscountModalOpen(true);
-    };
-
-    const handleEditDiscountSubmit = () => {
-        console.log('Descuento editado:', { ...selectedDiscount, ...editDiscountForm });
-        setIsEditDiscountModalOpen(false);
-    };
-
-    const handleDeleteDiscountSubmit = () => {
-        console.log('Descuento eliminado:', selectedDiscount);
-        setIsDeleteDiscountModalOpen(false);
-    };
-
-    const handlePriceChange = (e) => {
-        const newPrice = e.target.value;
-        setEditForm(prev => ({
-            ...prev,
-            originalPrice: newPrice,
-            price: prev.selectedDiscountId ? 
-                calculateDiscountedPrice(newPrice, prev.selectedDiscountId) : 
-                newPrice
-        }));
-    };
-
-    const handleDiscountChange = (e) => {
-        const discountId = e.target.value;
-        setEditForm(prev => ({
-            ...prev,
-            selectedDiscountId: discountId,
-            discounted: discountId !== '',
-            price: discountId ? 
-                calculateDiscountedPrice(prev.originalPrice, discountId) : 
-                prev.originalPrice
-        }));
-    };
-
-    const handleAddGameSubmit = () => {
-        const newGame = {
-            ...newGameForm,
-            discountId: newGameForm.selectedDiscountId || null
-        };
-        console.log('Nuevo juego creado:', newGame);
-        setIsAddGameModalOpen(false);
-        setNewGameForm({
-            title: '',
-            description: '',
-            price: '',
-            originalPrice: '',
-            category: '',
-            publisher: '',
-            discounted: false,
-            selectedDiscountId: '',
-            copies: 0,
-            image: null
-        });
-    };
-    
-    const handleAddDiscountSubmit = () => {
-        console.log('Nuevo descuento creado:', newDiscountForm);
-        setIsAddDiscountModalOpen(false);
-        setNewDiscountForm({
-            code: '',
-            discountPercentage: '',
-            endDate: ''
-        });
-    };
-
+    //#region Paginado Funciones
     const Pagination = ({ currentPage, totalItems, setPage }) => {
         const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
         
@@ -421,16 +443,12 @@ const GamesManagement = () => {
         reviewPage * ITEMS_PER_PAGE
     );
 
-    const filteredDiscountCodes = sortItems(
-        discountCodes.filter(discount =>
-            discount.code.toLowerCase().includes(discountSearch.toLowerCase())
-        )
-    );
-
     const paginatedDiscountCodes = filteredDiscountCodes.slice(
         (discountPage - 1) * ITEMS_PER_PAGE,
         discountPage * ITEMS_PER_PAGE
     );
+
+    //#endregion
 
     return (
         <div className="">

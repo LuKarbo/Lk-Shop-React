@@ -1,106 +1,133 @@
-a{
+a {
     text-decoration: none;
-}
-
-.headerNavbar{
+  }
+  
+  .headerNavbar {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
-    padding: 5px 5%;
+    padding: 10px 5%;
     background-color: #0B132B;
     display: flex;
     justify-content: space-between;
     align-items: center;
     z-index: 1000;
-}
-
-.headerNavbar .logo{
+  }
+  
+  .headerNavbar .logo {
     font-size: 25px;
     color: #6FFFE9;
     font-weight: 600;
-}
-
-.headerNavbar .logo:hover{
-    font-size: 25px;
+    transition: color 0.3s;
+  }
+  
+  .headerNavbar .logo:hover {
     color: white;
-    font-weight: 600;
-}
-
-.headerNavbar .navbar a{
-    position: relative;
-    font-size: 20px;
+  }
+  
+  .headerNavbar .navbar .nav-link {
+    font-size: 18px;
     color: #6FFFE9;
     font-weight: 400;
     margin-left: 25px;
-}
-
-.headerNavbar .navbar .BTN-Pages:hover{
     position: relative;
+    display: inline-block;
+    padding: 5px 0;
+    transition: color 0.3s;
+  }
+  
+  .headerNavbar .navbar .nav-link:hover {
     color: #5BC0BE;
-    font-weight: 500;
-}
-
-
-.headerNavbar .navbar .BTN-Pages::before{
+  }
+  
+  .headerNavbar .navbar .nav-link::before {
     content: "";
     position: absolute;
     height: 3px;
     background-color: #3A506B;
-    top:100%;
-    left:0;
+    top: 100%;
+    left: 0;
     width: 0;
-    transition: 0.5s;
-}
-
-.headerNavbar .navbar .BTN-Pages:hover::before{
+    transition: width 0.3s;
+  }
+  
+  .headerNavbar .navbar .nav-link:hover::before {
     width: 100%;
     background-color: #5BC0BE;
-}
-
-.headerNavbar .navbar .BTN-Login{
+  }
+  
+  .headerNavbar .navbar .login-link {
     background-color: #3A506B;
     color: white !important;
-    padding: 5px;
-    border-radius: 7%;
-    transition: 0.5s;
-}
-
-.headerNavbar .navbar .BTN-Login:hover{
+    padding: 5px 10px;
+    border-radius: 5px;
+    transition: background-color 0.3s, color 0.3s;
+  }
+  
+  .headerNavbar .navbar .login-link:hover {
     background-color: #5BC0BE;
     color: black !important;
-    padding: 5px;
-    border-radius: 10%;
-}
-
-.headerNavbar .navbar .BTN-Account:hover,
-.headerNavbar .navbar .BTN-Admin:hover{
-    color: white !important;
-}
-
-.headerNavbar .navbar .BTN-Account::before,
-.headerNavbar .navbar .BTN-Admin::before{
+  }
+  
+  .headerNavbar .navbar .account-link,
+  .headerNavbar .navbar .admin-link {
+    color: #6FFFE9;
+    display: flex;
+    align-items: center;
+    transition: color 0.3s;
+  }
+  
+  .headerNavbar .navbar .account-link:hover,
+  .headerNavbar .navbar .admin-link:hover {
+    color: white;
+  }
+  
+  .headerNavbar .navbar .account-link::before,
+  .headerNavbar .navbar .admin-link::before {
     content: "";
     position: absolute;
     height: 3px;
     background-color: #3A506B;
-    top:100%;
-    left:0;
+    top: 100%;
+    left: 0;
     width: 0;
-    transition: 0.5s;
-}
-
-.headerNavbar .navbar .BTN-Account:hover::before,
-.headerNavbar .navbar .BTN-Admin:hover::before{
+    transition: width 0.3s;
+  }
+  
+  .headerNavbar .navbar .account-link:hover::before,
+  .headerNavbar .navbar .admin-link:hover::before {
     width: 100%;
     background-color: white;
-}
-
-.headerNavbar .navbar .BTN-CloseAccount{
-    color: white !important;
-}
-
-.headerNavbar .navbar .BTN-CloseAccount:hover{
-    color: red !important;
-}
-
+  }
+  
+  .account-dropdown {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background-color: #fff;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    border-radius: 5px;
+    padding: 10px 0;
+    min-width: 150px;
+    z-index: 1;
+  }
+  
+  .account-dropdown .dropdown-item {
+    display: block;
+    padding: 8px 16px;
+    color: #333;
+    transition: background-color 0.3s;
+  }
+  
+  .account-dropdown .dropdown-item:hover {
+    background-color: #f4f4f4;
+  }
+  
+  .account-dropdown .logout {
+    color: #dc3545;
+  }
+  
+  .account-dropdown .logout:hover {
+    background-color: #f8d7da;
+  }

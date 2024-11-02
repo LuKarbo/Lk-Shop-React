@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { games_list } from '../../../BackEnd/Data/games';
 import { Image as ImageIcon, Pencil, Trash2, ChevronLeft, ChevronRight, ChevronUp, ChevronDown } from 'lucide-react';
 
 const GamesManagement = () => {
@@ -31,23 +32,6 @@ const GamesManagement = () => {
         copies: 0,
         image: null
     });
-
-    const games = [
-        {
-            id: 1,
-            title: "The Last Journey",
-            description: "Un épico juego de aventuras que te llevará a través de mundos inexplorados",
-            price: "59.99",
-            rating: 4.8,
-            image: "https://via.placeholder.com/800x600",
-            category: "Aventura",
-            publisher: "EA",
-            discounted: true,
-            originalPrice: "79.99",
-            copies: 150,
-            discountId: 1
-        }
-    ];
 
     const handleOpenEditModal = (game) => {
         setSelectedGame(game);
@@ -164,11 +148,27 @@ const GamesManagement = () => {
             createdAt: "2024-03-01",
             discountPercentage: 50,
             endDate: "2024-03-31",
-            status: "Caducado"
+            status: "Activo"
         },
         {
             id: 3,
             code: "NEWGAME30",
+            createdAt: "2024-03-25",
+            discountPercentage: 30,
+            endDate: "2024-04-25",
+            status: "Activo"
+        },
+        {
+            id: 4,
+            code: "BVXCBDGFH",
+            createdAt: "2024-03-01",
+            discountPercentage: 50,
+            endDate: "2024-03-31",
+            status: "Caducado"
+        },
+        {
+            id: 5,
+            code: "784356",
             createdAt: "2024-03-25",
             discountPercentage: 30,
             endDate: "2024-04-25",
@@ -339,7 +339,7 @@ const GamesManagement = () => {
 
     //#region Filtros de lista
     const filteredGames = sortItems(
-        games.filter(game => 
+        games_list.filter(game => 
             game.title.toLowerCase().includes(gameSearch.toLowerCase()) ||
             game.publisher.toLowerCase().includes(gameSearch.toLowerCase()) ||
             game.category.toLowerCase().includes(gameSearch.toLowerCase())

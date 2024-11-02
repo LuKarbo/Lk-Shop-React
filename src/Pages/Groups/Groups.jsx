@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Search, Users, X, Image as ImageIcon } from 'lucide-react';
+import { Search, X, Image as ImageIcon, ChevronDown } from 'lucide-react';
 import { useAuth } from '../../BackEnd/Auth/AuthContext';
+import GroupCard from './GroupCard';
 import './Groups.css';
 
 const Groups = () => {
@@ -11,6 +12,8 @@ const Groups = () => {
     const [selectedGroupToLeave, setSelectedGroupToLeave] = useState(null);
     const [toast, setToast] = useState(null);
     const [myGroups, setMyGroups] = useState([]);
+    const [selectedCategories, setSelectedCategories] = useState([]);
+    const [showCategoryFilter, setShowCategoryFilter] = useState(false);
     const [newGroup, setNewGroup] = useState({
         name: '',
         description: '',
@@ -61,13 +64,33 @@ const Groups = () => {
         }
     ];
 
+    const toggleCategoryFilter = (category) => {
+        setSelectedCategories(prev => {
+            if (prev.includes(category)) {
+                return prev.filter(c => c !== category);
+            } else {
+                return [...prev, category];
+            }
+        });
+    };
+
     useEffect(() => {
-        setFilteredGroups(groups);
-        const savedGroups = localStorage.getItem('MisGrupos');
-        if (savedGroups) {
-            setMyGroups(JSON.parse(savedGroups));
-        }
-    }, []);
+        const filtered = groups.filter(group => {
+            const matchesSearch = 
+                group.name.toLowerCase().includes(search.toLowerCase()) ||
+                group.description.toLowerCase().includes(search.toLowerCase()) ||
+                group.categories.some(category => 
+                    category.toLowerCase().includes(search.toLowerCase())
+                );
+            
+            const matchesCategories = 
+                selectedCategories.length === 0 || 
+                group.categories.some(category => selectedCategories.includes(category));
+
+            return matchesSearch && matchesCategories;
+        });
+        setFilteredGroups(filtered);
+    }, [search, selectedCategories]);
 
     const handleImageChange = (e) => {
         const file = e.target.files[0];
@@ -163,7 +186,7 @@ const Groups = () => {
     return (
         <div className="groups-container">
             <div className="row">
-                <div className="groups-search-container col-lg-10">
+                <div className="groups-search-container col-lg-8">
                     <Search className="groups-search-icon" size={25} />
                     <input
                         type="text"
@@ -172,6 +195,37 @@ const Groups = () => {
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                     />
+                </div>
+                <div className="col-lg-2">
+                    <div className="category-filter-container">
+                        <button 
+                            className="category-filter-button"
+                            onClick={() => setShowCategoryFilter(!showCategoryFilter)}
+                        >
+                            Categorías ({selectedCategories.length})
+                            <ChevronDown size={20} />
+                        </button>
+                        {showCategoryFilter && (
+                            <div className="category-filter-dropdown">
+                                {categories.map((category) => (
+                                    <div
+                                        key={category}
+                                        className={`category-filter-option ${
+                                            selectedCategories.includes(category) ? 'selected' : ''
+                                        }`}
+                                        onClick={() => toggleCategoryFilter(category)}
+                                    >
+                                        <input
+                                            type="checkbox"
+                                            checked={selectedCategories.includes(category)}
+                                            readOnly
+                                        />
+                                        {category}
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
                 </div>
                 <div className="col-lg-2">
                     {isLoggedIn && (
@@ -186,50 +240,36 @@ const Groups = () => {
                 </div>
             </div>
 
+            {selectedCategories.length > 0 && (
+                <div className="selected-categories">
+                    {selectedCategories.map((category) => (
+                        <span key={category} className="category-tag">
+                            {category}
+                            <button onClick={() => toggleCategoryFilter(category)}>
+                                <X size={14} />
+                            </button>
+                        </span>
+                    ))}
+                    <button 
+                        className="clear-categories"
+                        onClick={() => setSelectedCategories([])}
+                    >
+                        Limpiar filtros
+                    </button>
+                </div>
+            )}
+
             <div className="groups-grid">
                 {filteredGroups.map((group) => (
-                    <div key={group.id} className="group-card">
-                        <div className="group-image-container">
-                            <img
-                                src={group.image}
-                                alt={group.name}
-                                className="group-image"
-                            />
-                        </div>
-                        <div className="group-content">
-                            <div className="group-header">
-                                <h3 className="group-title">{group.name}</h3>
-                                <span className="group-members">
-                                    <Users size={16} />
-                                    {group.members}
-                                </span>
-                            </div>
-                            <p className="group-description">{group.description}</p>
-                            <div style={{ marginBottom: '16px', display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                                {group.categories.map((category) => (
-                                    <span key={category} className="category-tag">
-                                        {category}
-                                    </span>
-                                ))}
-                            </div>
-                            {myGroups.includes(group.id) ? (
-                                <button
-                                    className="group-button"
-                                    style={{ backgroundColor: '#dc3545' }}
-                                    onClick={() => handleLeaveGroup(group)}
-                                >
-                                    Salir del Grupo
-                                </button>
-                            ) : (
-                                <button
-                                    className="group-button"
-                                    onClick={() => handleJoinGroup(group)}
-                                >
-                                    Unirse al Grupo
-                                </button>
-                            )}
-                        </div>
-                    </div>
+                    <GroupCard
+                        key={group.id}
+                        group={group}
+                        isLoggedIn={isLoggedIn}
+                        isMember={myGroups.includes(group.id)}
+                        onJoin={handleJoinGroup}
+                        onLeave={handleLeaveGroup}
+                        size="default"
+                    />
                 ))}
             </div>
 

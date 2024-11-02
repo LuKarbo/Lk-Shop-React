@@ -1,4 +1,4 @@
-const EditUserModal = ({ isOpen, onClose, user, editForm, setEditForm, onSubmit }) => {
+export const EditUserModal = ({ isOpen, onClose, user, editForm, setEditForm, onSubmit }) => {
     if (!isOpen) return null;
 
     return (
@@ -75,7 +75,7 @@ const EditUserModal = ({ isOpen, onClose, user, editForm, setEditForm, onSubmit 
     );
 };
 
-const DeleteUserModal = ({ isOpen, onClose, user, onSubmit }) => {
+export const DeleteUserModal = ({ isOpen, onClose, user, onSubmit }) => {
     if (!isOpen) return null;
 
     return (
@@ -122,5 +122,3 @@ const DeleteUserModal = ({ isOpen, onClose, user, onSubmit }) => {
         </div>
     );
 };
-
-export { EditUserModal, DeleteUserModal };

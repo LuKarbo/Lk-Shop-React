@@ -1,6 +1,7 @@
 import { Users } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../../BackEnd/Auth/AuthContext';
+import GroupCard from '../../Groups/GroupCard';
 import './TopGroups.css';
 
 const TopGroups = () => {
@@ -64,6 +65,13 @@ const TopGroups = () => {
         showToast(`Te has unido al grupo ${group.name}`);
     };
 
+    const handleLeaveGroup = (group) => {
+        const updatedMyGroups = myGroups.filter(id => id !== group.id);
+        localStorage.setItem('MisGrupos', JSON.stringify(updatedMyGroups));
+        setMyGroups(updatedMyGroups);
+        showToast(`Has dejado el grupo ${group.name}`);
+    };
+
     const showToast = (message) => {
         setToast(message);
         setTimeout(() => setToast(null), 3000);
@@ -77,32 +85,15 @@ const TopGroups = () => {
             
             <div className="top-groups-grid">
                 {topGroups.map(group => (
-                    <div key={group.id} className="group-card">
-                        <div className="group-image-container">
-                            <img
-                                src={group.image}
-                                alt={group.name}
-                                className="group-image"
-                            />
-                        </div>
-                        <div className="group-content">
-                            <div className="group-header">
-                                <h3 className="group-title">{group.name}</h3>
-                                <span className="group-members">
-                                    <Users size={14} />
-                                    {group.members.toLocaleString()}
-                                </span>
-                            </div>
-                            <p className="group-description">{group.description}</p>
-                            <button
-                                className="group-button"
-                                onClick={() => handleJoinGroup(group)}
-                                disabled={myGroups.includes(group.id)}
-                            >
-                                {myGroups.includes(group.id) ? 'Ya eres miembro' : 'Unirse al Grupo'}
-                            </button>
-                        </div>
-                    </div>
+                    <GroupCard
+                        key={group.id}
+                        group={group}
+                        isLoggedIn={isLoggedIn}
+                        isMember={myGroups.includes(group.id)}
+                        onJoin={handleJoinGroup}
+                        onLeave={handleLeaveGroup}
+                        size="small"
+                    />
                 ))}
             </div>
             {toast && (

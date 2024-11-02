@@ -1,5 +1,10 @@
 import { useState } from 'react';
+import { users } from './Data/userData';
+import { pendingTickets, answeredTickets } from './Data/ticketsData';
 import { Pencil, Trash2, ChevronLeft, ChevronRight, ChevronUp, ChevronDown } from 'lucide-react';
+import TicketList from './Lists/TicketList';
+import { ViewTicketModal, ReplyTicketModal } from './Modals/TicketModals';
+
 
 const UserManagement = () => {
     const [isViewTicketOpen, setIsViewTicketOpen] = useState(false);
@@ -28,70 +33,6 @@ const UserManagement = () => {
         email: '',
         role: ''
     });
-
-    const users = [
-        {
-            id: 1,
-            name: 'Juan Pérez',
-            email: 'juan@example.com',
-            gamesCount: 5,
-            groupsCount: 2,
-            purchasesCount: 8,
-            role: 'usuario',
-            status: 'online',
-        },
-        {
-            id: 2,
-            name: 'María López',
-            email: 'maria@example.com',
-            gamesCount: 3,
-            groupsCount: 1,
-            purchasesCount: 4,
-            role: 'soporte',
-            status: 'offline',
-        },
-        {
-            id: 3,
-            name: 'Tomas López',
-            email: 'tolop@example.com',
-            gamesCount: 12,
-            groupsCount: 3,
-            purchasesCount: 12,
-            role: 'admin',
-            status: 'offline',
-        },
-        {
-            id: 4,
-            name: 'asdasd',
-            email: 'asdasd@example.com',
-            gamesCount: 0,
-            groupsCount: 0,
-            purchasesCount: 0,
-            role: 'usuario',
-            status: 'banned',
-        },
-    ];
-
-    const pendingTickets = [
-        {
-            id: 1,
-            userName: 'Juan Pérez',
-            date: '2024-03-20',
-            content: 'No puedo acceder a mi juego',
-        },
-    ];
-
-    const answeredTickets = [
-        {
-            id: 1,
-            userName: 'María López',
-            date: '2024-03-19',
-            content: 'Problema con el pago',
-            response: 'El pago ha sido procesado correctamente',
-            answeredBy: 'Admin',
-            answeredDate: '2024-03-20',
-        },
-    ];
 
     // filtro de header
     const handleSort = (key) => {
@@ -281,18 +222,7 @@ const UserManagement = () => {
         setUserSearch(value);
         setUserPage(1);
     };
-
-    const handlePendingSearch = (value) => {
-        setPendingSearch(value);
-        setPendingPage(1);
-    };
-
-    const handleAnsweredSearch = (value) => {
-        setAnsweredSearch(value);
-        setAnsweredPage(1);
-    };
-
-
+    
     return (
         <div className="">
             <h2 className="text-2xl font-bold mb-6 sectionTitle">Gestión de Usuarios</h2>
@@ -388,186 +318,46 @@ const UserManagement = () => {
             </div>
 
             {/* Consultas Pendientes */}
-            <div className="mb-10">
-                <div className="flex justify-between items-center mb-4">
-                    <h3 className="text-xl font-semibold">Consultas Pendientes</h3>
-                    <input
-                        type="text"
-                        placeholder="Buscar consultas pendientes..."
-                        value={pendingSearch}
-                        onChange={(e) => handlePendingSearch(e.target.value)}
-                        className="px-4 py-2 border rounded-lg w-72 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                </div>
-                <div className="bg-white rounded-lg shadow overflow-hidden">
-                    <table className="w-full">
-                        <thead className="bg-gray-50">
-                            <tr>
-                                <th className="px-6 py-3 text-left text-gray-600">Usuario</th>
-                                <th className="px-6 py-3 text-left text-gray-600">Fecha</th>
-                                <th className="px-6 py-3 text-left text-gray-600">Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-200">
-                            {paginatedPendingTickets.map((ticket) => (
-                                <tr key={ticket.id} className="hover:bg-gray-50">
-                                <td className="px-6 py-4">{ticket.userName}</td>
-                                <td className="px-6 py-4">{ticket.date}</td>
-                                <td className="px-6 py-4 space-x-2">
-                                    <button 
-                                        onClick={() => handleOpenViewTicket(ticket)}
-                                        className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
-                                        >
-                                        Ver
-                                    </button>
-                                    <button 
-                                        onClick={() => handleOpenReplyTicket(ticket)}
-                                        className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
-                                        >
-                                        Responder
-                                    </button>
-                                </td>
-                            </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                    <Pagination
-                        currentPage={pendingPage}
-                        totalItems={filteredPendingTickets.length}
-                        setPage={setPendingPage}
-                    />
-                </div>
-            </div>
+            <TicketList 
+                title="Consultas Pendientes"
+                tickets={paginatedPendingTickets}
+                searchValue={pendingSearch}
+                onSearchChange={setPendingSearch}
+                currentPage={pendingPage}
+                totalItems={filteredPendingTickets.length}
+                setPage={setPendingPage}
+                onViewTicket={handleOpenViewTicket}
+                onReplyTicket={handleOpenReplyTicket}
+                showReplyButton={true}
+            />
+            
+            {/* Consultas Respondidas */}
+            <TicketList 
+                title="Consultas Respondidas"
+                tickets={paginatedAnsweredTickets}
+                searchValue={answeredSearch}
+                onSearchChange={setAnsweredSearch}
+                currentPage={answeredPage}
+                totalItems={filteredAnsweredTickets.length}
+                setPage={setAnsweredPage}
+                onViewTicket={handleOpenViewTicket}
+                showAnsweredInfo={true}
+            />
 
-            {/* Consultas Resueltas */}
-            <div className="mb-10">
-                <div className="flex justify-between items-center mb-4">
-                    <h3 className="text-xl font-semibold">Consultas Respondidas</h3>
-                    <input
-                        type="text"
-                        placeholder="Buscar consultas respondidas..."
-                        value={answeredSearch}
-                        onChange={(e) => handleAnsweredSearch(e.target.value)}
-                        className="px-4 py-2 border rounded-lg w-72 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                </div>
-                <div className="bg-white rounded-lg shadow overflow-hidden">
-                    <table className="w-full">
-                        <thead className="bg-gray-50">
-                            <tr>
-                                <th className="px-6 py-3 text-left text-gray-600">Usuario</th>
-                                <th className="px-6 py-3 text-left text-gray-600">Fecha Consulta</th>
-                                <th className="px-6 py-3 text-left text-gray-600">Respondido Por</th>
-                                <th className="px-6 py-3 text-left text-gray-600">Fecha Respuesta</th>
-                                <th className="px-6 py-3 text-left text-gray-600">Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-200">
-                            {paginatedAnsweredTickets.map((ticket) => (
-                                <tr key={ticket.id} className="hover:bg-gray-50">
-                                <td className="px-6 py-4">{ticket.userName}</td>
-                                <td className="px-6 py-4">{ticket.date}</td>
-                                <td className="px-6 py-4">{ticket.answeredBy}</td>
-                                <td className="px-6 py-4">{ticket.answeredDate}</td>
-                                <td className="px-6 py-4">
-                                    <button 
-                                    onClick={() => handleOpenViewTicket(ticket)}
-                                    className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
-                                    >
-                                    Ver
-                                    </button>
-                                </td>
-                            </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                    <Pagination
-                        currentPage={answeredPage}
-                        totalItems={filteredAnsweredTickets.length}
-                        setPage={setAnsweredPage}
-                    />
-                </div>
-            </div>
-
-                {/* MODALS */}
-
-            {/* Modal de consulta */}
-            {isViewTicketOpen && (
-                <div className="fixed inset-0 z-50 overflow-y-auto">
-                    <div className="flex items-center justify-center min-h-screen p-4">
-                        <div className="fixed inset-0 bg-black bg-opacity-50 transition-opacity" onClick={() => setIsViewTicketOpen(false)} />
-                        <div className="relative bg-white rounded-lg max-w-lg w-full shadow-xl">
-                            <div className="flex items-center justify-between p-4 border-b">
-                                <h3 className="text-lg font-semibold">Detalles de la Consulta</h3>
-                                <button 
-                                    onClick={() => setIsViewTicketOpen(false)}
-                                    className="text-gray-400 hover:text-gray-500 focus:outline-none"
-                                    >
-                                    <span className="text-2xl">&times;</span>
-                                </button>
-                            </div>
-                            <div className="p-6">
-                                <div className="mb-4">
-                                    <h4 className="font-semibold mb-2">Consulta:</h4>
-                                    <p className="text-gray-600">{selectedTicket?.content}</p>
-                                </div>
-                                {selectedTicket?.response && (
-                                    <div>
-                                        <h4 className="font-semibold mb-2">Respuesta:</h4>
-                                        <p className="text-gray-600">{selectedTicket.response}</p>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* Modal de responder consulta */}
-            {isReplyTicketOpen && (
-                <div className="fixed inset-0 z-50 overflow-y-auto">
-                    <div className="flex items-center justify-center min-h-screen p-4">
-                        <div className="fixed inset-0 bg-black bg-opacity-50 transition-opacity" onClick={() => setIsReplyTicketOpen(false)} />
-                        <div className="relative bg-white rounded-lg max-w-lg w-full shadow-xl">
-                            <div className="flex items-center justify-between p-4 border-b">
-                                <h3 className="text-lg font-semibold">Responder Consulta</h3>
-                                <button 
-                                    onClick={() => setIsReplyTicketOpen(false)}
-                                    className="text-gray-400 hover:text-gray-500 focus:outline-none"
-                                    >
-                                    <span className="text-2xl">&times;</span>
-                                </button>
-                            </div>
-                            <div className="p-6">
-                                <div className="mb-4">
-                                    <h4 className="font-semibold mb-2">Consulta original:</h4>
-                                    <p className="text-gray-600 mb-4">{selectedTicket?.content}</p>
-                                    <textarea
-                                        value={replyContent}
-                                        onChange={(e) => setReplyContent(e.target.value)}
-                                        placeholder="Escribe tu respuesta aquí..."
-                                        className="w-full h-32 px-3 py-2 border rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    />
-                                </div>
-                            </div>
-                            <div className="flex justify-end gap-2 p-4 border-t">
-                                <button 
-                                onClick={() => setIsReplyTicketOpen(false)}
-                                className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
-                                >
-                                Cancelar
-                                </button>
-                                <button 
-                                onClick={handleReplySubmit}
-                                className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
-                                >
-                                Enviar Respuesta
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
+            {/* MODALS */}
+            <ViewTicketModal 
+                isOpen={isViewTicketOpen}
+                onClose={() => setIsViewTicketOpen(false)}
+                ticket={selectedTicket}
+            />
+            <ReplyTicketModal 
+                isOpen={isReplyTicketOpen}
+                onClose={() => setIsReplyTicketOpen(false)}
+                ticket={selectedTicket}
+                replyContent={replyContent}
+                setReplyContent={setReplyContent}
+                onSubmit={handleReplySubmit}
+            />
 
             {/* Modal de editar usuario */}
             {isEditModalOpen && (

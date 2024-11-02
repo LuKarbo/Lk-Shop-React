@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { Maximize, Bookmark, BookmarkCheck, X } from 'lucide-react';
+import { useNavigate} from 'react-router-dom';
 import { useAuth } from '../../../BackEnd/Auth/AuthContext';
+import CardGame from './CardGame';
+import PurchaseModal from './PurchaseModal'; 
 import './CardsStyle.css';
+
 
 const DescuentoGame = () => {
     const { isLoggedIn } = useAuth();
@@ -226,6 +228,7 @@ const DescuentoGame = () => {
                 localStorage.setItem('gameBuy', JSON.stringify(existingPurchases));
                 
                 showToast('¡Compra confirmada!');
+                navigate(`/mylibrary`);
             } else {
                 showToast('¡Ya has comprado este juego!');
             }
@@ -247,140 +250,27 @@ const DescuentoGame = () => {
             <h2>Juegos en Descuento</h2>
             <div className="descuento-games-grid">
                 {discountedGames.map((game) => (
-                    <div key={game.id} className="descuento-game-card">
-                        <div className="descuento-game-image-container">
-                            <img
-                                src={game.image}
-                                alt={game.title}
-                                className="descuento-game-image"
-                            />
-                            <div className="descuento-discount-badge">
-                                -{Math.round(((game.originalPrice - game.price) / game.originalPrice) * 100)}%
-                            </div>
-                        </div>
-                        <div className="descuento-game-content">
-                            <div className="descuento-game-header">
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                    <h3 className="descuento-game-title">{game.title}</h3>
-                                    <Maximize 
-                                        size={16} 
-                                        className="descuento-search-icon"
-                                        onClick={() => handleGameInfo(game)}
-                                    />
-                                </div>
-                                <span className="descuento-game-rating">★ {game.rating}</span>
-                            </div>
-                            <p className="descuento-game-description">{game.description}</p>
-                            <div className="descuento-game-details">
-                                <span className="descuento-game-publisher">{game.publisher}</span>
-                                <span className="descuento-game-category">{game.category}</span>
-                            </div>
-                            <div className="descuento-game-footer">
-                                <div className="descuento-game-price-container">
-                                    <span className="descuento-game-price">${game.price}</span>
-                                    <span className="descuento-game-original-price">${game.originalPrice}</span>
-                                </div>
-                                <div className="descuento-button-group">
-                                    {isLoggedIn ? (
-                                        purchases.includes(game.id) ? (
-                                            <Link 
-                                                to="/mylibrary"
-                                                className="product-button product-button-library"
-                                            >
-                                                En la Biblioteca
-                                            </Link>
-                                        ) : (
-                                            <>
-                                                <button
-                                                    onClick={() => toggleFavorite(game.id)}
-                                                    className={`product-button product-button-favorite ${favorites.includes(game.id) ? 'active' : ''}`}
-                                                    aria-label={favorites.includes(game.id) ? "Quitar de favoritos" : "Añadir a favoritos"}
-                                                >
-                                                    {favorites.includes(game.id) ? (
-                                                        <BookmarkCheck size={20} />
-                                                    ) : (
-                                                        <Bookmark size={20} />
-                                                    )}
-                                                </button>
-                                                <button 
-                                                    className="product-button product-button-buy"
-                                                    onClick={() => handleBuy(game)}
-                                                >
-                                                    Comprar
-                                                </button>
-                                            </>
-                                        )
-                                    ) : (
-                                        <>
-                                            <button
-                                                onClick={() => showToast('Debe de estar Logeado para agregar a Favoritos')}
-                                                className="product-button product-button-favorite"
-                                            >
-                                                <Bookmark size={20} />
-                                            </button>
-                                            <button 
-                                                className="product-button product-button-buy"
-                                                onClick={() => showToast('Debe de estar Logeado para comprar')}
-                                            >
-                                                Comprar
-                                            </button>
-                                        </>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    <CardGame
+                        key={game.id}
+                        game={game}
+                        variant="descuento"
+                        isLoggedIn={isLoggedIn}
+                        favorites={favorites}
+                        purchases={purchases}
+                        onFavoriteToggle={toggleFavorite}
+                        onBuy={handleBuy}
+                        showToast={showToast}
+                    />
                 ))}
             </div>
 
             {/* Purchase/Info Modal */}
-                {showModal && selectedGame && (
-                <div className="modal-overlay" onClick={() => setShowModal(false)}>
-                    <div className="modal-content" onClick={e => e.stopPropagation()}>
-                        <div className="modal-header">
-                            <h2 className="modal-title">Confirmar Compra</h2>
-                            <button className="modal-close" onClick={() => setShowModal(false)}>
-                                <X size={24} />
-                            </button>
-                        </div>
-                        <div className="modal-body">
-                            <div className="modal-game-info">
-                                <img 
-                                    src={selectedGame.image} 
-                                    alt={selectedGame.title} 
-                                    className="modal-game-image"
-                                />
-                                <div className="modal-game-details">
-                                    <h3>{selectedGame.title}</h3>
-                                    <p>{selectedGame.description}</p>
-                                    <p>Publicador: {selectedGame.publisher}</p>
-                                    <p>Categoría: {selectedGame.category}</p>
-                                    <p className="modal-game-price">
-                                        Precio: ${selectedGame.price}
-                                        <span className="game-original-price"> 
-                                            ${selectedGame.originalPrice}
-                                        </span>
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="modal-footer">
-                            <button 
-                                className="button button-secondary"
-                                onClick={() => setShowModal(false)}
-                            >
-                                Cancelar
-                            </button>
-                            <button 
-                                className="button button-buy"
-                                onClick={handlePurchaseConfirmation}
-                            >
-                                Confirmar Compra
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
+            <PurchaseModal
+                isOpen={showModal}
+                onClose={() => setShowModal(false)}
+                game={selectedGame}
+                onConfirm={handlePurchaseConfirmation}
+            />
 
             {toast && (
                 <div className={`contact-toast ${toast ? 'contact-toast-show' : ''}`}>

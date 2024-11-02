@@ -1,75 +1,71 @@
 import { useState } from 'react';
-import { ChevronLeft, ChevronRight, ChevronUp, ChevronDown } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ChevronUp, ChevronDown, Download } from 'lucide-react';
 
 const SalesManagement = () => {
-    const [userSearch, setUserSearch] = useState('');
-
+    const [purchaseSearch, setPurchaseSearch] = useState('');
     const [sortConfig, setSortConfig] = useState({
         key: null,
         direction: 'asc'
     });
-
-    const [userPage, setUserPage] = useState(1);
+    const [purchasePage, setPurchasePage] = useState(1);
     const ITEMS_PER_PAGE = 10;
 
-    const users = [
+    const purchases = [
         {
             id: 1,
-            name: 'Juan Pérez',
-            email: 'juan@example.com',
-            gamesCount: 5,
-            groupsCount: 2,
-            purchasesCount: 8,
-            role: 'usuario',
-            status: 'online',
+            date: '2024-03-15',
+            userName: 'Juan Pérez',
+            userEmail: 'juan@example.com',
+            gameName: 'Super Game 1',
+            amount: 29.99,
+            paymentMethod: 'credit_card',
+            status: 'completed'
         },
         {
             id: 2,
-            name: 'María López',
-            email: 'maria@example.com',
-            gamesCount: 3,
-            groupsCount: 1,
-            purchasesCount: 4,
-            role: 'soporte',
-            status: 'offline',
+            date: '2024-03-14',
+            userName: 'María López',
+            userEmail: 'maria@example.com',
+            gameName: 'Adventure Quest',
+            amount: 19.99,
+            paymentMethod: 'paypal',
+            status: 'completed'
         },
         {
             id: 3,
-            name: 'Tomas López',
-            email: 'tolop@example.com',
-            gamesCount: 12,
-            groupsCount: 3,
-            purchasesCount: 12,
-            role: 'admin',
-            status: 'offline',
+            date: '2024-03-14',
+            userName: 'Tomas López',
+            userEmail: 'tolop@example.com',
+            gameName: 'Racing Simulator',
+            amount: 49.99,
+            paymentMethod: 'credit_card',
+            status: 'refunded'
         },
         {
             id: 4,
-            name: 'asdasd',
-            email: 'asdasd@example.com',
-            gamesCount: 0,
-            groupsCount: 0,
-            purchasesCount: 0,
-            role: 'usuario',
-            status: 'banned',
+            date: '2024-03-13',
+            userName: 'Ana García',
+            userEmail: 'ana@example.com',
+            gameName: 'Strategy Master',
+            amount: 39.99,
+            paymentMethod: 'debit_card',
+            status: 'pending'
         },
     ];
 
-    // filtro de header
     const handleSort = (key) => {
         let direction = 'asc';
         if (sortConfig.key === key && sortConfig.direction === 'asc') {
             direction = 'desc';
         }
         setSortConfig({ key, direction });
-        setUserPage(1);
+        setPurchasePage(1);
     };
 
-    // filtro de header
-    const sortUsers = (usersToSort) => {
-        if (!sortConfig.key) return usersToSort;
+    const sortPurchases = (purchasesToSort) => {
+        if (!sortConfig.key) return purchasesToSort;
 
-        return [...usersToSort].sort((a, b) => {
+        return [...purchasesToSort].sort((a, b) => {
             if (a[sortConfig.key] === null) return 1;
             if (b[sortConfig.key] === null) return -1;
 
@@ -91,15 +87,41 @@ const SalesManagement = () => {
         });
     };
 
-    // Filtros
-    const filteredUsers = sortUsers(
-        users.filter(user => 
-            user.name.toLowerCase().includes(userSearch.toLowerCase()) ||
-            user.email.toLowerCase().includes(userSearch.toLowerCase()) ||
-            user.role.toLowerCase().includes(userSearch.toLowerCase()) ||
-            user.status.toLowerCase().includes(userSearch.toLowerCase())
+    const filteredPurchases = sortPurchases(
+        purchases.filter(purchase => 
+            purchase.userName.toLowerCase().includes(purchaseSearch.toLowerCase()) ||
+            purchase.userEmail.toLowerCase().includes(purchaseSearch.toLowerCase()) ||
+            purchase.gameName.toLowerCase().includes(purchaseSearch.toLowerCase()) ||
+            purchase.status.toLowerCase().includes(purchaseSearch.toLowerCase())
         )
     );
+
+    const handleExportToExcel = () => {
+        // Creo el archivo y descargo
+        const headers = ['ID', 'Fecha', 'Usuario', 'Email', 'Juego', 'Monto', 'Método de Pago', 'Estado'];
+        const csvContent = [
+            headers.join(','),
+            ...filteredPurchases.map(purchase => [
+                purchase.id,
+                purchase.date,
+                purchase.userName,
+                purchase.userEmail,
+                purchase.gameName,
+                purchase.amount,
+                purchase.paymentMethod,
+                purchase.status
+            ].join(','))
+        ].join('\n');
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', 'historial_compras.csv');
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
 
     const SortIndicator = ({ columnKey }) => {
         if (sortConfig.key !== columnKey) {
@@ -122,8 +144,6 @@ const SalesManagement = () => {
         </th>
     );
 
-
-    // paginado y filtros del paginado
     const Pagination = ({ currentPage, totalItems, setPage }) => {
         const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
         return (
@@ -174,30 +194,32 @@ const SalesManagement = () => {
         );
     };
     
-    const paginatedUsers = filteredUsers.slice(
-        (userPage - 1) * ITEMS_PER_PAGE,
-        userPage * ITEMS_PER_PAGE
+    const paginatedPurchases = filteredPurchases.slice(
+        (purchasePage - 1) * ITEMS_PER_PAGE,
+        purchasePage * ITEMS_PER_PAGE
     );
-
-    const handleUserSearch = (value) => {
-        setUserSearch(value);
-        setUserPage(1);
-    };
-
 
     return (
         <div className="">
             <h2 className="text-2xl font-bold mb-6 sectionTitle">Historial de Compras</h2>
 
-            {/* Lista de Usuarios */}
             <div className="mb-10">
                 <div className="flex justify-between items-center mb-4">
-                    <h3 className="text-xl font-semibold">Compras</h3>
+                    <div className="flex items-center space-x-4">
+                        <h3 className="text-xl font-semibold">Compras</h3>
+                        <button
+                            onClick={handleExportToExcel}
+                            className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                        >
+                            <Download size={20} className="mr-2" />
+                            Exportar a Excel
+                        </button>
+                    </div>
                     <input
                         type="text"
-                        placeholder="Buscar usuarios..."
-                        value={userSearch}
-                        onChange={(e) => handleUserSearch(e.target.value)}
+                        placeholder="Buscar compras..."
+                        value={purchaseSearch}
+                        onChange={(e) => setPurchaseSearch(e.target.value)}
                         className="px-4 py-2 border rounded-lg w-72 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                 </div>
@@ -207,55 +229,67 @@ const SalesManagement = () => {
                             <thead className="bg-gray-50">
                                 <tr>
                                     <th className="px-6 py-3 text-left text-gray-600">ID</th>
-                                    <SortableHeader column="name" label="Nombre" />
-                                    <SortableHeader column="email" label="Email" />
-                                    <SortableHeader column="gamesCount" label="Juegos" />
-                                    <SortableHeader column="groupsCount" label="Grupos" />
-                                    <SortableHeader column="purchasesCount" label="Compras" />
-                                    <SortableHeader column="role" label="Rol" />
+                                    <SortableHeader column="date" label="Fecha" />
+                                    <SortableHeader column="userName" label="Usuario" />
+                                    <SortableHeader column="userEmail" label="Email" />
+                                    <SortableHeader column="gameName" label="Juego" />
+                                    <SortableHeader column="amount" label="Monto" />
+                                    <SortableHeader column="paymentMethod" label="Método de Pago" />
                                     <SortableHeader column="status" label="Estado" />
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-200">
-                                {paginatedUsers.map((user) => (
-                                    <tr key={user.id} className="hover:bg-gray-50">
-                                    <td className="px-6 py-4">{user.id}</td>
-                                    <td className="px-6 py-4">{user.name}</td>
-                                    <td className="px-6 py-4">{user.email}</td>
-                                    <td className="px-6 py-4">{user.gamesCount}</td>
-                                    <td className="px-6 py-4">{user.groupsCount}</td>
-                                    <td className="px-6 py-4">{user.purchasesCount}</td>
-                                    <td className="px-6 py-4">
-                                        <span className={`px-2 py-1 rounded-full text-sm font-medium ${
-                                            user.role === 'admin' 
-                                            ? 'bg-blue-100 text-blue-800'
-                                            : user.role === 'soporte' 
-                                            ? 'bg-yellow-100 text-yellow-800'
-                                            :'bg-gray-100 text-gray-800'
-                                        }`}>
-                                            {user.role}
-                                        </span>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <span className={`px-2 py-1 rounded-full text-sm font-medium ${
-                                            user.status === 'online' 
-                                            ? 'bg-green-100 text-green-800'
-                                            : user.status === 'banned' 
-                                            ? 'bg-red-100 text-red-800'
-                                            :'bg-gray-100 text-gray-800'
-                                        }`}>
-                                            {user.status}
-                                        </span>
-                                    </td>
-                                </tr>
+                                {paginatedPurchases.map((purchase) => (
+                                    <tr key={purchase.id} className="hover:bg-gray-50">
+                                        <td className="px-6 py-4">{purchase.id}</td>
+                                        <td className="px-6 py-4">{purchase.date}</td>
+                                        <td className="px-6 py-4">{purchase.userName}</td>
+                                        <td className="px-6 py-4">{purchase.userEmail}</td>
+                                        <td className="px-6 py-4">{purchase.gameName}</td>
+                                        <td className="px-6 py-4">${purchase.amount}</td>
+                                        <td className="px-6 py-4">
+                                            <span className={`px-2 py-1 rounded-full text-sm font-medium ${
+                                                purchase.paymentMethod === 'credit_card'
+                                                ? 'bg-blue-100 text-blue-800'
+                                                : purchase.paymentMethod === 'paypal'
+                                                ? 'bg-purple-100 text-purple-800'
+                                                : 'bg-gray-100 text-gray-800'
+                                            }`}>
+                                                {
+                                                    purchase.paymentMethod === 'credit_card' ? 'Tarjeta de Crédito' :
+                                                    purchase.paymentMethod === 'paypal' ? 'PayPal' :
+                                                    purchase.paymentMethod === 'debit_card' ? 'Tarjeta de Débito' :
+                                                    purchase.paymentMethod
+                                                }
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <span className={`px-2 py-1 rounded-full text-sm font-medium ${
+                                                purchase.status === 'completed'
+                                                ? 'bg-green-100 text-green-800'
+                                                : purchase.status === 'pending'
+                                                ? 'bg-yellow-100 text-yellow-800'
+                                                : purchase.status === 'refunded'
+                                                ? 'bg-red-100 text-red-800'
+                                                : 'bg-gray-100 text-gray-800'
+                                            }`}>
+                                                {
+                                                    purchase.status === 'completed' ? 'Completado' :
+                                                    purchase.status === 'pending' ? 'Pendiente' :
+                                                    purchase.status === 'refunded' ? 'Reembolsado' :
+                                                    purchase.status
+                                                }
+                                            </span>
+                                        </td>
+                                    </tr>
                                 ))}
                             </tbody>
                         </table>
                     </div>
                     <Pagination
-                        currentPage={userPage}
-                        totalItems={filteredUsers.length}
-                        setPage={setUserPage}
+                        currentPage={purchasePage}
+                        totalItems={filteredPurchases.length}
+                        setPage={setPurchasePage}
                     />
                 </div>
             </div>

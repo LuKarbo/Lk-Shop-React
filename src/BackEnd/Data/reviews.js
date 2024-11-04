@@ -1,6 +1,7 @@
 export const reviews = [
     {
         id: 1,
+        userId: 1,
         userName: 'Juan Pérez',
         gameTitle: 'The Last Journey',
         rating: 4,
@@ -9,6 +10,7 @@ export const reviews = [
     },
     {
         id: 2,
+        userId: 1,
         userName: 'María López',
         gameTitle: 'The Last Journey',
         rating: 5,

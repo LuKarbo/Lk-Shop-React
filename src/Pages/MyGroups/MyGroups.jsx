@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../BackEnd/Auth/AuthContext';
+import { groups } from '../../BackEnd/Data/groups';
 import "./MyGroups.css";
 
 const MyGroups = () => {
@@ -28,42 +29,6 @@ const MyGroups = () => {
             { id: 2, text: "¿Civilization o Age of Empires?", user: "other", name: "Elena", timestamp: "2023-04-03 10:10" },
         ],
     });
-
-    // Lista compartida de grupos
-    const allGroups = [
-        {
-            id: 1,
-            name: "Gamers Elite",
-            description: "Grupo dedicado a jugadores competitivos de diversos géneros",
-            image: "https://via.placeholder.com/800x600",
-            members: 156,
-            categories: ["Acción", "Shooter"]
-        },
-        {
-            id: 2,
-            name: "Casual Gaming",
-            description: "Para jugadores que disfrutan de sesiones relajadas y amistosas",
-            image: "https://via.placeholder.com/800x600",
-            members: 89,
-            categories: ["Aventura", "Puzzle"]
-        },
-        {
-            id: 3,
-            name: "RPG Masters",
-            description: "Comunidad dedicada a los amantes de los RPG",
-            image: "https://via.placeholder.com/800x600",
-            members: 120,
-            categories: ["RPG"]
-        },
-        {
-            id: 4,
-            name: "Strategy Pros",
-            description: "Para los expertos en juegos de estrategia",
-            image: "https://via.placeholder.com/800x600",
-            members: 75,
-            categories: ["Estrategia"]
-        }
-    ];
 
     // Cargar grupos del usuario y conversaciones desde localStorage
     useEffect(() => {
@@ -112,7 +77,7 @@ const MyGroups = () => {
     }, [activeGroup, messages]);
 
     // Filtrar solo los grupos a los que pertenece el usuario
-    const myGroups = allGroups.filter(group => myGroupIds.includes(group.id));
+    const myGroups = groups.filter(group => myGroupIds.includes(group.id));
 
     const handleGroupClick = (groupId) => {
         setActiveGroup(groupId);

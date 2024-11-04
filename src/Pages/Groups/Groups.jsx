@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Search, X, Image as ImageIcon, ChevronDown } from 'lucide-react';
 import { useAuth } from '../../BackEnd/Auth/AuthContext';
+import { groups } from '../../BackEnd/Data/groups';
 import GroupCard from './GroupCard';
 import './Groups.css';
 
@@ -11,7 +12,10 @@ const Groups = () => {
     const [showLeaveModal, setShowLeaveModal] = useState(false);
     const [selectedGroupToLeave, setSelectedGroupToLeave] = useState(null);
     const [toast, setToast] = useState(null);
-    const [myGroups, setMyGroups] = useState([]);
+    const [myGroups, setMyGroups] = useState(() => {
+        const storedGroups = localStorage.getItem('MisGrupos');
+        return storedGroups ? JSON.parse(storedGroups) : [];
+    });
     const [selectedCategories, setSelectedCategories] = useState([]);
     const [showCategoryFilter, setShowCategoryFilter] = useState(false);
     const [newGroup, setNewGroup] = useState({
@@ -27,41 +31,6 @@ const Groups = () => {
     const categories = [
         "Acción", "Aventura", "RPG", "Estrategia", "Deportes",
         "Carreras", "Shooter", "Puzzle", "Arcade", "Simulación"
-    ];
-
-    const groups = [
-        {
-            id: 1,
-            name: "Gamers Elite",
-            description: "Grupo dedicado a jugadores competitivos de diversos géneros",
-            image: "https://via.placeholder.com/800x600",
-            members: 156,
-            categories: ["Acción", "Shooter"]
-        },
-        {
-            id: 2,
-            name: "Casual Gaming",
-            description: "Para jugadores que disfrutan de sesiones relajadas y amistosas",
-            image: "https://via.placeholder.com/800x600",
-            members: 89,
-            categories: ["Aventura", "Puzzle"]
-        },
-        {
-            id: 3,
-            name: "RPG Masters",
-            description: "Comunidad dedicada a los amantes de los RPG",
-            image: "https://via.placeholder.com/800x600",
-            members: 120,
-            categories: ["RPG"]
-        },
-        {
-            id: 4,
-            name: "Strategy Pros",
-            description: "Para los expertos en juegos de estrategia",
-            image: "https://via.placeholder.com/800x600",
-            members: 75,
-            categories: ["Estrategia"]
-        }
     ];
 
     const toggleCategoryFilter = (category) => {

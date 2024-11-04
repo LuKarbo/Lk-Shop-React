@@ -1,5 +1,9 @@
+import ExcelJS from 'exceljs';
+import { saveAs } from 'file-saver';
 import { useState } from 'react';
-import { ChevronLeft, ChevronRight, ChevronUp, ChevronDown, Download } from 'lucide-react';
+import { ChevronUp, ChevronDown, Download } from 'lucide-react';
+import { Pagination } from './Functions/Pagination';
+import { purchases } from '../../../BackEnd/Data/purchases';
 
 const SalesManagement = () => {
     const [purchaseSearch, setPurchaseSearch] = useState('');
@@ -9,49 +13,6 @@ const SalesManagement = () => {
     });
     const [purchasePage, setPurchasePage] = useState(1);
     const ITEMS_PER_PAGE = 10;
-
-    const purchases = [
-        {
-            id: 1,
-            date: '2024-03-15',
-            userName: 'Juan Pérez',
-            userEmail: 'juan@example.com',
-            gameName: 'Super Game 1',
-            amount: 29.99,
-            paymentMethod: 'credit_card',
-            status: 'completed'
-        },
-        {
-            id: 2,
-            date: '2024-03-14',
-            userName: 'María López',
-            userEmail: 'maria@example.com',
-            gameName: 'Adventure Quest',
-            amount: 19.99,
-            paymentMethod: 'paypal',
-            status: 'completed'
-        },
-        {
-            id: 3,
-            date: '2024-03-14',
-            userName: 'Tomas López',
-            userEmail: 'tolop@example.com',
-            gameName: 'Racing Simulator',
-            amount: 49.99,
-            paymentMethod: 'credit_card',
-            status: 'refunded'
-        },
-        {
-            id: 4,
-            date: '2024-03-13',
-            userName: 'Ana García',
-            userEmail: 'ana@example.com',
-            gameName: 'Strategy Master',
-            amount: 39.99,
-            paymentMethod: 'debit_card',
-            status: 'pending'
-        },
-    ];
 
     const handleSort = (key) => {
         let direction = 'asc';
@@ -96,31 +57,20 @@ const SalesManagement = () => {
         )
     );
 
-    const handleExportToExcel = () => {
-        // Creo el archivo y descargo
-        const headers = ['ID', 'Fecha', 'Usuario', 'Email', 'Juego', 'Monto', 'Método de Pago', 'Estado'];
-        const csvContent = [
-            headers.join(','),
-            ...filteredPurchases.map(purchase => [
-                purchase.id,
-                purchase.date,
-                purchase.userName,
-                purchase.userEmail,
-                purchase.gameName,
-                purchase.amount,
-                purchase.paymentMethod,
-                purchase.status
-            ].join(','))
-        ].join('\n');
+    const handleExportToExcel = async (fileName = 'historial_compras.xlsx') => {
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet('Hoja1');
+    
+        filteredPurchases.forEach((row) => {
+            worksheet.addRow(row);
+        });
 
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement('a');
-        const url = URL.createObjectURL(blob);
-        link.setAttribute('href', url);
-        link.setAttribute('download', 'historial_compras.csv');
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        // ----------------------------------------------------------------
+        // CONSULTAR Y ESTUDIAR SOBRE ESTO, para optimizar mejor esta parte
+        const buffer = await workbook.xlsx.writeBuffer();
+        const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+        saveAs(blob, fileName);
+        // ----------------------------------------------------------------
     };
 
     const SortIndicator = ({ columnKey }) => {
@@ -143,56 +93,6 @@ const SalesManagement = () => {
             </div>
         </th>
     );
-
-    const Pagination = ({ currentPage, totalItems, setPage }) => {
-        const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
-        return (
-            <div className="flex items-center justify-between px-4 py-3 bg-white border-t">
-                <div className="flex items-center">
-                    <p className="text-sm text-gray-700">
-                        Mostrando{' '}
-                        <span className="font-medium">
-                            {Math.min((currentPage - 1) * ITEMS_PER_PAGE + 1, totalItems)}
-                        </span>
-                        {' '}a{' '}
-                        <span className="font-medium">
-                            {Math.min(currentPage * ITEMS_PER_PAGE, totalItems)}
-                        </span>
-                        {' '}de{' '}
-                        <span className="font-medium">{totalItems}</span>
-                        {' '}resultados
-                    </p>
-                </div>
-                <div className="flex items-center space-x-2">
-                    <button
-                        onClick={() => setPage(prev => Math.max(1, prev - 1))}
-                        disabled={currentPage === 1}
-                        className={`p-2 rounded-lg ${
-                            currentPage === 1
-                            ? 'text-gray-400 bg-gray-100'
-                            : 'text-gray-700 hover:bg-gray-100'
-                        }`}
-                    >
-                        <ChevronLeft size={20} />
-                    </button>
-                    <span className="px-4 py-2 text-sm text-gray-700">
-                        Página {currentPage} de {totalPages}
-                    </span>
-                    <button
-                        onClick={() => setPage(prev => Math.min(totalPages, prev + 1))}
-                        disabled={currentPage === totalPages}
-                        className={`p-2 rounded-lg ${
-                            currentPage === totalPages
-                            ? 'text-gray-400 bg-gray-100'
-                            : 'text-gray-700 hover:bg-gray-100'
-                        }`}
-                    >
-                        <ChevronRight size={20} />
-                    </button>
-                </div>
-            </div>
-        );
-    };
     
     const paginatedPurchases = filteredPurchases.slice(
         (purchasePage - 1) * ITEMS_PER_PAGE,
@@ -208,7 +108,7 @@ const SalesManagement = () => {
                     <div className="flex items-center space-x-4">
                         <h3 className="text-xl font-semibold">Compras</h3>
                         <button
-                            onClick={handleExportToExcel}
+                            onClick={() => handleExportToExcel()}
                             className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
                         >
                             <Download size={20} className="mr-2" />
@@ -290,6 +190,7 @@ const SalesManagement = () => {
                         currentPage={purchasePage}
                         totalItems={filteredPurchases.length}
                         setPage={setPurchasePage}
+                        ITEMS_PER_PAGE={ITEMS_PER_PAGE}
                     />
                 </div>
             </div>

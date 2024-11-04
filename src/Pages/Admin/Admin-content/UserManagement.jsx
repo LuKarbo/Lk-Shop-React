@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { users } from './Data/userData';
 import { pendingTickets, answeredTickets } from './Data/ticketsData';
-import { Pencil, Trash2, ChevronLeft, ChevronRight, ChevronUp, ChevronDown } from 'lucide-react';
 import { ViewTicketModal, ReplyTicketModal } from './Modals/TicketModals';
 import { EditUserModal, DeleteUserModal } from './Modals/UserModal';
 import TicketList from './Lists/TicketList';
@@ -28,7 +27,7 @@ const UserManagement = () => {
     const [userPage, setUserPage] = useState(1);
     const [pendingPage, setPendingPage] = useState(1);
     const [answeredPage, setAnsweredPage] = useState(1);
-    const ITEMS_PER_PAGE = 10;
+    const ITEMS_PER_PAGE = 8;
 
     const [editForm, setEditForm] = useState({
         name: '',
@@ -64,18 +63,18 @@ const UserManagement = () => {
 
     // Filtros
     const filteredUsers = sortUsers(
-        users.filter(user => 
+        users.filter(user =>
             user.name.toLowerCase().includes(userSearch.toLowerCase()) ||
             user.email.toLowerCase().includes(userSearch.toLowerCase()) ||
             user.role.toLowerCase().includes(userSearch.toLowerCase()) ||
             user.status.toLowerCase().includes(userSearch.toLowerCase())
         )
     );
-
+    
     const filteredPendingTickets = pendingTickets.filter(ticket =>
         ticket.userName.toLowerCase().includes(pendingSearch.toLowerCase())
     );
-
+    
     const filteredAnsweredTickets = answeredTickets.filter(ticket =>
         ticket.userName.toLowerCase().includes(answeredSearch.toLowerCase())
     );
@@ -126,12 +125,12 @@ const UserManagement = () => {
         (userPage - 1) * ITEMS_PER_PAGE,
         userPage * ITEMS_PER_PAGE
     );
-
+    
     const paginatedPendingTickets = filteredPendingTickets.slice(
         (pendingPage - 1) * ITEMS_PER_PAGE,
         pendingPage * ITEMS_PER_PAGE
     );
-
+    
     const paginatedAnsweredTickets = filteredAnsweredTickets.slice(
         (answeredPage - 1) * ITEMS_PER_PAGE,
         answeredPage * ITEMS_PER_PAGE
@@ -155,11 +154,10 @@ const UserManagement = () => {
                 onSort={sortUsers}
                 onEditUser={handleOpenEditModal}
                 onDeleteUser={handleOpenDeleteModal}
-                itemsPerPage={ITEMS_PER_PAGE}
             />
 
             {/* Consultas Pendientes */}
-            <TicketList 
+            <TicketList
                 title="Consultas Pendientes"
                 tickets={paginatedPendingTickets}
                 searchValue={pendingSearch}
@@ -171,9 +169,9 @@ const UserManagement = () => {
                 onReplyTicket={handleOpenReplyTicket}
                 showReplyButton={true}
             />
-            
+
             {/* Consultas Respondidas */}
-            <TicketList 
+            <TicketList
                 title="Consultas Respondidas"
                 tickets={paginatedAnsweredTickets}
                 searchValue={answeredSearch}

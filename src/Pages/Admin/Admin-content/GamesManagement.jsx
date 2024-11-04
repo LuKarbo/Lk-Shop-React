@@ -1,6 +1,9 @@
 import { useState } from 'react';
 import { games_list } from '../../../BackEnd/Data/games';
-import { Image as ImageIcon, Pencil, Trash2, ChevronLeft, ChevronRight, ChevronUp, ChevronDown } from 'lucide-react';
+import { discountCodes } from '../../../BackEnd/Data/discountCodes';
+import { reviews } from '../../../BackEnd/Data/reviews';
+import { Pagination } from './Functions/Pagination';
+import { Image as ImageIcon, Pencil, Trash2, ChevronUp, ChevronDown } from 'lucide-react';
 
 const GamesManagement = () => {
     //#region Juegos estados, handlers y lista
@@ -133,49 +136,6 @@ const GamesManagement = () => {
         endDate: ''
     });
 
-    const discountCodes = [
-        {
-            id: 1,
-            code: "SUMMER2024",
-            createdAt: "2024-03-15",
-            discountPercentage: 25,
-            endDate: "2024-06-15",
-            status: "Activo"
-        },
-        {
-            id: 2,
-            code: "SPRING50",
-            createdAt: "2024-03-01",
-            discountPercentage: 50,
-            endDate: "2024-03-31",
-            status: "Activo"
-        },
-        {
-            id: 3,
-            code: "NEWGAME30",
-            createdAt: "2024-03-25",
-            discountPercentage: 30,
-            endDate: "2024-04-25",
-            status: "Activo"
-        },
-        {
-            id: 4,
-            code: "BVXCBDGFH",
-            createdAt: "2024-03-01",
-            discountPercentage: 50,
-            endDate: "2024-03-31",
-            status: "Caducado"
-        },
-        {
-            id: 5,
-            code: "784356",
-            createdAt: "2024-03-25",
-            discountPercentage: 30,
-            endDate: "2024-04-25",
-            status: "Espera"
-        }
-    ];
-
     const activeDiscounts = discountCodes.filter(discount => discount.status === 'Activo');
 
     const handleOpenEditDiscountModal = (discount) => {
@@ -234,25 +194,6 @@ const GamesManagement = () => {
     const [selectedReview, setSelectedReview] = useState(null);
     const [reviewSearch, setReviewSearch] = useState('');
 
-    const reviews = [
-        {
-            id: 1,
-            userName: 'Juan Pérez',
-            gameTitle: 'The Last Journey',
-            rating: 4,
-            date: '2024-03-20',
-            content: 'Excelente juego, muy divertido y adictivo'
-        },
-        {
-            id: 2,
-            userName: 'María López',
-            gameTitle: 'The Last Journey',
-            rating: 5,
-            date: '2024-03-19',
-            content: 'Uno de los mejores juegos que he jugado'
-        }
-    ];
-
     const handleOpenViewReview = (review) => {
         setSelectedReview(review);
         setIsViewReviewOpen(true);
@@ -261,104 +202,104 @@ const GamesManagement = () => {
     //#endregion
 
     //#region Funciones, Filtros y Ordenadores
-    const [sortConfig, setSortConfig] = useState({
-        key: null,
-        direction: 'asc'
-    });
-    const [gamePage, setGamePage] = useState(1);
-    const [reviewPage, setReviewPage] = useState(1);
-    const ITEMS_PER_PAGE = 10;
-
-    const sortItems = (itemsToSort) => {
-        if (!sortConfig.key) return itemsToSort;
-
-        return [...itemsToSort].sort((a, b) => {
-            if (a[sortConfig.key] === null) return 1;
-            if (b[sortConfig.key] === null) return -1;
-
-            let aValue = a[sortConfig.key];
-            let bValue = b[sortConfig.key];
-
-            if (typeof aValue === 'string') {
-                aValue = aValue.toLowerCase();
-                bValue = bValue.toLowerCase();
-            }
-
-            if (aValue < bValue) {
-                return sortConfig.direction === 'asc' ? -1 : 1;
-            }
-            if (aValue > bValue) {
-                return sortConfig.direction === 'asc' ? 1 : -1;
-            }
-            return 0;
+        const [sortConfig, setSortConfig] = useState({
+            key: null,
+            direction: 'asc'
         });
-    };
+        const [gamePage, setGamePage] = useState(1);
+        const [reviewPage, setReviewPage] = useState(1);
+        const ITEMS_PER_PAGE = 6;
 
-    const handleSort = (key) => {
-        let direction = 'asc';
-        if (sortConfig.key === key && sortConfig.direction === 'asc') {
-            direction = 'desc';
-        }
-        setSortConfig({ key, direction });
-        setGamePage(1);
-    };
+        const sortItems = (itemsToSort) => {
+            if (!sortConfig.key) return itemsToSort;
 
-    const SortIndicator = ({ columnKey }) => {
-        if (sortConfig.key !== columnKey) {
-            return <ChevronUp className="opacity-0 group-hover:opacity-50 w-4 h-4 inline-block ml-1" />;
-        }
-        return sortConfig.direction === 'asc' 
-            ? <ChevronUp className="w-4 h-4 inline-block ml-1 text-blue-500" />
-            : <ChevronDown className="w-4 h-4 inline-block ml-1 text-blue-500" />;
-    };
+            return [...itemsToSort].sort((a, b) => {
+                if (a[sortConfig.key] === null) return 1;
+                if (b[sortConfig.key] === null) return -1;
 
-    const SortableHeader = ({ column, label }) => (
-        <th 
-            className="px-6 py-3 text-left text-gray-600 cursor-pointer group hover:bg-gray-100"
-            onClick={() => handleSort(column)}
-        >
-            <div className="flex items-center">
-                {label}
-                <SortIndicator columnKey={column} />
-            </div>
-        </th>
-    );
+                let aValue = a[sortConfig.key];
+                let bValue = b[sortConfig.key];
 
-    const getStatusColor = (status) => {
-        switch (status) {
-            case 'Activo':
-                return 'bg-green-100 text-green-800';
-            case 'Caducado':
-                return 'bg-red-100 text-red-800';
-            case 'Espera':
-                return 'bg-yellow-100 text-yellow-800';
-            default:
-                return 'bg-gray-100 text-gray-800';
-        }
-    };
+                if (typeof aValue === 'string') {
+                    aValue = aValue.toLowerCase();
+                    bValue = bValue.toLowerCase();
+                }
 
-    //#region Filtros de lista
-    const filteredGames = sortItems(
-        games_list.filter(game => 
-            game.title.toLowerCase().includes(gameSearch.toLowerCase()) ||
-            game.publisher.toLowerCase().includes(gameSearch.toLowerCase()) ||
-            game.category.toLowerCase().includes(gameSearch.toLowerCase())
-        )
-    );
+                if (aValue < bValue) {
+                    return sortConfig.direction === 'asc' ? -1 : 1;
+                }
+                if (aValue > bValue) {
+                    return sortConfig.direction === 'asc' ? 1 : -1;
+                }
+                return 0;
+            });
+        };
 
-    const filteredReviews = sortItems(
-        reviews.filter(review =>
-            review.gameTitle.toLowerCase().includes(reviewSearch.toLowerCase()) ||
-            review.userName.toLowerCase().includes(reviewSearch.toLowerCase())
-        )
-    );
+        const handleSort = (key) => {
+            let direction = 'asc';
+            if (sortConfig.key === key && sortConfig.direction === 'asc') {
+                direction = 'desc';
+            }
+            setSortConfig({ key, direction });
+            setGamePage(1);
+        };
 
-    const filteredDiscountCodes = sortItems(
-        discountCodes.filter(discount =>
-            discount.code.toLowerCase().includes(discountSearch.toLowerCase())
-        )
-    );
-    //#endregion
+        const SortIndicator = ({ columnKey }) => {
+            if (sortConfig.key !== columnKey) {
+                return <ChevronUp className="opacity-0 group-hover:opacity-50 w-4 h-4 inline-block ml-1" />;
+            }
+            return sortConfig.direction === 'asc' 
+                ? <ChevronUp className="w-4 h-4 inline-block ml-1 text-blue-500" />
+                : <ChevronDown className="w-4 h-4 inline-block ml-1 text-blue-500" />;
+        };
+
+        const SortableHeader = ({ column, label }) => (
+            <th 
+                className="px-6 py-3 text-left text-gray-600 cursor-pointer group hover:bg-gray-100"
+                onClick={() => handleSort(column)}
+            >
+                <div className="flex items-center">
+                    {label}
+                    <SortIndicator columnKey={column} />
+                </div>
+            </th>
+        );
+
+        const getStatusColor = (status) => {
+            switch (status) {
+                case 'Activo':
+                    return 'bg-green-100 text-green-800';
+                case 'Caducado':
+                    return 'bg-red-100 text-red-800';
+                case 'Espera':
+                    return 'bg-yellow-100 text-yellow-800';
+                default:
+                    return 'bg-gray-100 text-gray-800';
+            }
+        };
+
+        //#region Filtros de lista
+        const filteredGames = sortItems(
+            games_list.filter(game => 
+                game.title.toLowerCase().includes(gameSearch.toLowerCase()) ||
+                game.publisher.toLowerCase().includes(gameSearch.toLowerCase()) ||
+                game.category.toLowerCase().includes(gameSearch.toLowerCase())
+            )
+        );
+
+        const filteredReviews = sortItems(
+            reviews.filter(review =>
+                review.gameTitle.toLowerCase().includes(reviewSearch.toLowerCase()) ||
+                review.userName.toLowerCase().includes(reviewSearch.toLowerCase())
+            )
+        );
+
+        const filteredDiscountCodes = sortItems(
+            discountCodes.filter(discount =>
+                discount.code.toLowerCase().includes(discountSearch.toLowerCase())
+            )
+        );
+        //#endregion
 
     //#endregion
 
@@ -382,57 +323,6 @@ const GamesManagement = () => {
     //#endregion
 
     //#region Paginado Funciones
-    const Pagination = ({ currentPage, totalItems, setPage }) => {
-        const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
-        
-        return (
-            <div className="flex items-center justify-between px-4 py-3 bg-white border-t">
-                <div className="flex items-center">
-                    <p className="text-sm text-gray-700">
-                        Mostrando{' '}
-                        <span className="font-medium">
-                            {Math.min((currentPage - 1) * ITEMS_PER_PAGE + 1, totalItems)}
-                        </span>
-                        {' '}a{' '}
-                        <span className="font-medium">
-                            {Math.min(currentPage * ITEMS_PER_PAGE, totalItems)}
-                        </span>
-                        {' '}de{' '}
-                        <span className="font-medium">{totalItems}</span>
-                        {' '}resultados
-                    </p>
-                </div>
-                <div className="flex items-center space-x-2">
-                    <button
-                        onClick={() => setPage(prev => Math.max(1, prev - 1))}
-                        disabled={currentPage === 1}
-                        className={`p-2 rounded-lg ${
-                            currentPage === 1
-                            ? 'text-gray-400 bg-gray-100'
-                            : 'text-gray-700 hover:bg-gray-100'
-                        }`}
-                    >
-                        <ChevronLeft size={20} />
-                    </button>
-                    <span className="px-4 py-2 text-sm text-gray-700">
-                        Página {currentPage} de {totalPages}
-                    </span>
-                    <button
-                        onClick={() => setPage(prev => Math.min(totalPages, prev + 1))}
-                        disabled={currentPage === totalPages}
-                        className={`p-2 rounded-lg ${
-                            currentPage === totalPages
-                            ? 'text-gray-400 bg-gray-100'
-                            : 'text-gray-700 hover:bg-gray-100'
-                        }`}
-                    >
-                        <ChevronRight size={20} />
-                    </button>
-                </div>
-            </div>
-        );
-    };
-    
     const paginatedGames = filteredGames.slice(
         (gamePage - 1) * ITEMS_PER_PAGE,
         gamePage * ITEMS_PER_PAGE
@@ -538,6 +428,7 @@ const GamesManagement = () => {
                         currentPage={gamePage}
                         totalItems={filteredGames.length}
                         setPage={setGamePage}
+                        ITEMS_PER_PAGE={ITEMS_PER_PAGE}
                     />
                 </div>
             </div>
@@ -613,6 +504,7 @@ const GamesManagement = () => {
                         currentPage={discountPage}
                         totalItems={filteredDiscountCodes.length}
                         setPage={setDiscountPage}
+                        ITEMS_PER_PAGE={ITEMS_PER_PAGE}
                     />
                 </div>
             </div>
@@ -669,6 +561,7 @@ const GamesManagement = () => {
                         currentPage={reviewPage}
                         totalItems={filteredReviews.length}
                         setPage={setReviewPage}
+                        ITEMS_PER_PAGE={ITEMS_PER_PAGE}
                     />
                 </div>
             </div>

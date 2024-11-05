@@ -11,7 +11,8 @@ export const games_list = [
         discounted: false,
         originalPrice: "29.99",
         copies: 1250000,
-        discountId: null
+        discountId: null,
+        installed: false
     },
     {
         id: 2,
@@ -25,7 +26,8 @@ export const games_list = [
         discounted: true,
         originalPrice: "59.99",
         copies: 980000,
-        discountId: 1
+        discountId: 1,
+        installed: false
     },
     {
         id: 3,
@@ -39,7 +41,8 @@ export const games_list = [
         discounted: false,
         originalPrice: "26.99",
         copies: 850000,
-        discountId: null
+        discountId: null,
+        installed: false
     },
     {
         id: 4,
@@ -53,7 +56,8 @@ export const games_list = [
         discounted: true,
         originalPrice: "69.99",
         copies: 780000,
-        discountId: 2
+        discountId: 2,
+        installed: false
     },
     {
         id: 5,
@@ -67,7 +71,8 @@ export const games_list = [
         discounted: true,
         originalPrice: "69.99",
         copies: 720000,
-        discountId: 1
+        discountId: 1,
+        installed: false
     },
     {
         id: 6,
@@ -81,7 +86,8 @@ export const games_list = [
         discounted: true,
         originalPrice: "59.99",
         copies: 450000,
-        discountId: 4
+        discountId: 4,
+        installed: false
     },
     {
         id: 7,
@@ -95,7 +101,8 @@ export const games_list = [
         discounted: true,
         originalPrice: "69.99",
         copies: 680000,
-        discountId: 3
+        discountId: 3,
+        installed: false
     },
     {
         id: 8,
@@ -109,7 +116,8 @@ export const games_list = [
         discounted: false,
         originalPrice: "0.00",
         copies: 1100000,
-        discountId: null
+        discountId: null,
+        installed: false
     },
     {
         id: 9,
@@ -123,7 +131,8 @@ export const games_list = [
         discounted: false,
         originalPrice: "0.00",
         copies: 950000,
-        discountId: null
+        discountId: null,
+        installed: false
     },
     {
         id: 10,
@@ -137,6 +146,7 @@ export const games_list = [
         discounted: true,
         originalPrice: "59.99",
         copies: 350000,
-        discountId: 2
+        discountId: 2,
+        installed: false
     }
 ];

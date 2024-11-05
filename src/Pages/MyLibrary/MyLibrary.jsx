@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { games_list } from '../../BackEnd/Data/games';
-import { Download, Info, X, RefreshCcw } from 'lucide-react';
+import Toast from '../../components/Toast/Toast';
+import { Download, Info, X, RefreshCcw, Play, Trash2 } from 'lucide-react';
 
 const MyLibrary = () => {
     const [favorites, setFavorites] = useState([]);
@@ -9,12 +10,13 @@ const MyLibrary = () => {
     const [showPurchaseModal, setShowPurchaseModal] = useState(false);
     const [showDownloadModal, setShowDownloadModal] = useState(false);
     const [showRefundModal, setShowRefundModal] = useState(false);
+    const [showUninstallConfirmModal, setShowUninstallConfirmModal] = useState(false);
+    const [showUninstallProgressModal, setShowUninstallProgressModal] = useState(false);
     const [selectedGame, setSelectedGame] = useState(null);
     const [toast, setToast] = useState(null);
     const navigate = useNavigate();
 
     useEffect(() => {
-        // Cargar favoritos del localStorage
         const savedFavorites = localStorage.getItem('gameFavorites');
         if (savedFavorites) {
             try {
@@ -26,15 +28,20 @@ const MyLibrary = () => {
             }
         }
 
-        // Cargar juegos comprados del localStorage
         const savedBuy = localStorage.getItem('gameBuy');
+        const savedInstalled = localStorage.getItem('gameInstalled') || '{}';
+        
         if (savedBuy) {
             try {
                 const parsedPurchases = JSON.parse(savedBuy);
+                const installedGames = JSON.parse(savedInstalled);
 
-                const purchasedGamesFull = games_list.filter(game => 
-                    Array.isArray(parsedPurchases) && parsedPurchases.includes(game.id)
-                );
+                const purchasedGamesFull = games_list
+                    .filter(game => Array.isArray(parsedPurchases) && parsedPurchases.includes(game.id))
+                    .map(game => ({
+                        ...game,
+                        installed: installedGames[game.id] || false
+                    }));
                 setPurchasedGames(purchasedGamesFull);
             } catch (error) {
                 console.error('Error parsing purchased games:', error);
@@ -61,14 +68,56 @@ const MyLibrary = () => {
     const handleDownload = (game) => {
         setSelectedGame(game);
         setShowDownloadModal(true);
-        // Simular proceso de descarga
         setTimeout(() => {
             setShowDownloadModal(false);
+            const updatedGames = purchasedGames.map(g => 
+                g.id === game.id ? { ...g, installed: true } : g
+            );
+            setPurchasedGames(updatedGames);
+            
+            const installedGames = JSON.parse(localStorage.getItem('gameInstalled') || '{}');
+            installedGames[game.id] = true;
+            localStorage.setItem('gameInstalled', JSON.stringify(installedGames));
+            
             showToast(`${game.title} se ha instalado correctamente`);
         }, 3000);
     };
 
+    const handleUninstallClick = (game) => {
+        setSelectedGame(game);
+        setShowUninstallConfirmModal(true);
+    };
+
+    const processUninstall = () => {
+        setShowUninstallConfirmModal(false);
+        setShowUninstallProgressModal(true);
+
+        setTimeout(() => {
+            setShowUninstallProgressModal(false);
+            
+            const updatedGames = purchasedGames.map(g => 
+                g.id === selectedGame.id ? { ...g, installed: false } : g
+            );
+            setPurchasedGames(updatedGames);
+            
+            const installedGames = JSON.parse(localStorage.getItem('gameInstalled') || '{}');
+            installedGames[selectedGame.id] = false;
+            localStorage.setItem('gameInstalled', JSON.stringify(installedGames));
+            
+            showToast(`${selectedGame.title} se ha desinstalado correctamente`);
+            setSelectedGame(null);
+        }, 3000);
+    };
+
+    const handlePlay = (game) => {
+        showToast(`Iniciando ${game.title}...`);
+    };
+
     const handleRefund = (game) => {
+        if (game.installed) {
+            showToast("Debes desinstalar el juego antes de solicitar un reembolso");
+            return;
+        }
         setSelectedGame(game);
         setShowRefundModal(true);
     };
@@ -79,6 +128,10 @@ const MyLibrary = () => {
         );
         setPurchasedGames(updatedPurchasedGames);
 
+        const installedGames = JSON.parse(localStorage.getItem('gameInstalled') || '{}');
+        delete installedGames[selectedGame.id];
+        localStorage.setItem('gameInstalled', JSON.stringify(installedGames));
+        
         localStorage.setItem('gameBuy', JSON.stringify(updatedPurchasedGames.map(game => game.id)));
 
         setShowRefundModal(false);
@@ -142,21 +195,42 @@ const MyLibrary = () => {
                                             <Info size={16} className="mr-1" />
                                             Ver
                                         </button>
+                                        {game.installed ? (
+                                            <button
+                                                className="flex items-center justify-center px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md transition-colors text-sm"
+                                                onClick={() => handlePlay(game)}
+                                            >
+                                                <Play size={16} className="mr-1" />
+                                                Jugar
+                                            </button>
+                                        ) : (
+                                            <button
+                                                className="flex items-center justify-center px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors text-sm"
+                                                onClick={() => handleDownload(game)}
+                                            >
+                                                <Download size={16} className="mr-1" />
+                                                Instalar
+                                            </button>
+                                        )}
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-2">
+                                        {game.installed && (
+                                            <button
+                                                className="flex items-center justify-center px-3 py-2 bg-red-100 hover:bg-red-200 text-red-600 rounded-md transition-colors text-sm"
+                                                onClick={() => handleUninstallClick(game)}
+                                            >
+                                                <Trash2 size={16} className="mr-1" />
+                                                Desinstalar
+                                            </button>
+                                        )}
                                         <button
-                                            className="flex items-center justify-center px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors text-sm"
-                                            onClick={() => handleDownload(game)}
+                                            className={`flex items-center justify-center px-3 py-2 bg-red-100 hover:bg-red-200 text-red-600 rounded-md transition-colors text-sm ${game.installed ? 'col-span-1' : 'col-span-2'}`}
+                                            onClick={() => handleRefund(game)}
                                         >
-                                            <Download size={16} className="mr-1" />
-                                            Descargar
+                                            <RefreshCcw size={16} className="mr-1" />
+                                            Reembolsar
                                         </button>
                                     </div>
-                                    <button
-                                        className="flex items-center justify-center w-full px-3 py-2 bg-red-100 hover:bg-red-200 text-red-600 rounded-md transition-colors text-sm"
-                                        onClick={() => handleRefund(game)}
-                                    >
-                                        <RefreshCcw size={16} className="mr-1" />
-                                        Reembolsar
-                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -322,10 +396,77 @@ const MyLibrary = () => {
                 </div>
             )}
 
-            {toast && (
-                <div className={`toast ${toast ? 'toast-show' : ''}`}>
-                    {toast}
+            {/* Modal de Confirmación de Desinstalación */}
+            {showUninstallConfirmModal && selectedGame && (
+                <div className="modal-overlay" onClick={() => setShowUninstallConfirmModal(false)}>
+                    <div className="modal-content" onClick={e => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <h2 className="modal-title">Confirmar Desinstalación</h2>
+                            <button className="modal-close" onClick={() => setShowUninstallConfirmModal(false)}>
+                                <X size={24} />
+                            </button>
+                        </div>
+                        <div className="modal-body">
+                            <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4">
+                                <div className="flex">
+                                    <div className="ml-3">
+                                        <p className="text-sm text-yellow-700">
+                                            ¿Estás seguro que deseas desinstalar {selectedGame.title}? Podrás volver a instalarlo cuando quieras.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="modal-game-info">
+                                <img 
+                                    src={selectedGame.image} 
+                                    alt={selectedGame.title} 
+                                    className="modal-game-image"
+                                />
+                                <div className="modal-game-details">
+                                    <h3>{selectedGame.title}</h3>
+                                    <p><strong>Espacio en disco:</strong> 45 GB</p>
+                                    <p><strong>Ubicación:</strong> C:/Games/{selectedGame.title}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="modal-footer">
+                            <button 
+                                className="product-button product-button-secondary"
+                                onClick={() => setShowUninstallConfirmModal(false)}
+                            >
+                                Cancelar
+                            </button>
+                            <button 
+                                className="product-button product-button-danger"
+                                onClick={processUninstall}
+                            >
+                                Confirmar Desinstalación
+                            </button>
+                        </div>
+                    </div>
                 </div>
+            )}
+
+            {/* Modal de Desinstalación */}
+            {showUninstallProgressModal && selectedGame && (
+                <div className="modal-overlay" onClick={(e) => e.stopPropagation()}>
+                    <div className="modal-content">
+                        <div className="modal-header">
+                            <h2 className="modal-title">Desinstalando {selectedGame.title}</h2>
+                        </div>
+                        <div className="modal-body">
+                            <div className="text-center p-6">
+                                <Trash2 size={48} className="mx-auto mb-4 text-red-600 animate-bounce" />
+                                <p className="text-lg">Desinstalando el juego...</p>
+                                <p className="text-sm text-gray-500 mt-2">Por favor, no cierres esta ventana</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {toast && (
+                <Toast message={toast} isVisible={!!toast} />
             )}
         </div>
     );

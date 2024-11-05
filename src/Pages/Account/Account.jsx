@@ -20,13 +20,11 @@ const Account = () => {
         joined: "Miembro desde 2023",
         bio: "Apasionado gamer | Streamer ocasional | Coleccionista de juegos retro",
         profileImage: "https://via.placeholder.com/150x150",
-        bannerImage: "https://via.placeholder.com/2100x300",
-        stats: {
-            games: 0,
-            reviews: 0,
-            groups: 0
-        }
+        bannerImage: "https://via.placeholder.com/2100x300"
     });
+
+    console.log(user);
+
     const { isLoggedIn } = useAuth();
     const navigate = useNavigate();
 
@@ -55,14 +53,14 @@ const Account = () => {
             try {
                 const parsedGroups = JSON.parse(savedGroups);
                 const userGroupsFull = groups.filter(group => parsedGroups.includes(group.id));
-                setUserGroups(userGroupsFull.slice(0, 3));
+                setUserGroups(userGroupsFull);
             } catch (error) {
                 console.error('Error parsing user groups:', error);
                 setUserGroups([]);
             }
         }
 
-        const userReviews = reviews.filter(review => review.userId === user.id).slice(0, 3);
+        const userReviews = reviews.filter(review => review.userId === user.id);
         setUserReviews(userReviews);
 
     }, [isLoggedIn, navigate]);
@@ -119,15 +117,15 @@ const Account = () => {
                         
                         <div className="flex justify-between mt-6 pt-6 border-t">
                             <div className="text-center">
-                                <div className="font-bold text-xl">{user.stats.games}</div>
+                                <div className="font-bold text-xl">{purchasedGames.length}</div>
                                 <div className="text-gray-600 text-sm">Juegos</div>
                             </div>
                             <div className="text-center">
-                                <div className="font-bold text-xl">{user.stats.reviews}</div>
+                                <div className="font-bold text-xl">{userReviews.length}</div>
                                 <div className="text-gray-600 text-sm">Reseñas</div>
                             </div>
                             <div className="text-center">
-                                <div className="font-bold text-xl">{user.stats.groups}</div>
+                                <div className="font-bold text-xl">{userGroups.length}</div>
                                 <div className="text-gray-600 text-sm">Grupos</div>
                             </div>
                         </div>
@@ -140,7 +138,7 @@ const Account = () => {
                             <button className="text-blue-500 hover:text-blue-600" onClick={() => { navigate("/mygroups") }}>Ver todos</button>
                         </div>
                         <div className="space-y-4">
-                            {userGroups.map(group => (
+                            {userGroups.slice(0, 3).map(group => (
                                 <div key={group.id} className="flex items-center space-x-4 p-2 hover:bg-gray-50 rounded-lg transition">
                                     <img src={group.image} alt={group.name} className="w-12 h-12 rounded-lg" />
                                     <div className="flex-1">
@@ -151,7 +149,47 @@ const Account = () => {
                             ))}
                         </div>
                     </div>
-                </div>
+
+                    {/* Mis Juegos */}
+                    <div className="bg-white rounded-xl shadow-md p-6">
+                        <div className="flex justify-between items-center mb-6">
+                            <h2 className="text-xl font-bold">Últimos 3 Juegos</h2>
+                            <button 
+                            className="text-blue-500 hover:text-blue-600" 
+                            onClick={() => navigate("/mylibrary")}
+                            >
+                            Ver todos
+                            </button>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                            {purchasedGames.slice(0, 3).map(game => (
+                            <div key={game.id} className="flex flex-col">
+                                {/* Imagen del juego */}
+                                <div className="aspect-[7/4] w-full mb-2">
+                                <img 
+                                    src={game.image} 
+                                    alt={game.title} 
+                                    className="w-full h-full object-cover rounded-lg bg-gray-200"
+                                />
+                                </div>
+                                
+                                {/* Nombre del juego */}
+                                <h3 className="text-blue-500 font-semibold mb-2">
+                                {game.title}
+                                </h3>
+
+                                {/* Botón Jugar */}
+                                <button 
+                                className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition w-fit"
+                                onClick={() => {/* Acción para jugar */}}
+                                >
+                                Jugar
+                                </button>
+                            </div>
+                            ))}
+                        </div>
+                    </div>
+                    </div>
 
                     <div className="lg:col-span-2 space-y-6">
                         {/* Mis Compras */}
@@ -161,7 +199,7 @@ const Account = () => {
                                 <button className="text-blue-500 hover:text-blue-600">Ver historial completo</button>
                             </div>
                             <div className="space-y-4">
-                            {purchaseHistory.map(purchase => (
+                            {purchaseHistory.slice(0, 3).map(purchase => (
                             <div key={purchase.id} className="flex items-center space-x-4 p-3 hover:bg-gray-50 rounded-lg transition">
                                 <img src={purchase.image} alt={purchase.game} className="w-16 h-16 rounded-lg" />
                                 <div className="flex-1">
@@ -181,7 +219,7 @@ const Account = () => {
                                 <button className="text-blue-500 hover:text-blue-600" onClick={() => { navigate("/myreviews") }}>Ver Todas</button>
                             </div>
                             <div className="space-y-4">
-                                {userReviews.map(review => (
+                                {userReviews.slice(0, 3).map(review => (
                                     <div key={review.id} className="p-4 hover:bg-gray-50 rounded-lg transition">
                                         <div className="flex items-center space-x-4">
                                             <div className="flex-1">

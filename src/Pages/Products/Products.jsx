@@ -3,6 +3,7 @@ import { Search, Bookmark, BookmarkCheck, X, Maximize } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../BackEnd/Auth/AuthContext';
 import { games_list } from '../../BackEnd/Data/games';
+import PurchaseModal from './PurchaseModal';
 import './Products.css';
 
 const Products = () => {
@@ -285,55 +286,12 @@ const Products = () => {
             )}
 
             {/* Purchase Modal */}
-            {showModal && selectedGame && (
-                <div className="modal-overlay" onClick={() => setShowModal(false)}>
-                    <div className="modal-content" onClick={e => e.stopPropagation()}>
-                        <div className="modal-header">
-                            <h2 className="modal-title">Confirmar Compra</h2>
-                            <button className="modal-close" onClick={() => setShowModal(false)}>
-                                <X size={24} />
-                            </button>
-                        </div>
-                        <div className="modal-body">
-                            <div className="modal-game-info">
-                                <img 
-                                    src={selectedGame.image} 
-                                    alt={selectedGame.title} 
-                                    className="modal-game-image"
-                                />
-                                <div className="modal-game-details">
-                                    <h3>{selectedGame.title}</h3>
-                                    <p>{selectedGame.description}</p>
-                                    <p>Publicador: {selectedGame.publisher}</p>
-                                    <p>Categoría: {selectedGame.category}</p>
-                                    <p className="modal-game-price">
-                                        Precio: ${selectedGame.price}
-                                        {selectedGame.discounted && (
-                                            <span className="product-game-original-price"> 
-                                                ${selectedGame.originalPrice}
-                                            </span>
-                                        )}
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="modal-footer">
-                            <button 
-                                className="product-button product-button-secondary"
-                                onClick={() => setShowModal(false)}
-                            >
-                                Cancelar
-                            </button>
-                            <button 
-                                className="product-button product-button-buy"
-                                onClick={handlePurchaseConfirmation}
-                            >
-                                Confirmar Compra
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
+            <PurchaseModal 
+                show={showModal}
+                onClose={() => setShowModal(false)}
+                game={selectedGame}
+                onConfirmPurchase={handlePurchaseConfirmation}
+            />
 
             {toast && (
                 <div className={`contact-toast ${toast ? 'contact-toast-show' : ''}`}>

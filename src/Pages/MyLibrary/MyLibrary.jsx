@@ -1,8 +1,13 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { games_list } from '../../BackEnd/Data/games';
 import Toast from '../../components/Toast/Toast';
-import { Download, Info, X, RefreshCcw, Play, Trash2 } from 'lucide-react';
+import PurchasedGamesSection from './components/PurchasedGamesSection';
+import FavoriteGamesSection from './components/FavoriteGamesSection';
+import PurchaseInfoModal  from './components/PurchaseInfoModal';
+import DownloadModal  from './components/DownloadModal';
+import RefundModal  from './components/RefundModal';
+import UninstallConfirmModal  from './components/UninstallConfirmModal';
+import UninstallProgressModal  from './components/UninstallProgressModal';
 
 const MyLibrary = () => {
     const [favorites, setFavorites] = useState([]);
@@ -14,7 +19,6 @@ const MyLibrary = () => {
     const [showUninstallProgressModal, setShowUninstallProgressModal] = useState(false);
     const [selectedGame, setSelectedGame] = useState(null);
     const [toast, setToast] = useState(null);
-    const navigate = useNavigate();
 
     useEffect(() => {
         const savedFavorites = localStorage.getItem('gameFavorites');
@@ -139,335 +143,64 @@ const MyLibrary = () => {
         setSelectedGame(null);
     };
 
-    const navigateToStore = (gameTitle) => {
-        navigate(`/products?search=${encodeURIComponent(gameTitle)}`);
-    };
-
-    const getFavoriteGames = () => {
-        const purchasedIds = purchasedGames.map(game => game.id);
-        
-        return games_list.filter(game => 
-            favorites.includes(game.id) && !purchasedIds.includes(game.id)
-        );
-    };
-
     return (
         <div className="product-container">
-            {/* Sección de Juegos Comprados */}
-            <h2 className="text-2xl font-bold mb-6">Mis Juegos</h2>
-            {purchasedGames.length === 0 ? (
-                <div className="text-center p-8 bg-gray-50 rounded-lg mb-12">
-                    <p className="text-gray-600 text-lg">No tienes juegos comprados todavía.</p>
-                    <button
-                        onClick={() => navigate('/products')}
-                        className="mt-4 product-button product-button-secondary"
-                    >
-                        Explorar tienda
-                    </button>
-                </div>
-            ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-                    {purchasedGames.map((game) => (
-                        <div key={game.id} className="flex flex-col bg-white rounded-lg shadow-md overflow-hidden h-full">
-                            <div className="relative w-full pt-[56.25%]">
-                                <img
-                                    src={game.image}
-                                    alt={game.title}
-                                    className="absolute top-0 left-0 w-full h-full object-cover"
-                                />
-                            </div>
-                            <div className="flex flex-col flex-grow p-4">
-                                <div className="flex justify-between items-start mb-2">
-                                    <h3 className="text-lg font-semibold truncate">{game.title}</h3>
-                                    <span className="text-yellow-500 font-medium">★ {game.rating}</span>
-                                </div>
-                                <p className="text-gray-600 text-sm mb-3 line-clamp-2">{game.description}</p>
-                                <div className="flex justify-between text-sm text-gray-500 mb-4">
-                                    <span>{game.publisher}</span>
-                                    <span>{game.category}</span>
-                                </div>
-                                <div className="mt-auto space-y-2">
-                                    <div className="grid grid-cols-2 gap-2">
-                                        <button
-                                            className="flex items-center justify-center px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors text-sm"
-                                            onClick={() => handlePurchaseInfo(game)}
-                                        >
-                                            <Info size={16} className="mr-1" />
-                                            Ver
-                                        </button>
-                                        {game.installed ? (
-                                            <button
-                                                className="flex items-center justify-center px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md transition-colors text-sm"
-                                                onClick={() => handlePlay(game)}
-                                            >
-                                                <Play size={16} className="mr-1" />
-                                                Jugar
-                                            </button>
-                                        ) : (
-                                            <button
-                                                className="flex items-center justify-center px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors text-sm"
-                                                onClick={() => handleDownload(game)}
-                                            >
-                                                <Download size={16} className="mr-1" />
-                                                Instalar
-                                            </button>
-                                        )}
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-2">
-                                        {game.installed && (
-                                            <button
-                                                className="flex items-center justify-center px-3 py-2 bg-red-100 hover:bg-red-200 text-red-600 rounded-md transition-colors text-sm"
-                                                onClick={() => handleUninstallClick(game)}
-                                            >
-                                                <Trash2 size={16} className="mr-1" />
-                                                Desinstalar
-                                            </button>
-                                        )}
-                                        <button
-                                            className={`flex items-center justify-center px-3 py-2 bg-red-100 hover:bg-red-200 text-red-600 rounded-md transition-colors text-sm ${game.installed ? 'col-span-1' : 'col-span-2'}`}
-                                            onClick={() => handleRefund(game)}
-                                        >
-                                            <RefreshCcw size={16} className="mr-1" />
-                                            Reembolsar
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            )}
+            <div>
+                <PurchasedGamesSection 
+                    purchasedGames={purchasedGames}
+                    onPurchaseInfo={handlePurchaseInfo}
+                    onPlay={handlePlay}
+                    onDownload={handleDownload}
+                    onUninstall={handleUninstallClick}
+                    onRefund={handleRefund}
+                />
+            </div>
 
-            {/* Sección de Juegos Favoritos */}
-            <h2 className="text-2xl font-bold mb-6">Mis Favoritos</h2>
-            {getFavoriteGames().length === 0 ? (
-                <div className="text-center p-8 bg-gray-50 rounded-lg">
-                    <p className="text-gray-600 text-lg">No tienes juegos en tu lista de favoritos.</p>
-                    <button
-                        onClick={() => navigate('/products')}
-                        className="mt-4 product-button product-button-secondary"
-                    >
-                        Descubrir juegos
-                    </button>
-                </div>
-            ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {getFavoriteGames().map((game) => (
-                        <div key={game.id} className="flex flex-col bg-white rounded-lg shadow-md overflow-hidden h-full">
-                            <div className="relative w-full pt-[56.25%]">
-                                <img
-                                    src={game.image}
-                                    alt={game.title}
-                                    className="absolute top-0 left-0 w-full h-full object-cover"
-                                />
-                            </div>
-                            <div className="flex flex-col flex-grow p-4">
-                                <div className="flex justify-between items-start mb-2">
-                                    <h3 className="text-lg font-semibold truncate">{game.title}</h3>
-                                    <span className="text-yellow-500 font-medium">★ {game.rating}</span>
-                                </div>
-                                <p className="text-gray-600 text-sm mb-3 line-clamp-2">{game.description}</p>
-                                <div className="flex justify-between text-sm text-gray-500 mb-4">
-                                    <span>{game.publisher}</span>
-                                    <span>{game.category}</span>
-                                </div>
-                                <div className="mt-auto">
-                                    <button
-                                        className="w-full px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors text-sm"
-                                        onClick={() => navigateToStore(game.title)}
-                                    >
-                                        Comprar
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            )}
+            <div>
+                <FavoriteGamesSection 
+                    favorites={favorites}
+                    games_list={games_list}
+                    purchasedGames={purchasedGames}
+                />
+            </div>
 
-            {/* Modal de Información de Compra */}
             {showPurchaseModal && selectedGame && (
-                <div className="modal-overlay" onClick={() => setShowPurchaseModal(false)}>
-                    <div className="modal-content" onClick={e => e.stopPropagation()}>
-                        <div className="modal-header">
-                            <h2 className="modal-title">Detalles de la Compra</h2>
-                            <button className="modal-close" onClick={() => setShowPurchaseModal(false)}>
-                                <X size={24} />
-                            </button>
-                        </div>
-                        <div className="modal-body">
-                            <div className="modal-game-info">
-                                <img 
-                                    src={selectedGame.image} 
-                                    alt={selectedGame.title} 
-                                    className="modal-game-image"
-                                />
-                                <div className="modal-game-details">
-                                    <h3>{selectedGame.title}</h3>
-                                    <p><strong>ID de Compra:</strong> {selectedGame.purchaseId}</p>
-                                    <p><strong>Fecha de Compra:</strong> {selectedGame.purchaseDate}</p>
-                                    <p><strong>Precio:</strong> ${selectedGame.price}</p>
-                                    <p><strong>Publicador:</strong> {selectedGame.publisher}</p>
-                                    <p><strong>Categoría:</strong> {selectedGame.category}</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="modal-footer">
-                            <button 
-                                className="product-button product-button-secondary"
-                                onClick={() => setShowPurchaseModal(false)}
-                            >
-                                Cerrar
-                            </button>
-                        </div>
-                    </div>
-                </div>
+                <PurchaseInfoModal
+                    game={selectedGame}
+                    onClose={() => setShowPurchaseModal(false)}
+                />
             )}
 
-            {/* Modal de Descarga */}
             {showDownloadModal && selectedGame && (
-                <div className="modal-overlay" onClick={() => setShowDownloadModal(false)}>
-                    <div className="modal-content" onClick={e => e.stopPropagation()}>
-                        <div className="modal-header">
-                            <h2 className="modal-title">Descargando {selectedGame.title}</h2>
-                            <button className="modal-close" onClick={() => setShowDownloadModal(false)}>
-                                <X size={24} />
-                            </button>
-                        </div>
-                        <div className="modal-body">
-                            <div className="text-center p-6">
-                                <Download size={48} className="mx-auto mb-4" />
-                                <p className="text-lg">Tu juego se está instalando...</p>
-                                <p className="text-sm text-gray-500 mt-2">Por favor, no cierres esta ventana</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <DownloadModal
+                    game={selectedGame}
+                    onClose={() => setShowDownloadModal(false)}
+                />
             )}
 
-             {/* Modal de Reembolso */}
             {showRefundModal && selectedGame && (
-                <div className="modal-overlay" onClick={() => setShowRefundModal(false)}>
-                    <div className="modal-content" onClick={e => e.stopPropagation()}>
-                        <div className="modal-header">
-                            <h2 className="modal-title">Confirmar Reembolso</h2>
-                            <button className="modal-close" onClick={() => setShowRefundModal(false)}>
-                                <X size={24} />
-                            </button>
-                        </div>
-                        <div className="modal-body">
-                            <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4">
-                                <div className="flex">
-                                    <div className="ml-3">
-                                        <p className="text-sm text-yellow-700">
-                                            ¿Estás seguro que deseas reembolsar {selectedGame.title}? Esta acción no se puede deshacer.
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="modal-game-info">
-                                <img 
-                                    src={selectedGame.image} 
-                                    alt={selectedGame.title} 
-                                    className="modal-game-image"
-                                />
-                                <div className="modal-game-details">
-                                    <h3>{selectedGame.title}</h3>
-                                    <p><strong>Precio a reembolsar:</strong> ${selectedGame.price}</p>
-                                    <p><strong>Fecha de Compra:</strong> {selectedGame.purchaseDate}</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="modal-footer">
-                            <button 
-                                className="product-button product-button-secondary"
-                                onClick={() => setShowRefundModal(false)}
-                            >
-                                Cancelar
-                            </button>
-                            <button 
-                                className="product-button product-button-danger"
-                                onClick={processRefund}
-                            >
-                                Confirmar Reembolso
-                            </button>
-                        </div>
-                    </div>
-                </div>
+                <RefundModal
+                    game={selectedGame}
+                    onClose={() => setShowRefundModal(false)}
+                    onConfirm={processRefund}
+                />
             )}
 
-            {/* Modal de Confirmación de Desinstalación */}
             {showUninstallConfirmModal && selectedGame && (
-                <div className="modal-overlay" onClick={() => setShowUninstallConfirmModal(false)}>
-                    <div className="modal-content" onClick={e => e.stopPropagation()}>
-                        <div className="modal-header">
-                            <h2 className="modal-title">Confirmar Desinstalación</h2>
-                            <button className="modal-close" onClick={() => setShowUninstallConfirmModal(false)}>
-                                <X size={24} />
-                            </button>
-                        </div>
-                        <div className="modal-body">
-                            <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4">
-                                <div className="flex">
-                                    <div className="ml-3">
-                                        <p className="text-sm text-yellow-700">
-                                            ¿Estás seguro que deseas desinstalar {selectedGame.title}? Podrás volver a instalarlo cuando quieras.
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="modal-game-info">
-                                <img 
-                                    src={selectedGame.image} 
-                                    alt={selectedGame.title} 
-                                    className="modal-game-image"
-                                />
-                                <div className="modal-game-details">
-                                    <h3>{selectedGame.title}</h3>
-                                    <p><strong>Espacio en disco:</strong> 45 GB</p>
-                                    <p><strong>Ubicación:</strong> C:/Games/{selectedGame.title}</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="modal-footer">
-                            <button 
-                                className="product-button product-button-secondary"
-                                onClick={() => setShowUninstallConfirmModal(false)}
-                            >
-                                Cancelar
-                            </button>
-                            <button 
-                                className="product-button product-button-danger"
-                                onClick={processUninstall}
-                            >
-                                Confirmar Desinstalación
-                            </button>
-                        </div>
-                    </div>
-                </div>
+                <UninstallConfirmModal
+                    game={selectedGame}
+                    onClose={() => setShowUninstallConfirmModal(false)}
+                    onConfirm={processUninstall}
+                />
             )}
 
-            {/* Modal de Desinstalación */}
             {showUninstallProgressModal && selectedGame && (
-                <div className="modal-overlay" onClick={(e) => e.stopPropagation()}>
-                    <div className="modal-content">
-                        <div className="modal-header">
-                            <h2 className="modal-title">Desinstalando {selectedGame.title}</h2>
-                        </div>
-                        <div className="modal-body">
-                            <div className="text-center p-6">
-                                <Trash2 size={48} className="mx-auto mb-4 text-red-600 animate-bounce" />
-                                <p className="text-lg">Desinstalando el juego...</p>
-                                <p className="text-sm text-gray-500 mt-2">Por favor, no cierres esta ventana</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <UninstallProgressModal
+                    game={selectedGame}
+                />
             )}
 
-            {toast && (
-                <Toast message={toast} isVisible={!!toast} />
-            )}
+            {toast && <Toast message={toast} isVisible={!!toast} />}
         </div>
     );
 };

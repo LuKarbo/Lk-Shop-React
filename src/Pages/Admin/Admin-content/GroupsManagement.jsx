@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { groups } from '../../../BackEnd/Data/groups';
-import GroupsTable from './GroupsManagment-content/GroupsTable';
-import EditGroupModal from './GroupsManagment-content/EditGroupModal';
-import DeleteGroupModal from './GroupsManagment-content/DeleteGroupModal';
+import GroupsTable from './GroupsManagment-component/GroupsTable';
+import EditGroupModal from './GroupsManagment-component/EditGroupModal';
+import DeleteGroupModal from './GroupsManagment-component/DeleteGroupModal';
 
 const GroupsManagement = () => {
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);

@@ -93,10 +93,6 @@ const TopGame = () => {
         }
     };
 
-    const handleGameInfo = (game) => {
-        navigate(`/game/${game.id}`);
-    };
-
     return (
         <div className="topgame-container">
             <h2>Juegos Más Comprados</h2>

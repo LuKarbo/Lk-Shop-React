@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { ChevronUp, ChevronDown, Download } from 'lucide-react';
 import { Pagination } from './Functions/Pagination';
 import { purchases } from '../../../BackEnd/Data/purchases';
+import PurchaseTable from './SalesManagment-component/PurchaseTable';
 
 const SalesManagement = () => {
     const [purchaseSearch, setPurchaseSearch] = useState('');
@@ -59,18 +60,70 @@ const SalesManagement = () => {
 
     const handleExportToExcel = async (fileName = 'historial_compras.xlsx') => {
         const workbook = new ExcelJS.Workbook();
-        const worksheet = workbook.addWorksheet('Hoja1');
-    
-        filteredPurchases.forEach((row) => {
-            worksheet.addRow(row);
+        const worksheet = workbook.addWorksheet('Historial de Compras');
+
+        worksheet.columns = [
+            { header: 'ID', key: 'id', width: 10 },
+            { header: 'Fecha', key: 'date', width: 15 },
+            { header: 'Usuario', key: 'userName', width: 20 },
+            { header: 'Email', key: 'userEmail', width: 30 },
+            { header: 'Juego', key: 'gameName', width: 20 },
+            { header: 'Monto', key: 'amount', width: 15 },
+            { header: 'Método de Pago', key: 'paymentMethod', width: 20 },
+            { header: 'Estado', key: 'status', width: 15 }
+        ];
+
+        worksheet.getRow(1).font = { bold: true };
+        worksheet.getRow(1).alignment = { vertical: 'middle', horizontal: 'center' };
+
+        filteredPurchases.forEach(purchase => {
+            worksheet.addRow({
+                id: purchase.id,
+                date: purchase.date,
+                userName: purchase.userName,
+                userEmail: purchase.userEmail,
+                gameName: purchase.gameName,
+                amount: purchase.amount,
+                paymentMethod: translatePaymentMethod(purchase.paymentMethod),
+                status: translateStatus(purchase.status)
+            });
         });
 
-        // ----------------------------------------------------------------
-        // CONSULTAR Y ESTUDIAR SOBRE ESTO, para optimizar mejor esta parte
-        const buffer = await workbook.xlsx.writeBuffer();
-        const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-        saveAs(blob, fileName);
-        // ----------------------------------------------------------------
+        worksheet.getColumn('amount').numFmt = '"$"#,##0.00';
+        
+        worksheet.eachRow((row) => {
+            row.eachCell((cell) => {
+                cell.alignment = { vertical: 'middle' };
+            });
+        });
+
+        try {
+            const buffer = await workbook.xlsx.writeBuffer();
+            const blob = new Blob([buffer], { 
+                type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' 
+            });
+            saveAs(blob, fileName);
+        } catch (error) {
+            console.error('Error al exportar el Excel:', error);
+        }
+    };
+
+    const translatePaymentMethod = (method) => {
+        const translations = {
+            credit_card: 'Tarjeta de Crédito',
+            paypal: 'PayPal',
+            debit_card: 'Tarjeta de Débito'
+        };
+        return translations[method] || method;
+    };
+
+    const translateStatus = (status) => {
+        const translations = {
+            completed: 'Completado',
+            pending: 'Pendiente',
+            refunded: 'Reembolsado'
+        };
+        return translations[status] || status;
     };
 
     const SortIndicator = ({ columnKey }) => {
@@ -124,68 +177,10 @@ const SalesManagement = () => {
                     />
                 </div>
                 <div className="bg-white rounded-lg shadow overflow-hidden">
-                    <div className="overflow-x-auto">
-                        <table className="w-full">
-                            <thead className="bg-gray-50">
-                                <tr>
-                                    <th className="px-6 py-3 text-left text-gray-600">ID</th>
-                                    <SortableHeader column="date" label="Fecha" />
-                                    <SortableHeader column="userName" label="Usuario" />
-                                    <SortableHeader column="userEmail" label="Email" />
-                                    <SortableHeader column="gameName" label="Juego" />
-                                    <SortableHeader column="amount" label="Monto" />
-                                    <SortableHeader column="paymentMethod" label="Método de Pago" />
-                                    <SortableHeader column="status" label="Estado" />
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-200">
-                                {paginatedPurchases.map((purchase) => (
-                                    <tr key={purchase.id} className="hover:bg-gray-50">
-                                        <td className="px-6 py-4">{purchase.id}</td>
-                                        <td className="px-6 py-4">{purchase.date}</td>
-                                        <td className="px-6 py-4">{purchase.userName}</td>
-                                        <td className="px-6 py-4">{purchase.userEmail}</td>
-                                        <td className="px-6 py-4">{purchase.gameName}</td>
-                                        <td className="px-6 py-4">${purchase.amount}</td>
-                                        <td className="px-6 py-4">
-                                            <span className={`px-2 py-1 rounded-full text-sm font-medium ${
-                                                purchase.paymentMethod === 'credit_card'
-                                                ? 'bg-blue-100 text-blue-800'
-                                                : purchase.paymentMethod === 'paypal'
-                                                ? 'bg-purple-100 text-purple-800'
-                                                : 'bg-gray-100 text-gray-800'
-                                            }`}>
-                                                {
-                                                    purchase.paymentMethod === 'credit_card' ? 'Tarjeta de Crédito' :
-                                                    purchase.paymentMethod === 'paypal' ? 'PayPal' :
-                                                    purchase.paymentMethod === 'debit_card' ? 'Tarjeta de Débito' :
-                                                    purchase.paymentMethod
-                                                }
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <span className={`px-2 py-1 rounded-full text-sm font-medium ${
-                                                purchase.status === 'completed'
-                                                ? 'bg-green-100 text-green-800'
-                                                : purchase.status === 'pending'
-                                                ? 'bg-yellow-100 text-yellow-800'
-                                                : purchase.status === 'refunded'
-                                                ? 'bg-red-100 text-red-800'
-                                                : 'bg-gray-100 text-gray-800'
-                                            }`}>
-                                                {
-                                                    purchase.status === 'completed' ? 'Completado' :
-                                                    purchase.status === 'pending' ? 'Pendiente' :
-                                                    purchase.status === 'refunded' ? 'Reembolsado' :
-                                                    purchase.status
-                                                }
-                                            </span>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
+                    <PurchaseTable 
+                        paginatedPurchases={paginatedPurchases}
+                        SortableHeader={SortableHeader}
+                    />
                     <Pagination
                         currentPage={purchasePage}
                         totalItems={filteredPurchases.length}

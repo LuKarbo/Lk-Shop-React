@@ -1,4 +1,3 @@
-import { Users } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../../BackEnd/Auth/AuthContext';
 import GroupCard from '../../Groups/GroupCard';

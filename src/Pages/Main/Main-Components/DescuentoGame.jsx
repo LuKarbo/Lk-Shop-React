@@ -99,10 +99,6 @@ const DescuentoGame = () => {
         }
     };
 
-    const handleGameInfo = (game) => {
-        navigate(`/game/${game.id}`);
-    };
-
     return (
         <div className="descuento-container">
             <h2>Juegos en Descuento</h2>

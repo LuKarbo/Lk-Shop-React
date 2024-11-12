@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Search, Bookmark, BookmarkCheck, X, Maximize } from 'lucide-react';
+import { Search, Bookmark, BookmarkCheck, Maximize } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../BackEnd/Auth/AuthContext';
 import { games_list } from '../../BackEnd/Data/games';

@@ -73,13 +73,13 @@ const Account = () => {
     ];
 
     const handleProfileUpdate = (updatedProfile) => {
-        setUser({
-        ...user,
-        profileImage: updatedProfile.profileImage,
-        bannerImage: updatedProfile.bannerImage,
-        name: updatedProfile.name,
-        bio: updatedProfile.bio
-        });
+        setUser(prevUser => ({
+            ...prevUser,           
+            name: updatedProfile.name,
+            bio: updatedProfile.bio,
+            profileImage: updatedProfile.profileImage,
+            bannerImage: updatedProfile.bannerImage
+        }));
     };
 
     const stats = {

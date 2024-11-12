@@ -13,7 +13,6 @@ export const AuthProvider = ({ children }) => {
     };
 
     const login = (email, password) => {
-        // Save in localStorage
         localStorage.setItem('email', email);
         localStorage.setItem('password', password);
         
@@ -23,7 +22,6 @@ export const AuthProvider = ({ children }) => {
             setIsAdmin(true);
         }
         
-        // Create User instance
         User.createInstance({
             email,
             isAdmin: userIsAdmin
@@ -33,14 +31,19 @@ export const AuthProvider = ({ children }) => {
     };
 
     const logout = () => {
-        // Clear localStorage
         localStorage.clear();
         
-        // Destroy User instance
         User.destroyInstance();
         
         setIsAdmin(false);
         setIsLoggedIn(false);
+    };
+
+    const updateUserProfile = (updatedProfile) => {
+        localStorage.setItem('profileImage', updatedProfile.profileImage);
+        localStorage.setItem('bannerImage', updatedProfile.bannerImage);
+        localStorage.setItem('name', updatedProfile.name);
+        localStorage.setItem('bio', updatedProfile.bio);
     };
 
     return (
@@ -49,8 +52,8 @@ export const AuthProvider = ({ children }) => {
             isAdmin, 
             login, 
             logout,
-            // Also expose the current user instance
-            currentUser: User.getInstance()
+            currentUser: User.getInstance(),
+            updateUserProfile
         }}>
             {children}
         </AuthContext.Provider>

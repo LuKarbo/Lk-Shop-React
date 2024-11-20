@@ -1,60 +1,58 @@
 import { createContext, useContext, useState } from 'react';
 import User from '../Model/User';
+import axios from 'axios';
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-    const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem('email'));
+    const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem('accessToken'));
     const [isAdmin, setIsAdmin] = useState(!!localStorage.getItem('isAdmin'));
 
-    const checkIfAdmin = (email) => {
+    const checkIfAdmin = (user) => {
         const adminEmails = ['asd@gmail.com'];
-        return adminEmails.includes(email);
+        return adminEmails.includes(user.email);
     };
 
-    const login = (email, password) => {
-        localStorage.setItem('email', email);
-        localStorage.setItem('password', password);
-        
-        const userIsAdmin = checkIfAdmin(email);
+    const login = (user) => {
+        const userIsAdmin = checkIfAdmin(user);
+
         if (userIsAdmin) {
             localStorage.setItem('isAdmin', 'true');
             setIsAdmin(true);
         }
-        
+
         User.createInstance({
-            email,
-            isAdmin: userIsAdmin
+            id: user.id_user,
+            email: user.email,
+            name: user.nombre,
+            isAdmin: user.id_permissions == 2 ? true : false
         });
-        
+
         setIsLoggedIn(true);
     };
 
     const logout = () => {
         localStorage.clear();
-        
         User.destroyInstance();
-        
         setIsAdmin(false);
         setIsLoggedIn(false);
     };
 
-    const updateUserProfile = (updatedProfile) => {
-        localStorage.setItem('profileImage', updatedProfile.profileImage);
-        localStorage.setItem('bannerImage', updatedProfile.bannerImage);
-        localStorage.setItem('name', updatedProfile.name);
-        localStorage.setItem('bio', updatedProfile.bio);
-    };
+    axios.interceptors.request.use(
+        config => {
+            const token = localStorage.getItem('accessToken');
+            if (token) {
+                config.headers['Authorization'] = `Bearer ${token}`;
+            }
+            return config;
+        },
+        error => {
+            return Promise.reject(error);
+        }
+    );
 
     return (
-        <AuthContext.Provider value={{ 
-            isLoggedIn, 
-            isAdmin, 
-            login, 
-            logout,
-            currentUser: User.getInstance(),
-            updateUserProfile
-        }}>
+        <AuthContext.Provider value={{ isLoggedIn, isAdmin, login, logout }}>
             {children}
         </AuthContext.Provider>
     );

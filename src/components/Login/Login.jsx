@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import bcrypt from 'bcryptjs';
+import { UserApi } from '../../BackEnd/API/UserApi';
 import { useAuth } from '../../BackEnd/Auth/AuthContext';
 import './Login.css';
 import logo from '../../assets/logo.jpg';
@@ -16,23 +16,25 @@ const Login = () => {
         e.preventDefault();
         setError('');
 
-        try {
-            const storedEmail = localStorage.getItem('email');
-            const storedPassword = localStorage.getItem('password');
+        const loginResult = await UserApi.login(email, password);
+        
+        if (loginResult.success) {
+            localStorage.setItem('accessToken', loginResult.accessToken);
+            localStorage.setItem('refreshToken', loginResult.refreshToken);
 
-            if (email === storedEmail) {
-                const match = await bcrypt.compare(password, storedPassword);
-                if (match) {
-                    login(email);
-                    navigate('/');
-                } else {
-                    setError('Credenciales inválidas');
-                }
+            const userResult = await UserApi.getCurrentUser(
+                loginResult.user.id, 
+                loginResult.accessToken
+            );
+            
+            if (userResult.success) {
+                login(email);
+                navigate('/');
             } else {
-                setError('Credenciales inválidas');
+                setError(userResult.message);
             }
-        } catch (err) {
-            setError('Error al iniciar sesión. Por favor, intente nuevamente.');
+        } else {
+            setError(loginResult.message);
         }
     };
 

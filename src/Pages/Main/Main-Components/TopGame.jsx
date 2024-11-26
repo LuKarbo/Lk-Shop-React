@@ -23,8 +23,21 @@ const TopGame = () => {
             try {
                 const allGames = await GamesAPI.getAllGames();
                 
-                const userGamesFav = await GamesAPI.getUserFavorites(localStorage.getItem('user'));
-                const userFavoriteIds = userGamesFav.data.map(fav => fav.id_game);
+                let userGamesFav = [];
+
+                const userId = localStorage.getItem('user');
+                if (userId) {
+                    try {
+                        userGamesFav = await GamesAPI.getUserFavorites(userId);
+                    } catch (favError) {
+                        console.error('Error fetching user favorites:', favError);
+                        userGamesFav = [];
+                    }
+                }
+    
+                const userFavoriteIds = userGamesFav.data 
+                    ? userGamesFav.data.map(fav => fav.id_game) 
+                    : [];
     
                 const sortedTopGames = allGames.data
                     .sort((a, b) => b.copias_cantidad - a.copias_disponibles)

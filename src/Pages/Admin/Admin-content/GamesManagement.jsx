@@ -20,7 +20,8 @@ const GamesManagement = () => {
         publisher: '',
         discounted: false,
         selectedDiscountId: '',
-        copies: 0
+        copies: 0,
+        imageUrl: ''
     });
     const [isAddGameModalOpen, setIsAddGameModalOpen] = useState(false);
     const [newGameForm, setNewGameForm] = useState({
@@ -33,7 +34,7 @@ const GamesManagement = () => {
         discounted: false,
         selectedDiscountId: '',
         copies: 0,
-        image: null
+        imageUrl: ''
     });
 
     const handleOpenEditModal = (game) => {
@@ -47,7 +48,8 @@ const GamesManagement = () => {
             discounted: game.discounted,
             originalPrice: game.originalPrice,
             selectedDiscountId: game.discountId || '',
-            copies: game.copies
+            copies: game.copies,
+            imageUrl: game.imageUrl || game.image || ''
         });
         setIsEditModalOpen(true);
     };
@@ -89,7 +91,7 @@ const GamesManagement = () => {
             discounted: false,
             selectedDiscountId: '',
             copies: 0,
-            image: null
+            imageUrl: ''
         });
     };
 
@@ -589,6 +591,36 @@ const GamesManagement = () => {
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        URL de Imagen
+                                    </label>
+                                    <input
+                                        type="url"
+                                        value={editForm.imageUrl}
+                                        onChange={(e) => setEditForm({...editForm, imageUrl: e.target.value})}
+                                        className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        placeholder="https://ejemplo.com/imagen.jpg"
+                                    />
+                                </div>
+                                {(editForm.imageUrl || selectedGame?.image) && (
+                                    <div className="col-span-2 mb-4">
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            Vista Previa de Imagen
+                                        </label>
+                                        <div className="w-full h-48 flex items-center justify-center border rounded-lg overflow-hidden">
+                                            <img 
+                                                src={editForm.imageUrl || selectedGame.image} 
+                                                alt="Preview" 
+                                                className="max-w-full max-h-full object-contain"
+                                                onError={(e) => {
+                                                    e.target.src = '/placeholder-image.png';
+                                                    e.target.alt = 'Imagen no válida';
+                                                }}
+                                            />
+                                        </div>
+                                    </div>
+                                )}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
                                         Precio Original
                                     </label>
                                     <input
@@ -636,41 +668,6 @@ const GamesManagement = () => {
                                         onChange={(e) => setEditForm({...editForm, copies: parseInt(e.target.value)})}
                                         className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                                     />
-                                </div>
-                                <div className="col-span-2">
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Imagen del Juego
-                                    </label>
-                                    <div
-                                        className="border-2 border-dashed border-gray-300 rounded-lg p-6 cursor-pointer hover:border-gray-600 transition-colors"
-                                        onClick={() => document.getElementById('editImageInput').click()}
-                                    >
-                                        {imagePreview ? (
-                                            <img
-                                                src={imagePreview}
-                                                alt="Preview"
-                                                className="w-full h-48 object-contain rounded-lg"
-                                            />
-                                        ) : selectedGame?.image ? (
-                                            <img
-                                                src={selectedGame.image}
-                                                alt="Imagen actual"
-                                                className="w-full h-48 object-contain rounded-lg"
-                                            />
-                                        ) : (
-                                            <div className="flex flex-col items-center justify-center gap-2 text-gray-500">
-                                                <ImageIcon size={48} />
-                                                <span className="text-sm">Click para subir imagen</span>
-                                            </div>
-                                        )}
-                                        <input
-                                            id="editImageInput"
-                                            type="file"
-                                            accept="image/*"
-                                            onChange={handleImageChange}
-                                            className="hidden"
-                                        />
-                                    </div>
                                 </div>
                                 <div className="col-span-2">
                                     <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -904,6 +901,36 @@ const GamesManagement = () => {
                                         required
                                     />
                                 </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        URL de Imagen
+                                    </label>
+                                    <input
+                                        type="url"
+                                        value={newGameForm.imageUrl}
+                                        onChange={(e) => setNewGameForm({...newGameForm, imageUrl: e.target.value})}
+                                        className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        placeholder="https://ejemplo.com/imagen.jpg"
+                                    />
+                                </div>
+                                {newGameForm.imageUrl && (
+                                    <div className="col-span-2 mb-4">
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            Vista Previa de Imagen
+                                        </label>
+                                        <div className="w-full h-48 flex items-center justify-center border rounded-lg overflow-hidden">
+                                            <img 
+                                                src={newGameForm.imageUrl} 
+                                                alt="Preview" 
+                                                className="max-w-full max-h-full object-contain"
+                                                onError={(e) => {
+                                                    e.target.src = '/placeholder-image.png'; // Optional: fallback image
+                                                    e.target.alt = 'Imagen no válida';
+                                                }}
+                                            />
+                                        </div>
+                                    </div>
+                                )}
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">
                                         Precio Original

@@ -18,9 +18,7 @@ export const GamesAPI = {
 
     getAllGames: async () => {
         try {
-            const response = await axios.get(`${BASE_URL}/games`, {
-                headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-            });
+            const response = await axios.get(`${BASE_URL}/games`);
             return response.data;
         } catch (error) {
             console.error('Error fetching all games:', error);

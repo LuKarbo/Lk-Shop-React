@@ -23,14 +23,23 @@ const DescuentoGame = () => {
             try {
                 const allGames = await GamesAPI.getAllGames();
                 const userId = localStorage.getItem('user');
-
-                const userGamesFav = await GamesAPI.getUserFavorites(userId);
-                const userFavoriteIds = userGamesFav.data.map(fav => fav.id_game);
+        
+                let userFavoriteIds = [];
+                if (userId) {
+                    try {
+                        const userGamesFav = await GamesAPI.getUserFavorites(userId);
+                        userFavoriteIds = userGamesFav.data 
+                            ? userGamesFav.data.map(fav => fav.id_game) 
+                            : [];
+                    } catch (favError) {
+                        console.error('Error fetching user favorites:', favError);
+                    }
+                }
                 
                 const sortedDiscountedGames = allGames.data
                     .filter(game => game.descuento_porcentaje > 0)
                     .slice(0, 5);
-
+        
                 setDiscountedGames(sortedDiscountedGames);
                 setFavorites(userFavoriteIds);
                 setIsLoading(false);
@@ -62,15 +71,22 @@ const DescuentoGame = () => {
 
     const toggleFavorite = async (gameId) => {
         const game = discountedGames.find(g => g.id_game === gameId);
+        const userId = localStorage.getItem('user');
+    
+        if (!userId) {
+            showToast('Debes iniciar sesión para agregar a favoritos');
+            return;
+        }
+    
         try {
             if (favorites.includes(gameId)) {
-                await GamesAPI.removeFromFavorites(localStorage.getItem('user'), gameId);
+                await GamesAPI.removeFromFavorites(userId, gameId);
                 const newFavorites = favorites.filter(id => id !== gameId);
                 setFavorites(newFavorites);
                 localStorage.setItem('gameFavorites', JSON.stringify(newFavorites));
-                showToast(`${game.game_name} se elimino de favoritos`);
+                showToast(`${game.game_name} se eliminó de favoritos`);
             } else {
-                await GamesAPI.addToFavorites(localStorage.getItem('user'), gameId);
+                await GamesAPI.addToFavorites(userId, gameId);
                 const newFavorites = [...favorites, gameId];
                 setFavorites(newFavorites);
                 localStorage.setItem('gameFavorites', JSON.stringify(newFavorites));

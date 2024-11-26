@@ -1,4 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useAuth } from '../../BackEnd/Auth/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import Sidebar from './Admin-content/Sidebar';
 import Dashboard from './Admin-content/Dashboard';
 import UserManagement from './Admin-content/UserManagement';
@@ -8,7 +10,19 @@ import SalesManagement from './Admin-content/SalesManagement';
 import './Admin.css';
 
 const Admin = () => {
+    const { isLoggedIn, isAdmin } = useAuth();
+    const navigate = useNavigate();
     const [activeSection, setActiveSection] = useState('dashboard');
+
+    useEffect(() => {
+        if (!isLoggedIn || !isAdmin) {
+            navigate('/login');
+        }
+    }, [isLoggedIn, isAdmin, navigate]);
+
+    if (!isLoggedIn || !isAdmin) {
+        return null;
+    }
 
     const renderContent = () => {
         switch (activeSection) {

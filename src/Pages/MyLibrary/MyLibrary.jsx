@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { games_list } from '../../BackEnd/Data/games';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../BackEnd/Auth/AuthContext';
 import Toast from '../../components/Toast/Toast';
 import PurchasedGamesSection from './components/PurchasedGamesSection';
 import FavoriteGamesSection from './components/FavoriteGamesSection';
@@ -19,8 +21,14 @@ const MyLibrary = () => {
     const [showUninstallProgressModal, setShowUninstallProgressModal] = useState(false);
     const [selectedGame, setSelectedGame] = useState(null);
     const [toast, setToast] = useState(null);
+    const { isLoggedIn } = useAuth();
+    const navigate = useNavigate();
 
     useEffect(() => {
+            if (!isLoggedIn) {
+                navigate('/login');
+            }
+
         const savedFavorites = localStorage.getItem('gameFavorites');
         if (savedFavorites) {
             try {

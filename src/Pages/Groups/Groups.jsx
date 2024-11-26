@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Search, X, Image as ImageIcon, ChevronDown } from 'lucide-react';
+import { Search, X, Image as ImageIcon, ChevronDown, Link2 } from 'lucide-react';
 import { useAuth } from '../../BackEnd/Auth/AuthContext';
 import { groups } from '../../BackEnd/Data/groups';
 import GroupCard from './GroupCard';
@@ -21,12 +21,13 @@ const Groups = () => {
     const [newGroup, setNewGroup] = useState({
         name: '',
         description: '',
-        image: null,
+        imageUrl: '',
         imagePreview: null,
         categories: []
     });
     const [filteredGroups, setFilteredGroups] = useState([]);
     const [showCategoryOptions, setShowCategoryOptions] = useState(false);
+    const [imageUrlError, setImageUrlError] = useState('');
 
     const categories = [
         "Acción", "Aventura", "RPG", "Estrategia", "Deportes",
@@ -61,27 +62,42 @@ const Groups = () => {
         setFilteredGroups(filtered);
     }, [search, selectedCategories]);
 
-    const handleImageChange = (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setNewGroup({
-                    ...newGroup,
-                    image: file,
-                    imagePreview: reader.result
-                });
+    const handleImageUrlChange = (e) => {
+        const url = e.target.value;
+        setNewGroup({ ...newGroup, imageUrl: url });
+        setImageUrlError('');
+
+        if (url) {
+            const img = new Image();
+            img.onload = () => {
+                setNewGroup(prev => ({
+                    ...prev,
+                    imagePreview: url
+                }));
+                setImageUrlError('');
             };
-            reader.readAsDataURL(file);
+            img.onerror = () => {
+                setImageUrlError('URL de imagen inválida');
+                setNewGroup(prev => ({
+                    ...prev,
+                    imagePreview: null
+                }));
+            };
+            img.src = url;
+        } else {
+            setNewGroup(prev => ({
+                ...prev,
+                imagePreview: null
+            }));
         }
     };
 
-    const showToast = (message) => {
-        setToast(message);
-        setTimeout(() => setToast(null), 3000);
-    };
-
     const handleCreateGroup = () => {
+        if (imageUrlError) {
+            showToast('Por favor, corrija la URL de la imagen');
+            return;
+        }
+
         const newGroupData = {
             ...newGroup,
             id: groups.length + 1,
@@ -93,10 +109,15 @@ const Groups = () => {
         setNewGroup({
             name: '',
             description: '',
-            image: null,
+            imageUrl: '',
             imagePreview: null,
             categories: []
         });
+    };
+
+    const showToast = (message) => {
+        setToast(message);
+        setTimeout(() => setToast(null), 3000);
     };
 
     const handleJoinGroup = (group) => {
@@ -269,29 +290,46 @@ const Groups = () => {
 
                             <div className="form-group">
                                 <label className="form-label">Imagen del Grupo</label>
-                                <div
-                                    className="image-upload-container"
-                                    onClick={() => document.getElementById('imageInput').click()}
-                                >
-                                    {newGroup.imagePreview ? (
-                                        <img
-                                            src={newGroup.imagePreview}
-                                            alt="Preview"
-                                            className="image-preview"
+                                <div className="image-upload-container">
+                                    <div className="image-url-input-container">
+                                        <Link2 size={20} className="url-input-icon" />
+                                        <input
+                                            type="text"
+                                            className="form-input image-url-input"
+                                            value={newGroup.imageUrl}
+                                            onChange={handleImageUrlChange}
+                                            placeholder="Ingresa la URL de la imagen"
                                         />
+                                    </div>
+                                    
+                                    {imageUrlError && (
+                                        <div className="image-url-error">{imageUrlError}</div>
+                                    )}
+
+                                    {newGroup.imagePreview ? (
+                                        <div className="image-preview-container">
+                                            <img
+                                                src={newGroup.imagePreview}
+                                                alt="Preview"
+                                                className="image-preview"
+                                            />
+                                            <button 
+                                                className="remove-image-btn"
+                                                onClick={() => setNewGroup(prev => ({
+                                                    ...prev, 
+                                                    imageUrl: '', 
+                                                    imagePreview: null
+                                                }))}
+                                            >
+                                                <X size={16} />
+                                            </button>
+                                        </div>
                                     ) : (
                                         <div style={{ color: '#666', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
                                             <ImageIcon size={48} />
-                                            <span>Click para subir imagen</span>
+                                            <span>Ingresa una URL de imagen</span>
                                         </div>
                                     )}
-                                    <input
-                                        id="imageInput"
-                                        type="file"
-                                        accept="image/*"
-                                        onChange={handleImageChange}
-                                        style={{ display: 'none' }}
-                                    />
                                 </div>
                             </div>
 

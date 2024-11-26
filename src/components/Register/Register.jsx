@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import bcrypt from 'bcryptjs';
+import { UserApi } from '../../BackEnd/API/UserApi';
 import '../Login/Login.css';
 import logo from '../../assets/logo.jpg';
 
@@ -20,10 +20,13 @@ const Register = () => {
         }
 
         try {
-            const hashedPassword = await bcrypt.hash(password, 10);
-            localStorage.setItem('email', email);
-            localStorage.setItem('password', hashedPassword);
-            navigate('/login');
+            const registerResult = await UserApi.register(name, email, password);
+            if (registerResult.success){
+                navigate('/login');
+            }
+            else{
+                setError('Error al crear la cuenta. Por favor, intente nuevamente.');
+            }
         } catch (err) {
             setError('Error al crear la cuenta. Por favor, intente nuevamente.');
         }

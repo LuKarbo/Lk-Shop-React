@@ -43,8 +43,6 @@ export const UserApi = {
 
     getCurrentUser: async (userId, accessToken) => {
         try {
-            console.log(userId);
-            console.log(accessToken);
             const response = await axios.get(`${BASE_URL}/getUser/${userId}`, {
                 headers: {
                     'Authorization': `Bearer ${accessToken}`
@@ -60,5 +58,35 @@ export const UserApi = {
                 message: 'Error al obtener información del usuario'
             };
         }
-    }
+    },
+
+    register: async (nombre, email, password) => {
+        try {        
+            const response = await axios.post(`${BASE_URL}/register`, {
+                nombre: nombre,
+                email: email,
+                contrasena: password
+            }, {
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            if (response.data.success) {
+                return {
+                    success: true
+                };
+            } else {
+                return {
+                    success: false,
+                    message: response.data.message
+                };
+            }
+        } catch (error) {
+            return {
+                success: false,
+                message: 'Error al iniciar sesión. Por favor, intente nuevamente.'
+            };
+        }
+    } 
 };

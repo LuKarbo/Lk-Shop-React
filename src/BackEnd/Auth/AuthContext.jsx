@@ -1,28 +1,60 @@
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useState, useEffect} from 'react';
 import User from '../Model/User';
 import axios from 'axios';
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-    const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem('accessToken'));
+    const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem('token'));
+    const [token, setToken] = useState(null);
+    const [loading, setLoading] = useState(true);
     const [isAdmin, setIsAdmin] = useState(!!localStorage.getItem('isAdmin'));
+    const [user, setUser] = useState(!!localStorage.getItem('user'));
+
+    useEffect(() => {
+        doRefreshToken();
+    }, []);
+
+    const doRefreshToken = async() => {
+
+        if(localStorage.getItem("token")){
+
+            try{
+
+                const response = await axios.get("http://localhost:8888/user/refresh-token", {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem("token")}`
+                    }
+                });
+    
+                if(response.data.success){
+                    setUser(localStorage.getItem('user'))
+                    setIsLoggedIn(true);
+                    setToken(response.data.accessToken);
+                }
+
+            }catch(error){
+                console.log(error);
+            }finally{
+                setLoading(false);
+            }
+
+        }else{
+            setLoading(false);
+        }
+
+    }
 
     const checkIfAdmin = (user) => {
-        const adminEmails = ['asd@gmail.com'];
-        return adminEmails.includes(user.email);
+        const adminRols = ['Admin','Support'];
+        return adminRols.includes(user.id_permissions);
     };
 
-    const login = (user) => {
+    const login = (user, accessToken, refreshToken) => {
         
         const userData = Array.isArray(user) && user.length > 0 ? user[0] : user;
     
         const userIsAdmin = checkIfAdmin(userData);
-    
-        if (userIsAdmin) {
-            localStorage.setItem('isAdmin', 'true');
-            setIsAdmin(true);
-        }
     
         const userInstanceData = {
             id: userData.id_user,
@@ -31,13 +63,16 @@ export const AuthProvider = ({ children }) => {
             id_permissions: userData.permissions_name,
             profileIMG: userData.profileIMG,
             profileBanner: userData.profileBanner,
-            isAdmin: userData.id_permissions !== "User",
+            isAdmin: userIsAdmin,
             status_name: userData.status_name
         };
     
         User.createInstance(userInstanceData);
-    
+
         setIsLoggedIn(true);
+        setToken(accessToken);
+        localStorage.setItem("token", refreshToken);
+        localStorage.setItem("user", userData.id_user);
     };
 
     const logout = () => {
@@ -45,11 +80,13 @@ export const AuthProvider = ({ children }) => {
         User.destroyInstance();
         setIsAdmin(false);
         setIsLoggedIn(false);
+        setToken(null);
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
     };
 
     axios.interceptors.request.use(
         config => {
-            const token = localStorage.getItem('accessToken');
             if (token) {
                 config.headers['Authorization'] = `Bearer ${token}`;
             }
@@ -61,8 +98,14 @@ export const AuthProvider = ({ children }) => {
     );
 
     return (
-        <AuthContext.Provider value={{ isLoggedIn, isAdmin, login, logout }}>
-            {children}
+        <AuthContext.Provider value={{ isLoggedIn, isAdmin, login, logout, token }}>
+            {
+                (loading)
+                ?
+                    <div> Cargando... </div>
+                :
+                    children
+            }
         </AuthContext.Provider>
     );
 };

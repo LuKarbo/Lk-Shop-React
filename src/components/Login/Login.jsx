@@ -18,17 +18,14 @@ const Login = () => {
         const loginResult = await UserApi.login(email, password);
         
         if (loginResult.success) {
-            localStorage.setItem('accessToken', loginResult.accessToken);
-            localStorage.setItem('refreshToken', loginResult.refreshToken);
-
             const userResult = await UserApi.getCurrentUser(
-                loginResult.user.id, 
+                loginResult.user.id,
                 loginResult.accessToken
             );
             
             if (userResult.success) {
                 console.log(userResult);
-                login(userResult.user);
+                login(userResult.user,loginResult.accessToken,loginResult.refreshToken);
                 navigate('/');
             } else {
                 setError(userResult.message);

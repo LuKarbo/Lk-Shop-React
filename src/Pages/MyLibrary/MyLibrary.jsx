@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { games_list } from '../../BackEnd/Data/games';
+import { GamesAPI } from '../../BackEnd/API/GamesAPI';
 import Toast from '../../components/Toast/Toast';
 import PurchasedGamesSection from './components/PurchasedGamesSection';
 import FavoriteGamesSection from './components/FavoriteGamesSection';
@@ -21,37 +22,36 @@ const MyLibrary = () => {
     const [toast, setToast] = useState(null);
 
     useEffect(() => {
-        const savedFavorites = localStorage.getItem('gameFavorites');
-        if (savedFavorites) {
+        const fetchUserData = async () => {
             try {
-                const parsedFavorites = JSON.parse(savedFavorites);
-                setFavorites(Array.isArray(parsedFavorites) ? parsedFavorites : []);
+                const userGamesFav = await GamesAPI.getUserFavorites(localStorage.getItem('user'));
+                setFavorites(userGamesFav);
+                console.log(favorites);
+
+                const savedBuy = localStorage.getItem('gameBuy');
+                const savedInstalled = localStorage.getItem('gameInstalled') || '{}';
+                
+                if (savedBuy) {
+                    const parsedPurchases = JSON.parse(savedBuy);
+                    const installedGames = JSON.parse(savedInstalled);
+
+                    const purchasedGamesFull = games_list
+                        .filter(game => Array.isArray(parsedPurchases) && parsedPurchases.includes(game.id))
+                        .map(game => ({
+                            ...game,
+                            installed: installedGames[game.id] || false
+                        }));
+                    setPurchasedGames(purchasedGamesFull);
+                }
             } catch (error) {
-                console.error('Error parsing favorites:', error);
+                console.error('Error fetching user data:', error);
                 setFavorites([]);
-            }
-        }
-
-        const savedBuy = localStorage.getItem('gameBuy');
-        const savedInstalled = localStorage.getItem('gameInstalled') || '{}';
-        
-        if (savedBuy) {
-            try {
-                const parsedPurchases = JSON.parse(savedBuy);
-                const installedGames = JSON.parse(savedInstalled);
-
-                const purchasedGamesFull = games_list
-                    .filter(game => Array.isArray(parsedPurchases) && parsedPurchases.includes(game.id))
-                    .map(game => ({
-                        ...game,
-                        installed: installedGames[game.id] || false
-                    }));
-                setPurchasedGames(purchasedGamesFull);
-            } catch (error) {
-                console.error('Error parsing purchased games:', error);
                 setPurchasedGames([]);
+                showToast('No se pudieron cargar los juegos favoritos');
             }
-        }
+        };
+
+        fetchUserData();
     }, []);
 
     const showToast = (message) => {

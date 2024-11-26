@@ -15,7 +15,6 @@ export const UserApi = {
             });
             
             if (response.data.success) {
-                console.log(response);
                 return {
                     success: true,
                     user: {

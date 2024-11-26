@@ -1,37 +1,48 @@
 import { useState, useEffect } from 'react';
 import { useNavigate} from 'react-router-dom';
 import { useAuth } from '../../../BackEnd/Auth/AuthContext';
-import { games_list } from '../../../BackEnd/Data/games';
+import { GamesAPI } from '../../../BackEnd/API/GamesAPI';
 import CardGame from './CardGame';
 import PurchaseModal from './PurchaseModal'; 
 import './CardsStyle.css';
 
-
 const DescuentoGame = () => {
-    const { isLoggedIn } = useAuth();
+    const { isLoggedIn} = useAuth();
     const [favorites, setFavorites] = useState([]);
     const [purchases, setPurchases] = useState([]);
+    const [discountedGames, setDiscountedGames] = useState([]);
     const [selectedGame, setSelectedGame] = useState(null);
     const [showModal, setShowModal] = useState(false);
     const [toast, setToast] = useState(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState(null);
     const navigate = useNavigate();
 
-    const discountedGames = games_list
-    .filter(game => game.discounted)
-    .sort((a, b) => {
-        const discountA = (a.originalPrice - a.price) / a.originalPrice;
-        const discountB = (b.originalPrice - b.price) / b.originalPrice;
-        return discountB - discountA;
-    })
-    .slice(0, 5);
-
     useEffect(() => {
-        const savedFavorites = localStorage.getItem('gameFavorites');
+        const fetchDiscountedGames = async () => {
+            try {
+                const allGames = await GamesAPI.getAllGames();
+                const userId = localStorage.getItem('user');
+
+                const userGamesFav = await GamesAPI.getUserFavorites(userId);
+                const userFavoriteIds = userGamesFav.data.map(fav => fav.id_game);
+                
+                const sortedDiscountedGames = allGames.data
+                    .filter(game => game.descuento_porcentaje > 0)
+                    .slice(0, 5);
+
+                setDiscountedGames(sortedDiscountedGames);
+                setFavorites(userFavoriteIds);
+                setIsLoading(false);
+            } catch (err) {
+                console.error('Error fetching discounted games:', err);
+                setError('No se pudieron cargar los juegos en descuento');
+                setIsLoading(false);
+            }
+        };
+
         const savedPurchases = localStorage.getItem('gameBuy');
         
-        if (savedFavorites) {
-            setFavorites(JSON.parse(savedFavorites));
-        }
         if (savedPurchases) {
             try {
                 const parsedPurchases = JSON.parse(savedPurchases);
@@ -40,6 +51,8 @@ const DescuentoGame = () => {
                 setPurchases([]);
             }
         }
+
+        fetchDiscountedGames();
     }, []);
 
     const showToast = (message) => {
@@ -47,17 +60,25 @@ const DescuentoGame = () => {
         setTimeout(() => setToast(null), 3000);
     };
 
-    const toggleFavorite = (gameId) => {
-        const game = discountedGames.find(g => g.id === gameId);
-        const newFavorites = favorites.includes(gameId)
-            ? favorites.filter(id => id !== gameId)
-            : [...favorites, gameId];
-        
-        setFavorites(newFavorites);
-        localStorage.setItem('gameFavorites', JSON.stringify(newFavorites));
-        
-        if (!favorites.includes(gameId)) {
-            showToast(`${game.title} se agregó a favoritos`);
+    const toggleFavorite = async (gameId) => {
+        const game = discountedGames.find(g => g.id_game === gameId);
+        try {
+            if (favorites.includes(gameId)) {
+                await GamesAPI.removeFromFavorites(localStorage.getItem('user'), gameId);
+                const newFavorites = favorites.filter(id => id !== gameId);
+                setFavorites(newFavorites);
+                localStorage.setItem('gameFavorites', JSON.stringify(newFavorites));
+                showToast(`${game.game_name} se elimino de favoritos`);
+            } else {
+                await GamesAPI.addToFavorites(localStorage.getItem('user'), gameId);
+                const newFavorites = [...favorites, gameId];
+                setFavorites(newFavorites);
+                localStorage.setItem('gameFavorites', JSON.stringify(newFavorites));
+                showToast(`${game.game_name} se agregó a favoritos`);
+            }
+        } catch (error) {
+            console.error('Error updating favorites:', error);
+            showToast('No se pudo actualizar favoritos');
         }
     };
 
@@ -80,8 +101,8 @@ const DescuentoGame = () => {
                 }
             }
     
-            if (!existingPurchases.includes(selectedGame.id)) {
-                existingPurchases.push(selectedGame.id);
+            if (!existingPurchases.includes(selectedGame.id_game)) {
+                existingPurchases.push(selectedGame.id_game);
                 
                 localStorage.setItem('gameBuy', JSON.stringify(existingPurchases));
                 
@@ -99,13 +120,21 @@ const DescuentoGame = () => {
         }
     };
 
+    if (isLoading) {
+        return <div>Cargando juegos en descuento...</div>;
+    }
+
+    if (error) {
+        return <div>{error}</div>;
+    }
+
     return (
         <div className="descuento-container">
             <h2>Juegos en Descuento</h2>
             <div className="descuento-games-grid">
                 {discountedGames.map((game) => (
                     <CardGame
-                        key={game.id}
+                        key={`descuento-${game.id_game}`}
                         game={game}
                         variant="descuento"
                         isLoggedIn={isLoggedIn}

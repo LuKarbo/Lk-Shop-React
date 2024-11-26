@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { useAuth } from '../../BackEnd/Auth/AuthContext';
+import { GamesAPI } from '../../BackEnd/API/GamesAPI';
 import GameInfo from './components/GameInfo';
 import PurchaseGameModal from './components/PurchaseGameModal';
 
@@ -14,146 +15,37 @@ const Game = () => {
     const [purchases, setPurchases] = useState([]);
     const [showModal, setShowModal] = useState(false);
     const [toast, setToast] = useState(null);
-
-    const games = [
-        {
-            id: 1,
-            title: "GTA V",
-            description: "Acción y aventura en Los Santos",
-            price: "29.99",
-            rating: 4.8,
-            image: "https://via.placeholder.com/800x600",
-            category: "Acción/Aventura",
-            publisher: "Rockstar Games",
-            discounted: false,
-            originalPrice: "29.99",
-            copies: 1250000
-        },
-        {
-            id: 2,
-            title: "FIFA 24",
-            description: "El mejor juego de fútbol",
-            price: "39.99",
-            rating: 4.5,
-            image: "https://via.placeholder.com/800x600",
-            category: "Deportes",
-            publisher: "EA Sports",
-            discounted: true,
-            originalPrice: "59.99",
-            copies: 980000
-        },
-        {
-            id: 3,
-            title: "Minecraft",
-            description: "Construye tu propio mundo",
-            price: "26.99",
-            rating: 4.9,
-            image: "https://via.placeholder.com/800x600",
-            category: "Aventura",
-            publisher: "Mojang",
-            discounted: false,
-            originalPrice: "26.99",
-            copies: 850000
-        },
-        {
-            id: 4,
-            title: "Call of Duty: Modern Warfare III",
-            description: "Acción militar en primera persona",
-            price: "39.99",
-            rating: 4.6,
-            image: "https://via.placeholder.com/800x600",
-            category: "FPS",
-            publisher: "Activision",
-            discounted: true,
-            originalPrice: "69.99",
-            copies: 780000
-        },
-        {
-            id: 5,
-            title: "Spider-Man 2",
-            description: "Aventuras del hombre araña",
-            price: "49.99",
-            rating: 4.7,
-            image: "https://via.placeholder.com/800x600",
-            category: "Acción",
-            publisher: "Sony",
-            discounted: true,
-            originalPrice: "69.99",
-            copies: 720000
-        },
-        {
-            id: 6,
-            title: "The Last of Us Part I",
-            description: "Aventura post-apocalíptica",
-            price: "29.99",
-            rating: 4.9,
-            image: "https://via.placeholder.com/800x600",
-            category: "Acción/Aventura",
-            publisher: "Sony",
-            discounted: true,
-            originalPrice: "59.99",
-            copies: 450000
-        },
-        {
-            id: 7,
-            title: "Red Dead Redemption 2",
-            description: "Una aventura en el salvaje oeste",
-            price: "45.99",
-            rating: 4.8,
-            image: "https://via.placeholder.com/800x600",
-            category: "Acción/Aventura",
-            publisher: "Rockstar Games",
-            discounted: true,
-            originalPrice: "69.99",
-            copies: 680000
-        },
-        {
-            id: 8,
-            title: "League of Legends",
-            description: "El MOBA más popular del mundo",
-            price: "0.00",
-            rating: 4.5,
-            image: "https://via.placeholder.com/800x600",
-            category: "MOBA",
-            publisher: "Riot Games",
-            discounted: false,
-            originalPrice: "0.00",
-            copies: 1100000
-        },
-        {
-            id: 9,
-            title: "Fortnite",
-            description: "Battle Royale popular",
-            price: "0.00",
-            rating: 4.4,
-            image: "https://via.placeholder.com/800x600",
-            category: "Battle Royale",
-            publisher: "Epic Games",
-            discounted: false,
-            originalPrice: "0.00",
-            copies: 950000
-        },
-        {
-            id: 10,
-            title: "Cyberpunk 2077",
-            description: "RPG futurista de mundo abierto",
-            price: "39.99",
-            rating: 4.5,
-            image: "https://via.placeholder.com/800x600",
-            category: "RPG",
-            publisher: "CD Projekt Red",
-            discounted: true,
-            originalPrice: "59.99",
-            copies: 350000
-        }
-    ];
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState(null);
 
     useEffect(() => {
-        const savedFavorites = localStorage.getItem('gameFavorites');
-        if (savedFavorites) {
-            setFavorites(JSON.parse(savedFavorites));
-        }
+        const fetchGameData = async () => {
+            try {
+                const allGamesResponse = await GamesAPI.getAllGames();
+                
+                const userId = localStorage.getItem('user');
+                const userGamesFav = await GamesAPI.getUserFavorites(userId);
+                const userFavoriteIds = userGamesFav.data.map(fav => fav.id_game);
+                setFavorites(userFavoriteIds);
 
+                const foundGame = allGamesResponse.data.find(g => g.id_game === parseInt(id));
+                
+                if (foundGame) {
+                    setGame(foundGame);
+                } else {
+                    navigate('/products');
+                }
+
+                setIsLoading(false);
+            } catch (err) {
+                console.error('Error fetching game data:', err);
+                setError('No se pudo cargar la información del juego');
+                setIsLoading(false);
+                navigate('/products');
+            }
+        };
+
+        // Keep purchases logic from localStorage
         const savedPurchases = localStorage.getItem('gameBuy');
         if (savedPurchases) {
             try {
@@ -164,12 +56,7 @@ const Game = () => {
             }
         }
 
-        const foundGame = games.find(g => g.id === parseInt(id));
-        if (foundGame) {
-            setGame(foundGame);
-        } else {
-            navigate('/products');
-        }
+        fetchGameData();
     }, [id, navigate]);
 
     const showToast = (message) => {
@@ -177,21 +64,27 @@ const Game = () => {
         setTimeout(() => setToast(null), 3000);
     };
 
-    const toggleFavorite = (gameId) => {
+    const toggleFavorite = async (gameId) => {
         if (!isLoggedIn) {
             showToast('Debe de estar Logeado para agregar a Favoritos');
             return;
         }
 
-        const newFavorites = favorites.includes(gameId)
-            ? favorites.filter(id => id !== gameId)
-            : [...favorites, gameId];
-        
-        setFavorites(newFavorites);
-        localStorage.setItem('gameFavorites', JSON.stringify(newFavorites));
-        
-        if (!favorites.includes(gameId)) {
-            showToast(`${game.title} se agregó a favoritos`);
+        try {
+            if (favorites.includes(gameId)) {
+                await GamesAPI.removeFromFavorites(localStorage.getItem('user'), gameId);
+                const newFavorites = favorites.filter(favId => favId !== gameId);
+                setFavorites(newFavorites);
+                showToast(`${game.game_name} se eliminó de favoritos`);
+            } else {
+                await GamesAPI.addToFavorites(localStorage.getItem('user'), gameId);
+                const newFavorites = [...favorites, gameId];
+                setFavorites(newFavorites);
+                showToast(`${game.game_name} se agregó a favoritos`);
+            }
+        } catch (error) {
+            console.error('Error updating favorites:', error);
+            showToast('No se pudo actualizar favoritos');
         }
     };
 
@@ -217,8 +110,8 @@ const Game = () => {
                 }
             }
     
-            if (!existingPurchases.includes(game.id)) {
-                existingPurchases.push(game.id);
+            if (!existingPurchases.includes(game.id_game)) {
+                existingPurchases.push(game.id_game);
                 
                 localStorage.setItem('gameBuy', JSON.stringify(existingPurchases));
                 setPurchases(existingPurchases);
@@ -234,6 +127,14 @@ const Game = () => {
             setShowModal(false);
         }
     };
+
+    if (isLoading) {
+        return <div>Cargando información del juego...</div>;
+    }
+
+    if (error) {
+        return <div>{error}</div>;
+    }
 
     if (!game) return null;
 

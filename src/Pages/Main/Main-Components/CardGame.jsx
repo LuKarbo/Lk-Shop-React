@@ -15,20 +15,20 @@ const CardGame = ({
     const navigate = useNavigate();
 
     const handleGameInfo = (game) => {
-        navigate(`/game/${game.id}`);
+        navigate(`/game/${game.id_game}`);
     };
-
+    const price = parseFloat(game.precio_original);
     return (
         <div className={`${variant}-game-card`}>
             <div className={`${variant}-game-image-container`}>
                 <img
-                    src={game.image}
-                    alt={game.title}
+                    src={game.gameBanner}
+                    alt={game.game_name}
                     className={`${variant}-game-image`}
                 />
                 {variant === 'descuento' && (
                     <div className="descuento-discount-badge">
-                        -{Math.round(((game.originalPrice - game.price) / game.originalPrice) * 100)}%
+                        -{Math.round(game.descuento_porcentaje)}%
                     </div>
                 )}
                 {variant === 'topgame' && (
@@ -40,32 +40,37 @@ const CardGame = ({
             <div className={`${variant}-game-content`}>
                 <div className={`${variant}-game-header`}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <h3 className={`${variant}-game-title`}>{game.title}</h3>
+                        <h3 className={`${variant}-game-title`}>{game.game_name}</h3>
                         <Maximize 
                             size={16} 
                             className={`${variant}-search-icon`}
                             onClick={() => handleGameInfo(game)}
                         />
                     </div>
-                    <span className={`${variant}-game-rating`}>★ {game.rating}</span>
+                    <span className={`${variant}-game-rating`}>★ {game.puntaje}</span>
                 </div>
-                <p className={`${variant}-game-description`}>{game.description}</p>
+                <p className={`${variant}-game-description`}>{game.game_description}</p>
                 <div className={`${variant}-game-details`}>
-                    <span className={`${variant}-game-publisher`}>{game.publisher}</span>
-                    <span className={`${variant}-game-category`}>{game.category}</span>
+                    <span className={`${variant}-game-publisher`}>{game.editor_nombre}</span>
+                    <span className={`${variant}-game-category`}>{game.categorias}</span>
                 </div>
                 <div className={`${variant}-game-footer`}>
                     <div className={`${variant}-game-price-container`}>
-                        <span className={`${variant}-game-price`}>${game.price}</span>
-                        {variant === 'descuento' && (
-                            <span className={`${variant}-game-original-price`}>
-                                ${game.originalPrice}
-                            </span>
-                        )}
+                    {
+                        variant === 'descuento' ? (
+                            <>
+                                <span className={`${variant}-game-price`}>${price - (price * (game.descuento_porcentaje / 100))}</span>
+                                <span className={`${variant}-game-original-price`}>${price}</span>
+                            </>
+                        ) : (
+                            <span className={`${variant}-game-price`}>${price}</span>
+                        )
+                    }
+
                     </div>
                     <div className={`${variant}-button-group`}>
                         {isLoggedIn ? (
-                            purchases.includes(game.id) ? (
+                            purchases.includes(game.id_game) ? (
                                 <Link 
                                     to="/mylibrary"
                                     className="product-button product-button-library"
@@ -75,9 +80,9 @@ const CardGame = ({
                             ) : (
                                 <>
                                     <button
-                                        onClick={() => onFavoriteToggle(game.id)}
-                                        className={`product-button product-button-favorite ${favorites.includes(game.id) ? 'active' : ''}`}
-                                        aria-label={favorites.includes(game.id) ? "Quitar de favoritos" : "Añadir a favoritos"}
+                                        onClick={() => onFavoriteToggle(game.id_game)}
+                                        className={`product-button product-button-favorite ${favorites.includes(game.id_game) ? 'active' : ''}`}
+                                        aria-label={favorites.includes(game.id_game) ? "Quitar de favoritos" : "Añadir a favoritos"}
                                     >
                                         {favorites.includes(game.id) ? (
                                             <BookmarkCheck size={20} />

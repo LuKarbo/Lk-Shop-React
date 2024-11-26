@@ -14,20 +14,29 @@ export const AuthProvider = ({ children }) => {
     };
 
     const login = (user) => {
-        const userIsAdmin = checkIfAdmin(user);
-
+        
+        const userData = Array.isArray(user) && user.length > 0 ? user[0] : user;
+    
+        const userIsAdmin = checkIfAdmin(userData);
+    
         if (userIsAdmin) {
             localStorage.setItem('isAdmin', 'true');
             setIsAdmin(true);
         }
-
-        User.createInstance({
-            id: user.id_user,
-            email: user.email,
-            name: user.nombre,
-            isAdmin: user.id_permissions == 2 ? true : false
-        });
-
+    
+        const userInstanceData = {
+            id: userData.id_user,
+            email: userData.email,
+            name: userData.nombre,
+            id_permissions: userData.permissions_name,
+            profileIMG: userData.profileIMG,
+            profileBanner: userData.profileBanner,
+            isAdmin: userData.id_permissions !== "User",
+            status_name: userData.status_name
+        };
+    
+        User.createInstance(userInstanceData);
+    
         setIsLoggedIn(true);
     };
 

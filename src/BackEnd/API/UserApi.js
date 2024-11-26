@@ -1,18 +1,28 @@
 import axios from 'axios';
 
-const BASE_URL = 'http://localhost:8888';
+const BASE_URL = 'http://localhost:8888/user';
 
 export const UserApi = {
     login: async (email, password) => {
-        try {
-            const response = await axios.post(`${BASE_URL}/login`, { email, password });
+        try {        
+            const response = await axios.post(`${BASE_URL}/login`, {
+                email: email,
+                password: password
+            }, {
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
             
             if (response.data.success) {
+                console.log(response);
                 return {
                     success: true,
                     user: {
-                        id: response.data.ID,
-                        email: response.data.user.email
+                        id: response.data.user.id_user,
+                        email: response.data.user.email,
+                        nombre: response.data.user.nombre,
+                        permisos: response.data.user.id_permissions
                     },
                     accessToken: response.data.accessToken,
                     refreshToken: response.data.refreshToken
@@ -33,6 +43,8 @@ export const UserApi = {
 
     getCurrentUser: async (userId, accessToken) => {
         try {
+            console.log(userId);
+            console.log(accessToken);
             const response = await axios.get(`${BASE_URL}/getUser/${userId}`, {
                 headers: {
                     'Authorization': `Bearer ${accessToken}`

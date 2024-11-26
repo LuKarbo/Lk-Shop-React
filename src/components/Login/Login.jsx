@@ -15,7 +15,6 @@ const Login = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
-
         const loginResult = await UserApi.login(email, password);
         
         if (loginResult.success) {
@@ -28,7 +27,8 @@ const Login = () => {
             );
             
             if (userResult.success) {
-                login(email);
+                console.log(userResult);
+                login(userResult.user);
                 navigate('/');
             } else {
                 setError(userResult.message);

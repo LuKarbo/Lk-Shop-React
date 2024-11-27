@@ -28,7 +28,7 @@ const FavoriteGamesSection = ({ favorites, games_list, purchasedGames }) => {
                         <div key={game.id_game} className="flex flex-col bg-white rounded-lg shadow-md overflow-hidden h-full">
                             <div className="relative w-full pt-[56.25%]">
                                 <img
-                                    src={game.gameBanner || 'default-placeholder.jpg'}
+                                    src={game.gameBanner || 'https://via.placeholder.com/280x160'}
                                     alt={game.game_name}
                                     className="absolute top-0 left-0 w-full h-full object-cover"
                                 />

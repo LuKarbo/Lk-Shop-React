@@ -22,7 +22,7 @@ const CardGame = ({
         <div className={`${variant}-game-card`}>
             <div className={`${variant}-game-image-container`}>
                 <img
-                    src={game.gameBanner}
+                    src={game.gameBanner || 'https://via.placeholder.com/280x160'}
                     alt={game.game_name}
                     className={`${variant}-game-image`}
                 />
@@ -47,7 +47,7 @@ const CardGame = ({
                             onClick={() => handleGameInfo(game)}
                         />
                     </div>
-                    <span className={`${variant}-game-rating`}>★ {game.puntaje}</span>
+                    <span className={`${variant}-game-rating`}>★ {parseFloat(game.puntaje)}</span>
                 </div>
                 <p className={`${variant}-game-description`}>{game.game_description}</p>
                 <div className={`${variant}-game-details`}>

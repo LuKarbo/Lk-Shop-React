@@ -15,6 +15,35 @@ export const GamesAPI = {
         }
     },
 
+    purchaseGame: async (userId, gameId) => {
+        try {
+            const response = await axios.post(`${BASE_URL}/purchase`, { userId, gameId }, {
+                headers: { 
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error adding game to favorites:', error);
+            throw error;
+        }
+    },
+
+    refoundGame: async (userId, gameId) => {
+        try {
+            const response = await axios.post(`${BASE_URL}/refund`, { userId, gameId }, {
+                headers: { 
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error adding game to favorites:', error);
+            throw error;
+        }
+    },
 
     getAllGames: async () => {
         try {

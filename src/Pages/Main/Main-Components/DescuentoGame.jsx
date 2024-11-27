@@ -25,6 +25,8 @@ const DescuentoGame = () => {
                 const userId = localStorage.getItem('user');
         
                 let userFavoriteIds = [];
+                let userGames = [];
+
                 if (userId) {
                     try {
                         const userGamesFav = await GamesAPI.getUserFavorites(userId);
@@ -34,14 +36,25 @@ const DescuentoGame = () => {
                     } catch (favError) {
                         console.error('Error fetching user favorites:', favError);
                     }
+
+                    try {
+                        userGames = await GamesAPI.getUserGames(userId);
+                    } catch (userGamesError) {
+                        console.error('Error fetching user games:', userGamesError);
+                    }
                 }
                 
+                const userGamesIds = userGames.data 
+                    ? userGames.data.map(game => game.id_game) 
+                    : [];
+
                 const sortedDiscountedGames = allGames.data
                     .filter(game => game.descuento_porcentaje > 0)
                     .slice(0, 5);
         
                 setDiscountedGames(sortedDiscountedGames);
                 setFavorites(userFavoriteIds);
+                setPurchases(userGamesIds);
                 setIsLoading(false);
             } catch (err) {
                 console.error('Error fetching discounted games:', err);
@@ -103,31 +116,25 @@ const DescuentoGame = () => {
         setShowModal(true);
     };
 
-    const handlePurchaseConfirmation = () => {
+    const handlePurchaseConfirmation = async () => {
         try {
-            let existingPurchases = [];
-            const savedPurchases = localStorage.getItem('gameBuy');
-            
-            if (savedPurchases) {
-                try {
-                    const parsed = JSON.parse(savedPurchases);
-                    existingPurchases = Array.isArray(parsed) ? parsed : [];
-                } catch (e) {
-                    existingPurchases = [];
-                }
-            }
-    
-            if (!existingPurchases.includes(selectedGame.id_game)) {
-                existingPurchases.push(selectedGame.id_game);
-                
-                localStorage.setItem('gameBuy', JSON.stringify(existingPurchases));
-                
-                showToast('¡Compra confirmada!');
-                navigate(`/mylibrary`);
-            } else {
+            const userId = localStorage.getItem('user');
+            const gameId = selectedGame.id_game;
+
+            if (purchases.includes(gameId)) {
                 showToast('¡Ya has comprado este juego!');
+                setShowModal(false);
+                return;
             }
-            
+
+            await GamesAPI.purchaseGame(userId, gameId);
+
+            const newPurchases = [...purchases, gameId];
+            setPurchases(newPurchases);
+            localStorage.setItem('gameBuy', JSON.stringify(newPurchases));
+
+            showToast('¡Compra confirmada!');
+            navigate('/mylibrary');
             setShowModal(false);
         } catch (error) {
             console.error('Error al procesar la compra:', error);

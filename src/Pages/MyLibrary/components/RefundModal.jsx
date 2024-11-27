@@ -17,20 +17,20 @@ const RefundModal = ({ game, onClose, onConfirm }) => {
             <div className="flex">
               <div className="ml-3">
                 <p className="text-sm text-yellow-700">
-                  ¿Estás seguro que deseas reembolsar {game.title}? Esta acción no se puede deshacer.
+                  ¿Estás seguro que deseas reembolsar {game.game_name}? Esta acción no se puede deshacer.
                 </p>
               </div>
             </div>
           </div>
           <div className="modal-game-info">
             <img 
-              src={game.image} 
-              alt={game.title} 
+              src={game.gameBanner || 'https://via.placeholder.com/280x160'}
+              alt={game.game_name} 
               className="modal-game-image"
             />
             <div className="modal-game-details">
-              <h3>{game.title}</h3>
-              <p><strong>Precio a reembolsar:</strong> ${game.price}</p>
+              <h3>{game.game_name}</h3>
+              <p><strong>Precio a reembolsar:</strong> ${parseFloat(game.precio_con_descuento)}</p>
               <p><strong>Fecha de Compra:</strong> {game.purchaseDate}</p>
             </div>
           </div>

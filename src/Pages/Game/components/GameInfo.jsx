@@ -16,7 +16,7 @@ const GameInfo = ({
         <div className="grid md:grid-cols-2 gap-8">
             <div className="relative">
                 <img 
-                    src={game.gameBanner} 
+                    src={game.gameBanner || 'https://via.placeholder.com/280x160'}
                     alt={game.game_name}
                     className="w-full rounded-lg shadow-lg"
                 />

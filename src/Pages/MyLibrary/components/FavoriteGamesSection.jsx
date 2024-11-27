@@ -3,16 +3,18 @@ import { useNavigate } from 'react-router-dom';
 const FavoriteGamesSection = ({ favorites, games_list, purchasedGames }) => {
     const navigate = useNavigate();
 
-    const navigateToStore = (gameTitle) => {
-        navigate(`/products?search=${encodeURIComponent(gameTitle)}`);
+    const navigateToStore = (id_game) => {
+        navigate(`/game/${id_game}`);
     };
 
-    const favoritesArray = favorites?.data || [];
+    const filteredFavorites = (favorites?.data || []).filter(favorite => 
+        !purchasedGames.some(purchased => purchased.id_game === favorite.id_game)
+    );
 
     return (
         <div>
             <h2 className="text-2xl font-bold mb-6">Mis Favoritos</h2>
-            {favoritesArray.length === 0 ? (
+            {filteredFavorites.length === 0 ? (
                 <div className="text-center p-8 bg-gray-50 rounded-lg">
                     <p className="text-gray-600 text-lg">No tienes juegos en tu lista de favoritos.</p>
                     <button
@@ -24,7 +26,7 @@ const FavoriteGamesSection = ({ favorites, games_list, purchasedGames }) => {
                 </div>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {favoritesArray.map((game) => (
+                    {filteredFavorites.map((game) => (
                         <div key={game.id_game} className="flex flex-col bg-white rounded-lg shadow-md overflow-hidden h-full">
                             <div className="relative w-full pt-[56.25%]">
                                 <img
@@ -42,7 +44,7 @@ const FavoriteGamesSection = ({ favorites, games_list, purchasedGames }) => {
                                 <div className="mt-auto">
                                     <button
                                         className="w-full px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors text-sm"
-                                        onClick={() => navigateToStore(game.game_name)}
+                                        onClick={() => navigateToStore(game.id_game)}
                                     >
                                         Comprar
                                     </button>

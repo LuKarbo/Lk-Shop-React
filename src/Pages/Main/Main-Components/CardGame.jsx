@@ -84,7 +84,7 @@ const CardGame = ({
                                         className={`product-button product-button-favorite ${favorites.includes(game.id_game) ? 'active' : ''}`}
                                         aria-label={favorites.includes(game.id_game) ? "Quitar de favoritos" : "Añadir a favoritos"}
                                     >
-                                        {favorites.includes(game.id) ? (
+                                        {favorites.includes(game.id_game) ? (
                                             <BookmarkCheck size={20} />
                                         ) : (
                                             <Bookmark size={20} />

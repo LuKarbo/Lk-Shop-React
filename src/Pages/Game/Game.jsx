@@ -23,10 +23,32 @@ const Game = () => {
             try {
                 const allGamesResponse = await GamesAPI.getAllGames();
                 
+                let userGamesFav = [];
+                let userGames = [];
+
                 const userId = localStorage.getItem('user');
-                const userGamesFav = await GamesAPI.getUserFavorites(userId);
-                const userFavoriteIds = userGamesFav.data.map(fav => fav.id_game);
-                setFavorites(userFavoriteIds);
+                if (userId) {
+                    try {
+                        userGamesFav = await GamesAPI.getUserFavorites(userId);
+                    } catch (favError) {
+                        console.error('Error fetching user favorites:', favError);
+                        userGamesFav = [];
+                    }
+                    try {
+                        userGames = await GamesAPI.getUserGames(userId);
+                    } catch (userGamesError) {
+                        console.error('Error fetching user games:', userGamesError);
+                        userGames = [];
+                    }
+                }
+    
+                const userFavoriteIds = userGamesFav.data 
+                    ? userGamesFav.data.map(fav => fav.id_game) 
+                    : [];
+
+                const userGamesIds = userGames.data 
+                    ? userGames.data.map(game => game.id_game) 
+                    : [];
 
                 const foundGame = allGamesResponse.data.find(g => g.id_game === parseInt(id));
                 
@@ -36,6 +58,8 @@ const Game = () => {
                     navigate('/products');
                 }
 
+                setFavorites(userFavoriteIds);
+                setPurchases(userGamesIds);
                 setIsLoading(false);
             } catch (err) {
                 console.error('Error fetching game data:', err);
@@ -47,6 +71,7 @@ const Game = () => {
 
         // Keep purchases logic from localStorage
         const savedPurchases = localStorage.getItem('gameBuy');
+        
         if (savedPurchases) {
             try {
                 const parsedPurchases = JSON.parse(savedPurchases);
@@ -96,30 +121,25 @@ const Game = () => {
         setShowModal(true);
     };
 
-    const handlePurchaseConfirmation = () => {
+    const handlePurchaseConfirmation = async () => {
         try {
-            let existingPurchases = [];
-            const savedPurchases = localStorage.getItem('gameBuy');
-            
-            if (savedPurchases) {
-                try {
-                    const parsed = JSON.parse(savedPurchases);
-                    existingPurchases = Array.isArray(parsed) ? parsed : [];
-                } catch (e) {
-                    existingPurchases = [];
-                }
-            }
-    
-            if (!existingPurchases.includes(game.id_game)) {
-                existingPurchases.push(game.id_game);
-                
-                localStorage.setItem('gameBuy', JSON.stringify(existingPurchases));
-                setPurchases(existingPurchases);
-                showToast('¡Compra confirmada!');
-            } else {
+            const userId = localStorage.getItem('user');
+            const gameId = game.id_game;
+
+            if (purchases.includes(gameId)) {
                 showToast('¡Ya has comprado este juego!');
+                setShowModal(false);
+                return;
             }
-            
+
+            await GamesAPI.purchaseGame(userId, gameId);
+
+            const newPurchases = [...purchases, gameId];
+            setPurchases(newPurchases);
+            localStorage.setItem('gameBuy', JSON.stringify(newPurchases));
+
+            showToast('¡Compra confirmada!');
+            navigate('/mylibrary');
             setShowModal(false);
         } catch (error) {
             console.error('Error al procesar la compra:', error);

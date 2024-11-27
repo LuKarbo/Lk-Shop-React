@@ -18,6 +18,7 @@ const DescuentoGame = () => {
     const [error, setError] = useState(null);
     const navigate = useNavigate();
 
+    
     useEffect(() => {
         const fetchDiscountedGames = async () => {
             try {

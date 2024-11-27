@@ -55,6 +55,28 @@ export const GamesAPI = {
         }
     },
 
+    getEditors: async () => {
+        try {
+            const response = await axios.get(`${BASE_URL}/editors`);
+            console.log(response.data);
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching all editors:', error);
+            throw error;
+        }
+    },
+
+    getCategories: async () => {
+        try {
+            const response = await axios.get(`${BASE_URL}/categories`);
+            console.log(response.data);
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching all categories:', error);
+            throw error;
+        }
+    },
+
     createGame: async (gameData) => {
         try {
             const response = await axios.post(`${BASE_URL}/games`, gameData, {

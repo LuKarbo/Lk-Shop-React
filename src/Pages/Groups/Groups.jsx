@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Search, X, Image as ImageIcon, ChevronDown, Link2 } from 'lucide-react';
 import { useAuth } from '../../BackEnd/Auth/AuthContext';
-import { groups } from '../../BackEnd/Data/groups';
+import { GroupsApi } from '../../BackEnd/API/GroupsAPI';
+import { GamesAPI } from '../../BackEnd/API/GamesAPI';
 import GroupCard from './GroupCard';
 import './Groups.css';
 
@@ -12,12 +13,12 @@ const Groups = () => {
     const [showLeaveModal, setShowLeaveModal] = useState(false);
     const [selectedGroupToLeave, setSelectedGroupToLeave] = useState(null);
     const [toast, setToast] = useState(null);
-    const [myGroups, setMyGroups] = useState(() => {
-        const storedGroups = localStorage.getItem('MisGrupos');
-        return storedGroups ? JSON.parse(storedGroups) : [];
-    });
+    const [myGroups, setMyGroups] = useState([]);
+    const [groups, setGroups] = useState([]);
+    const [loading, setLoading] = useState(true);
     const [selectedCategories, setSelectedCategories] = useState([]);
     const [showCategoryFilter, setShowCategoryFilter] = useState(false);
+    const [categories, setCategories] = useState([]);
     const [newGroup, setNewGroup] = useState({
         name: '',
         description: '',
@@ -25,42 +26,41 @@ const Groups = () => {
         imagePreview: null,
         categories: []
     });
-    const [filteredGroups, setFilteredGroups] = useState([]);
     const [showCategoryOptions, setShowCategoryOptions] = useState(false);
     const [imageUrlError, setImageUrlError] = useState('');
-
-    const categories = [
-        "Acción", "Aventura", "RPG", "Estrategia", "Deportes",
-        "Carreras", "Shooter", "Puzzle", "Arcade", "Simulación"
-    ];
-
-    const toggleCategoryFilter = (category) => {
-        setSelectedCategories(prev => {
-            if (prev.includes(category)) {
-                return prev.filter(c => c !== category);
-            } else {
-                return [...prev, category];
-            }
-        });
-    };
+    const userId = localStorage.getItem('user');
 
     useEffect(() => {
-        const filtered = groups.filter(group => {
-            const matchesSearch = 
-                group.name.toLowerCase().includes(search.toLowerCase()) ||
-                group.description.toLowerCase().includes(search.toLowerCase()) ||
-                group.categories.some(category => 
-                    category.toLowerCase().includes(search.toLowerCase())
-                );
-            
-            const matchesCategories = 
-                selectedCategories.length === 0 || 
-                group.categories.some(category => selectedCategories.includes(category));
+        const fetchData = async () => {
+            try {
+                const [allGroupsResponse, categoriesResponse] = await Promise.all([
+                    GroupsApi.getAllGroups(),
+                    GamesAPI.getCategories()
+                ]);
 
-            return matchesSearch && matchesCategories;
-        });
-        setFilteredGroups(filtered);
-    }, [search, selectedCategories]);
+                if (allGroupsResponse.success) {
+                    console.log(allGroupsResponse.data);
+                    setGroups(allGroupsResponse.data);
+                }
+                
+                setCategories(categoriesResponse.data || []);
+
+                if (isLoggedIn) {
+                    const userGroupsResponse = await GroupsApi.getUserGroups(userId);
+                    if (userGroupsResponse.success) {
+                        const userGroupIds = userGroupsResponse.data.map(group => group.id_group);
+                        setMyGroups(userGroupIds);
+                    }
+                }
+            } catch (error) {
+                showToast('Error al cargar datos');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchData();
+    }, [isLoggedIn]);
 
     const handleImageUrlChange = (e) => {
         const url = e.target.value;
@@ -92,44 +92,64 @@ const Groups = () => {
         }
     };
 
-    const handleCreateGroup = () => {
+    const handleCreateGroup = async () => {
         if (imageUrlError) {
             showToast('Por favor, corrija la URL de la imagen');
             return;
         }
 
-        const newGroupData = {
-            ...newGroup,
-            id: groups.length + 1,
-            members: 1,
-        };
-        console.log('Nuevo grupo creado:', newGroupData);
-        showToast(`Grupo ${newGroup.name} creado exitosamente`);
-        setShowModal(false);
-        setNewGroup({
-            name: '',
-            description: '',
-            imageUrl: '',
-            imagePreview: null,
-            categories: []
-        });
+        const accessToken = localStorage.getItem('token');
+
+        try {
+            const response = await GroupsApi.createGroup(
+                newGroup.name,
+                newGroup.description,
+                newGroup.imageUrl,
+                userId,
+                accessToken
+            );
+
+            if (response.success) {
+                showToast(`Grupo ${newGroup.name} creado exitosamente`);
+                setShowModal(false);
+                setNewGroup({
+                    name: '',
+                    description: '',
+                    imageUrl: '',
+                    imagePreview: null,
+                    categories: []
+                });
+                
+                const allGroupsResponse = await GroupsApi.getAllGroups();
+                if (allGroupsResponse.success) {
+                    setGroups(allGroupsResponse.data);
+                }
+            } else {
+                showToast(response.message || 'Error al crear el grupo');
+            }
+        } catch (error) {
+            showToast('Error al crear el grupo');
+        }
     };
 
-    const showToast = (message) => {
-        setToast(message);
-        setTimeout(() => setToast(null), 3000);
-    };
-
-    const handleJoinGroup = (group) => {
+    const handleJoinGroup = async (group) => {
         if (!isLoggedIn) {
             showToast('Debe estar logeado para unirse');
             return;
         }
 
-        const updatedMyGroups = [...myGroups, group.id];
-        localStorage.setItem('MisGrupos', JSON.stringify(updatedMyGroups));
-        setMyGroups(updatedMyGroups);
-        showToast(`Te has unido al grupo ${group.name}`);
+        try {
+            const response = await GroupsApi.joinGroup(group.id, userId);
+            if (response.success) {
+                const updatedMyGroups = [...myGroups, group.id];
+                setMyGroups(updatedMyGroups);
+                showToast(`Te has unido al grupo ${group.name}`);
+            } else {
+                showToast(response.message || 'Error al unirse al grupo');
+            }
+        } catch (error) {
+            showToast('Error al unirse al grupo');
+        }
     };
 
     const handleLeaveGroup = (group) => {
@@ -137,13 +157,31 @@ const Groups = () => {
         setShowLeaveModal(true);
     };
 
-    const confirmLeaveGroup = () => {
-        const updatedMyGroups = myGroups.filter(id => id !== selectedGroupToLeave.id);
-        localStorage.setItem('MisGrupos', JSON.stringify(updatedMyGroups));
-        setMyGroups(updatedMyGroups);
-        showToast(`Has dejado el grupo ${selectedGroupToLeave.name}`);
+    const confirmLeaveGroup = async () => {
+        try {
+            const response = await GroupsApi.leaveGroup(selectedGroupToLeave.id, userId);
+            if (response.success) {
+                const updatedMyGroups = myGroups.filter(id => id !== selectedGroupToLeave.id);
+                setMyGroups(updatedMyGroups);
+                showToast(`Has dejado el grupo ${selectedGroupToLeave.name}`);
+            } else {
+                showToast(response.message || 'Error al salir del grupo');
+            }
+        } catch (error) {
+            showToast('Error al salir del grupo');
+        }
         setShowLeaveModal(false);
         setSelectedGroupToLeave(null);
+    };
+
+    const toggleCategoryFilter = (category) => {
+        setSelectedCategories(prev => {
+            if (prev.includes(category)) {
+                return prev.filter(c => c !== category);
+            } else {
+                return [...prev, category];
+            }
+        });
     };
 
     const toggleCategory = (category) => {
@@ -162,21 +200,34 @@ const Groups = () => {
         }));
     };
 
-    useEffect(() => {
-        const filtered = groups.filter(group =>
-            group.name.toLowerCase().includes(search.toLowerCase()) ||
-            group.description.toLowerCase().includes(search.toLowerCase()) ||
-            group.categories.some(category => 
-                category.toLowerCase().includes(search.toLowerCase())
-            )
-        );
-        setFilteredGroups(filtered);
-    }, [search]);
+    const showToast = (message) => {
+        setToast(message);
+        setTimeout(() => setToast(null), 3000);
+    };
+
+    if (loading) {
+        return <div>Cargando grupos...</div>;
+    }
+
+    const filteredGroups = groups.filter(group => {
+        const matchesSearch = 
+            group.group_name.toLowerCase().includes(search.toLowerCase()) ||
+            (group.group_description || '').toLowerCase().includes(search.toLowerCase()) ||
+            (group.categories || '').toLowerCase().includes(search.toLowerCase());
+        
+        const matchesCategories = 
+            selectedCategories.length === 0 || 
+            (group.categories || '').split(',').some(category => 
+                selectedCategories.includes(category.trim())
+            );
+
+        return matchesSearch && matchesCategories;
+    });
 
     return (
         <div className="groups-container">
             <div className="row">
-                <div className="groups-search-container col-lg-8">
+            <div className="groups-search-container col-lg-8">
                     <Search className="groups-search-icon" size={25} />
                     <input
                         type="text"
@@ -199,18 +250,18 @@ const Groups = () => {
                             <div className="category-filter-dropdown">
                                 {categories.map((category) => (
                                     <div
-                                        key={category}
+                                        key={category.id_category}
                                         className={`category-filter-option ${
-                                            selectedCategories.includes(category) ? 'selected' : ''
+                                            selectedCategories.includes(category.nombre) ? 'selected' : ''
                                         }`}
-                                        onClick={() => toggleCategoryFilter(category)}
+                                        onClick={() => toggleCategoryFilter(category.nombre)}
                                     >
                                         <input
                                             type="checkbox"
-                                            checked={selectedCategories.includes(category)}
+                                            checked={selectedCategories.includes(category.nombre)}
                                             readOnly
                                         />
-                                        {category}
+                                        {category.nombre}
                                     </div>
                                 ))}
                             </div>
@@ -252,10 +303,17 @@ const Groups = () => {
             <div className="groups-grid">
                 {filteredGroups.map((group) => (
                     <GroupCard
-                        key={group.id}
-                        group={group}
+                        key={group.id_group}
+                        group={{
+                            id: group.id_group,
+                            name: group.group_name,
+                            description: group.group_description || 'Grupo sin descripción',
+                            image: group.groupbanner || "https://via.placeholder.com/800x600",
+                            members: group.member_count || 0,
+                            categories: group.categories ? group.categories.split(',') : []
+                        }}
                         isLoggedIn={isLoggedIn}
-                        isMember={myGroups.includes(group.id)}
+                        isMember={myGroups.includes(group.id_group)}
                         onJoin={handleJoinGroup}
                         onLeave={handleLeaveGroup}
                         size="default"
@@ -345,39 +403,41 @@ const Groups = () => {
                             </div>
 
                             <div className="form-group">
-                                <label className="form-label">Categorías</label>
-                                <div
-                                    className="categories-select"
-                                    onClick={() => setShowCategoryOptions(!showCategoryOptions)}
-                                >
-                                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
-                                        {newGroup.categories.map((category) => (
-                                            <span key={category} className="category-tag">
-                                                {category}
-                                                <button onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    removeCategory(category);
-                                                }}>
-                                                    <X size={14} />
-                                                </button>
-                                            </span>
-                                        ))}
-                                    </div>
+                            <label className="form-label">Categorías</label>
+                            <div
+                                className="categories-select"
+                                onClick={() => setShowCategoryOptions(!showCategoryOptions)}
+                            >
+                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                                    {newGroup.categories.map((category) => (
+                                        <span key={category} className="category-tag">
+                                            {category}
+                                            <button onClick={(e) => {
+                                                e.stopPropagation();
+                                                removeCategory(category);
+                                            }}>
+                                                <X size={14} />
+                                            </button>
+                                        </span>
+                                    ))}
                                 </div>
-                                {showCategoryOptions && (
-                                    <div className="category-options">
-                                        {categories.filter(category => !newGroup.categories.includes(category)).map((category) => (
+                            </div>
+                            {showCategoryOptions && (
+                                <div className="category-options">
+                                    {categories
+                                        .filter(category => !newGroup.categories.includes(category.nombre))
+                                        .map((category) => (
                                             <div
-                                                key={category}
+                                                key={category.id_category}
                                                 className="category-option"
-                                                onClick={() => toggleCategory(category)}
+                                                onClick={() => toggleCategory(category.nombre)}
                                             >
-                                                {category}
+                                                {category.nombre}
                                             </div>
                                         ))}
-                                    </div>
-                                )}
-                            </div>
+                                </div>
+                            )}
+                        </div>
                         </div>
                         <div className="modal-footer">
                             <button

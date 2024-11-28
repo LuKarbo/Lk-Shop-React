@@ -73,6 +73,7 @@ export const AuthProvider = ({ children }) => {
         setToken(accessToken);
         localStorage.setItem("token", refreshToken);
         localStorage.setItem("user", userData.id_user);
+        localStorage.setItem("nombre", userData.nombre);
     };
 
     const logout = () => {

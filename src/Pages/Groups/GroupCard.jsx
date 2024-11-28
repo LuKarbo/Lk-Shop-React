@@ -3,7 +3,7 @@ import { Users } from 'lucide-react';
 const GroupCard = ({ 
         group, 
         isLoggedIn, 
-        isMember, 
+        isMember,
         onJoin, 
         onLeave,
         size = 'default'

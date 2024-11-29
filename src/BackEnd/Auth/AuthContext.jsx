@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect} from 'react';
+import {UserApi} from '../API/UserApi'
 import User from '../Model/User';
 import axios from 'axios';
 
@@ -28,6 +29,10 @@ export const AuthProvider = ({ children }) => {
                 });
     
                 if(response.data.success){
+                    const userData = await UserApi.getCurrentUser(localStorage.getItem('user'),response.data.accessToken);
+                    if(userData.success){
+                        setIsAdmin(checkIfAdmin(userData.user[0]));
+                    }
                     setUser(localStorage.getItem('user'))
                     setIsLoggedIn(true);
                     setToken(response.data.accessToken);
@@ -47,7 +52,14 @@ export const AuthProvider = ({ children }) => {
 
     const checkIfAdmin = (user) => {
         const adminRols = ['Admin','Support'];
-        return adminRols.includes(user.id_permissions);
+        if(adminRols.includes(user.permissions_name)){
+            setIsAdmin(true);
+            return true;
+        }
+        else{
+            setIsAdmin(false);
+            return false;
+        }
     };
 
     const login = (user, accessToken, refreshToken) => {
@@ -55,7 +67,7 @@ export const AuthProvider = ({ children }) => {
         const userData = Array.isArray(user) && user.length > 0 ? user[0] : user;
     
         const userIsAdmin = checkIfAdmin(userData);
-    
+
         const userInstanceData = {
             id: userData.id_user,
             email: userData.email,

@@ -2,69 +2,62 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../BackEnd/Auth/AuthContext';
 import EditProfile from './EditProfile';
-import { games_list } from '../../BackEnd/Data/games';
-import { reviews } from '../../BackEnd/Data/reviews';
-import { groups } from '../../BackEnd/Data/groups';
+import { UserApi } from '../../BackEnd/API/UserApi';
+import { GamesAPI } from '../../BackEnd/API/GamesAPI';
+import { GroupsApi } from '../../BackEnd/API/GroupsAPI';
 import ProfileHeader from './components/ProfileHeader';
 import UserInfo from './components/UserInfo';
 import UserGroups from './components/UserGroups';
 import UserGames from './components/UserGames';
 import PurchaseHistory from './components/PurchaseHistory';
 import UserReviews from './components/UserReviews';
+
 import './Account.css';
 
 const Account = () => {
+    const { isLoggedIn } = useAuth();
+    const navigate = useNavigate();
     const [purchasedGames, setPurchasedGames] = useState([]);
     const [userGroups, setUserGroups] = useState([]);
     const [userReviews, setUserReviews] = useState([]);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-    const [user, setUser] = useState({
-        id: 1,
-        name: "Alex González",
-        username: "@alexgonzalez",
-        joined: "Miembro desde 2023",
-        bio: "Apasionado gamer | Streamer ocasional | Coleccionista de juegos retro",
-        profileImage: "https://via.placeholder.com/150x150",
-        bannerImage: "https://via.placeholder.com/2100x300"
-    });
+    const [user, setUser] = useState(null);
+    const [loading, setLoading] = useState(true);
 
-    const { isLoggedIn } = useAuth();
-    const navigate = useNavigate();
-
+    const userId = localStorage.getItem('user');
+    const accessToken = localStorage.getItem('token');
+    
     useEffect(() => {
-        if (!isLoggedIn) {
-        navigate('/login');
-        }
+        const fetchUserData = async () => {
+            if (!isLoggedIn) {
+                navigate('/login');
+                return;
+            }
 
-        const savedBuy = localStorage.getItem('gameBuy');
-        if (savedBuy) {
-        try {
-            const parsedPurchases = JSON.parse(savedBuy);
-            const purchasedGamesFull = games_list.filter(game => 
-            Array.isArray(parsedPurchases) && parsedPurchases.includes(game.id)
-            );
-            setPurchasedGames(purchasedGamesFull);
-        } catch (error) {
-            console.error('Error parsing purchased games:', error);
-            setPurchasedGames([]);
-        }
-        }
+            try {
+                const userAccount = await UserApi.getCurrentUser(userId, accessToken);
+                const userGames = await GamesAPI.getUserGames(userId);
+                const userGroups = await GroupsApi.getUserGroups(userId, accessToken);
+                console.log(userAccount.user[0]);
+                console.log(userGames.data);
+                console.log(userGroups.data);
+                setUser(userAccount.user[0]);
+                setPurchasedGames(userGames.data);
+                setUserGroups(userGroups.data);
 
-        const savedGroups = localStorage.getItem('MisGrupos');
-        if (savedGroups) {
-        try {
-            const parsedGroups = JSON.parse(savedGroups);
-            const userGroupsFull = groups.filter(group => parsedGroups.includes(group.id));
-            setUserGroups(userGroupsFull);
-        } catch (error) {
-            console.error('Error parsing user groups:', error);
-            setUserGroups([]);
-        }
-        }
+                // crear el apartado de reviews
+                // const userReviews = await ReviewApi.getUserReviews(userId);
+                // setUserReviews(userReviews);
+            } catch (error) {
+                console.error('Error fetching user data:', error);
+                navigate('/login');
+            } finally {
+                setLoading(false);
+            }
+        };
 
-        const userReviews = reviews.filter(review => review.userId === user.id);
-        setUserReviews(userReviews);
-    }, [isLoggedIn, navigate, user.id]);
+        fetchUserData();
+    }, [isLoggedIn, navigate]);
 
     const purchaseHistory = [
         { id: 1, game: "Elden Ring", date: "15 Oct 2024", price: "$59.99", image: "/api/placeholder/60/60" },
@@ -81,6 +74,10 @@ const Account = () => {
             bannerImage: updatedProfile.bannerImage
         }));
     };
+
+    if (loading) {
+        return <div>Loading...</div>;
+    }
 
     const stats = {
         games: purchasedGames.length,
@@ -104,8 +101,8 @@ const Account = () => {
                 onViewAll={() => navigate("/mygroups")} 
                 />
                 <UserGames 
-                games={purchasedGames}
-                onViewAll={() => navigate("/mylibrary")}
+                    games={purchasedGames}
+                    onViewAll={() => navigate("/mylibrary")}
                 />
             </div>
 

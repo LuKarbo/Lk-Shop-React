@@ -9,7 +9,7 @@ const UserGroups = ({ groups, onViewAll }) => {
             </div>
             <div className="space-y-4">
                 {groups.slice(0, 3).map(group => (
-                    <GroupItem key={group.id} group={group} />
+                    <GroupItem key={group.id_group} group={group} />
                 ))}
             </div>
         </div>
@@ -18,10 +18,9 @@ const UserGroups = ({ groups, onViewAll }) => {
 
 const GroupItem = ({ group }) => (
     <div className="flex items-center space-x-4 p-2 hover:bg-gray-50 rounded-lg transition">
-        <img src={group.image} alt={group.name} className="w-12 h-12 rounded-lg" />
+        <img src={group.groupbanner || 'https://via.placeholder.com/280x160'} alt={group.group_name} className="w-12 h-12 rounded-lg" />
         <div className="flex-1">
-            <h3 className="font-semibold">{group.name}</h3>
-            <p className="text-sm text-gray-600">{group.members} miembros</p>
+            <h3 className="font-semibold">{group.group_name}</h3>
         </div>
     </div>
 );

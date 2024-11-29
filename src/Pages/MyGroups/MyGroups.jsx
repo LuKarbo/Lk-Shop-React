@@ -1,112 +1,161 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../BackEnd/Auth/AuthContext';
-import { groups } from '../../BackEnd/Data/groups';
+import { GroupsApi } from '../../BackEnd/API/GroupsAPI';
+import { X } from 'lucide-react';
 import "./MyGroups.css";
 
 const MyGroups = () => {
     const { isLoggedIn } = useAuth();
     const navigate = useNavigate();
-    const [myGroupIds, setMyGroupIds] = useState([]);
+    const messagesEndRef = useRef(null);
+    const [myGroups, setMyGroups] = useState([]);
     const [activeGroup, setActiveGroup] = useState(null);
     const [messages, setMessages] = useState([]);
     const [inputMessage, setInputMessage] = useState("");
-    const [conversations, setConversations] = useState({
-        1: [
-            { id: 1, text: "¡Bienvenidos al grupo de Gamers Elite!", user: "other", name: "Admin", timestamp: "2023-04-01 10:30" },
-            { id: 2, text: "¿Alguien para una partida competitiva?", user: "other", name: "Juan", timestamp: "2023-04-01 10:32" },
-        ],
-        2: [
-            { id: 1, text: "¡Hola a todos los jugadores casuales!", user: "other", name: "María", timestamp: "2023-04-02 15:20" },
-            { id: 2, text: "¿Qué juegos recomiendan para relajarse?", user: "other", name: "Luis", timestamp: "2023-04-02 15:22" },
-        ],
-        3: [
-            { id: 1, text: "¿Alguien jugando el último Final Fantasy?", user: "other", name: "Ana", timestamp: "2023-04-03 09:00" },
-            { id: 2, text: "¡Aquí fan de los RPG clásicos!", user: "other", name: "Carlos", timestamp: "2023-04-03 10:10" },
-        ],
-        4: [
-            { id: 1, text: "Bienvenidos estrategas", user: "other", name: "Admin", timestamp: "2023-04-03 09:00" },
-            { id: 2, text: "¿Civilization o Age of Empires?", user: "other", name: "Elena", timestamp: "2023-04-03 10:10" },
-        ],
-    });
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [showLeaveModal, setShowLeaveModal] = useState(false);
+    const [selectedGroupToDelete, setSelectedGroupToDelete] = useState(null);
+    const [selectedGroupToLeave, setSelectedGroupToLeave] = useState(null);
+    const userId = localStorage.getItem('user');
+    const accessToken = localStorage.getItem('token');
 
-    // Cargar grupos del usuario y conversaciones desde localStorage
     useEffect(() => {
-        if (isLoggedIn) {
-            const savedGroups = localStorage.getItem('MisGrupos');
-            if (savedGroups) {
-                const groupIds = JSON.parse(savedGroups);
-                setMyGroupIds(groupIds);
+        const fetchUserGroups = async () => {
+            if (!isLoggedIn || !userId) {
+                navigate('/login');
+                return;
             }
 
-            const savedConversations = localStorage.getItem('GroupConversations');
-            if (savedConversations) {
-                setConversations(JSON.parse(savedConversations));
+            try {
+                const response = await GroupsApi.getUserGroups(userId, accessToken);
+                if (response.success !== false) {
+                    setMyGroups(response.data);
+                }
+            } catch (error) {
+                console.error("Error fetching user groups:", error);
             }
-        } else {
-            navigate('/login');
-        }
-    }, [isLoggedIn, navigate]);
+        };
 
-    // Guardar conversaciones en localStorage cuando cambien
+        fetchUserGroups();
+    }, [isLoggedIn, userId, navigate, accessToken]);
+
     useEffect(() => {
-        localStorage.setItem('GroupConversations', JSON.stringify(conversations));
-    }, [conversations]);
+        const fetchGroupMessages = async () => {
+            if (!activeGroup) return;
 
-    const loadMessages = (groupId) => {
-        const savedConversations = localStorage.getItem('GroupConversations');
-        if (savedConversations) {
-            const parsedConversations = JSON.parse(savedConversations);
-            return parsedConversations[groupId] || [];
+            try {
+                const response = await GroupsApi.getGroupMessages(activeGroup, accessToken);
+                if (response.success !== false) {
+                    setMessages(response.data.map(msg => ({
+                        id: msg.mensaje_id,
+                        message: msg.mensaje,
+                        name: msg.usuario_nombre,
+                        createdAt: msg.fecha,
+                        user: msg.id_user == userId ? "my" : "other"
+                    })));
+                }
+            } catch (error) {
+                console.error("Error fetching group messages:", error);
+            }
+        };
+
+        fetchGroupMessages();
+        
+        const intervalId = setInterval(fetchGroupMessages, 5000);
+        return () => clearInterval(intervalId);
+    }, [activeGroup, userId, accessToken]);
+
+    const scrollToBottom = () => {
+        if (messagesEndRef.current) {
+            const messagesContainer = messagesEndRef.current.closest('.messages');
+            if (messagesContainer) {
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            }
         }
-        return conversations[groupId] || [];
     };
 
     useEffect(() => {
-        if (!activeGroup) return;
-
-        const intervalId = setInterval(() => {
-            const updatedMessages = loadMessages(activeGroup);
-            // Solo actualizar si hay nuevos mensajes
-            if (JSON.stringify(updatedMessages) !== JSON.stringify(messages)) {
-                setMessages(updatedMessages);
-            }
-        }, 100);
-
-        return () => clearInterval(intervalId);
+        scrollToBottom();
     }, [activeGroup, messages]);
-
-    // Filtrar solo los grupos a los que pertenece el usuario
-    const myGroups = groups.filter(group => myGroupIds.includes(group.id));
 
     const handleGroupClick = (groupId) => {
         setActiveGroup(groupId);
-        const groupMessages = loadMessages(groupId);
-        setMessages(groupMessages);
     };
 
-    const handleSendMessage = () => {
-        if (inputMessage.trim() && activeGroup) {
-            const currentTime = new Date().toLocaleString();
-            const newMessage = {
-                id: messages.length + 1,
-                text: inputMessage,
-                user: "my",
-                name: "Yo",
-                timestamp: currentTime,
-            };
+    const handleSendMessage = async () => {
+        if (!inputMessage.trim() || !activeGroup) return;
 
-            // Actualizar tanto el estado local como las conversaciones persistentes
-            const updatedMessages = [...messages, newMessage];
-            setMessages(updatedMessages);
-            setConversations(prevConversations => ({
-                ...prevConversations,
-                [activeGroup]: updatedMessages
-            }));
-            setInputMessage("");
+        try {
+            const response = await GroupsApi.sendMessage(
+                activeGroup, 
+                userId, 
+                inputMessage, 
+                accessToken
+            );
+
+            if (response.success !== false) {
+                setInputMessage("");
+                
+                const updatedMessages = await GroupsApi.getGroupMessages(activeGroup, accessToken);
+                setMessages(updatedMessages.data.map(msg => ({
+                    id: msg.mensaje_id,
+                    message: msg.mensaje,
+                    name: msg.usuario_nombre,
+                    createdAt: msg.fecha,
+                    user: msg.id_user == userId ? "my" : "other"
+                })));
+            }
+        } catch (error) {
+            console.error("Error sending message:", error);
         }
     };
 
+    const handleLeaveGroup = (group) => {
+        setSelectedGroupToLeave(group);
+        setShowLeaveModal(true);
+    };
+
+    const confirmLeaveGroup = async () => {
+        try {
+            const response = await GroupsApi.leaveGroup(selectedGroupToLeave.id_group, userId, accessToken);
+            
+            if (response.success !== false) {
+                setMyGroups(prevGroups => prevGroups.filter(group => group.id_group !== selectedGroupToLeave.id_group));
+                
+                if (activeGroup === selectedGroupToLeave.id_group) {
+                    setActiveGroup(null);
+                }
+            }
+        } catch (error) {
+            console.error("Error leaving group:", error);
+        }
+        setShowLeaveModal(false);
+        setSelectedGroupToLeave(null);
+    };
+
+    const handleDeleteGroup = (group) => {
+        setSelectedGroupToDelete(group);
+        setShowDeleteModal(true);
+    };
+
+    const confirmDeleteGroup = async () => {
+        try {
+            const response = await GroupsApi.deleteGroup(selectedGroupToDelete.id_group, accessToken);
+            if (response.success !== false) {
+                setMyGroups(prevGroups => prevGroups.filter(group => group.id_group !== selectedGroupToDelete.id_group));
+                
+                if (activeGroup === selectedGroupToDelete.id_group) {
+                    setActiveGroup(null);
+                }
+            }
+        } catch (error) {
+            console.error("Error deleting group:", error);
+        }
+        setShowDeleteModal(false);
+        setSelectedGroupToDelete(null);
+    };
+    
     return (
         <div className="chat-view">
             <div className="group-list">
@@ -114,19 +163,21 @@ const MyGroups = () => {
                 <ul>
                     {myGroups.map((group) => (
                         <li
-                            key={group.id}
-                            onClick={() => handleGroupClick(group.id)}
+                            key={group.id_group}
                             className={`flex items-center p-2 hover:bg-gray-200 cursor-pointer ${
-                                activeGroup === group.id ? 'bg-gray-200' : ''
+                                activeGroup === group.id_group ? 'bg-gray-200' : ''
                             }`}
+                            onClick={() => handleGroupClick(group.id_group)}
                         >
-                            <div
+                            <div 
                                 className="group-icon mr-2"
-                                style={{ backgroundImage: `url(${group.image})` }}
+                                style={{ backgroundImage: `url(${group.groupbanner || "https://via.placeholder.com/800x600"})` }}
                             ></div>
-                            <div className="flex flex-col">
-                                <span className="font-medium">{group.name}</span>
-                                <span className="text-sm text-gray-500">{group.members} miembros</span>
+                            <div className="flex flex-col flex-1">
+                                <span className="font-medium">{group.group_name}</span>
+                                <span className="text-sm text-gray-500">
+                                    Rol: {group.rol_nombre} 
+                                </span>
                             </div>
                         </li>
                     ))}
@@ -142,26 +193,58 @@ const MyGroups = () => {
                 {activeGroup ? (
                     <>
                         <div className="chat-header">
-                            <h3 className="text-xl font-bold mb-4">
-                                {myGroups.find((group) => group.id === activeGroup)?.name}
-                            </h3>
-                            <div className="text-sm text-gray-500 mb-4">
-                                {myGroups.find((group) => group.id === activeGroup)?.description}
+                            <div className="chat-header-info">
+                                <h3 className="text-xl font-bold mb-4">
+                                    {myGroups.find((group) => group.id_group === activeGroup)?.group_name}
+                                </h3>
+                                <div className="text-sm text-gray-500">
+                                    Rol: {myGroups.find((group) => group.id_group === activeGroup)?.rol_nombre}
+                                </div>
+                            </div>
+                            <div className="chat-header-actions">
+                                {myGroups.find((group) => group.id_group === activeGroup)?.rol_nombre === "Owner" ? (
+                                    <button
+                                        onClick={() => handleDeleteGroup(myGroups.find((group) => group.id_group === activeGroup))}
+                                        className="delete-button"
+                                    >
+                                        Eliminar Grupo
+                                    </button>
+                                ) : (
+                                    <button
+                                        onClick={() => handleLeaveGroup(myGroups.find((group) => group.id_group === activeGroup))}
+                                        className="leave-button"
+                                    >
+                                        Salir del Grupo
+                                    </button>
+                                )}
                             </div>
                         </div>
-                        <div className="messages">
+                        <div className="messages overflow-y-auto">
                             {messages.map((message) => (
                                 <div
                                     key={message.id}
-                                    className={`message ${message.user} flex flex-col p-3 rounded-lg mb-2`}
+                                    className={`message ${message.user} flex flex-col p-3 rounded-lg mb-2 ${
+                                        message.user === "my" 
+                                            ? "self-end bg-blue-100 text-right" 
+                                            : "self-start bg-gray-100"
+                                    }`}
+                                    style={{
+                                        alignSelf: message.user === "my" ? "flex-end" : "flex-start",
+                                        maxWidth: "75%",
+                                        marginLeft: message.user === "my" ? "auto" : "0",
+                                        marginRight: message.user === "my" ? "0" : "auto"
+                                    }}
                                 >
-                                    <div className="message-user font-medium">{message.name}</div>
-                                    <div className="message-text">{message.text}</div>
+                                    <div className={`message-user font-medium ${message.user === "my" ? "text-blue-700" : "text-gray-700"}`}>
+                                        {message.name}
+                                    </div>
+                                    <div className="message-text">{message.message}</div>
                                     <div className="message-timestamp text-gray-500 text-sm">
-                                        {message.timestamp}
+                                        {new Date(message.createdAt).toLocaleString()}
                                     </div>
                                 </div>
                             ))}
+                            <div ref={messagesEndRef} />
                         </div>
                         <div className="input-area flex items-center">
                             <input
@@ -194,6 +277,80 @@ const MyGroups = () => {
                     </div>
                 )}
             </div>
+
+            {showLeaveModal && selectedGroupToLeave && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+                        <div className="flex justify-between items-center mb-4">
+                            <h2 className="text-xl font-bold">Confirmar Salida</h2>
+                            <button
+                                onClick={() => {
+                                    setShowLeaveModal(false);
+                                    setSelectedGroupToLeave(null);
+                                }}
+                                className="text-gray-500 hover:text-gray-700"
+                            >
+                                <X size={24} />
+                            </button>
+                        </div>
+                        <p className="mb-6">¿Estás seguro que deseas salir del grupo "{selectedGroupToLeave.group_name}"?</p>
+                        <div className="flex justify-end gap-4">
+                            <button
+                                onClick={() => {
+                                    setShowLeaveModal(false);
+                                    setSelectedGroupToLeave(null);
+                                }}
+                                className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+                            >
+                                Cancelar
+                            </button>
+                            <button
+                                onClick={confirmLeaveGroup}
+                                className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+                            >
+                                Confirmar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {showDeleteModal && selectedGroupToDelete && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+                        <div className="flex justify-between items-center mb-4">
+                            <h2 className="text-xl font-bold">Confirmar Eliminación</h2>
+                            <button
+                                onClick={() => {
+                                    setShowDeleteModal(false);
+                                    setSelectedGroupToDelete(null);
+                                }}
+                                className="text-gray-500 hover:text-gray-700"
+                            >
+                                <X size={24} />
+                            </button>
+                        </div>
+                        <p className="mb-6">¿Estás seguro que deseas eliminar el grupo "{selectedGroupToDelete.group_name}"? Esta acción no se puede deshacer.</p>
+                        <div className="flex justify-end gap-4">
+                            <button
+                                onClick={() => {
+                                    setShowDeleteModal(false);
+                                    setSelectedGroupToDelete(null);
+                                }}
+                                className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+                            >
+                                Cancelar
+                            </button>
+                            <button
+                                onClick={confirmDeleteGroup}
+                                className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+                            >
+                                Eliminar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

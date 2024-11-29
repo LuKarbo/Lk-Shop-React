@@ -44,10 +44,10 @@ export const GroupsApi = {
         }
     },
 
-    createGroup: async (name, groupImg, groupBanner, ownerId, accessToken) => {
+    createGroup: async (name, description, groupBanner, ownerId, accessToken, categories) => {
         try {
             const response = await axios.post(`${BASE_URL}/groups`, 
-                { name, groupImg, groupBanner, ownerId },
+                { name, description, groupBanner, ownerId, categories },
                 { headers: { 'Authorization': `Bearer ${accessToken}` } }
             );
             return response.data;
@@ -84,7 +84,7 @@ export const GroupsApi = {
         } catch (error) {
             return {
                 success: false,
-                message: 'Error al abandonar el grupo'
+                message: error.response.data.message
             };
         }
     },

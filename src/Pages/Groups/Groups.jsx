@@ -24,11 +24,15 @@ const Groups = () => {
         description: '',
         imageUrl: '',
         imagePreview: null,
-        categories: []
+        categories: [],
+        categoryIds: []
     });
     const [showCategoryOptions, setShowCategoryOptions] = useState(false);
     const [imageUrlError, setImageUrlError] = useState('');
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [selectedGroupToDelete, setSelectedGroupToDelete] = useState(null);
     const userId = localStorage.getItem('user');
+    const accessToken = localStorage.getItem('token');
 
     useEffect(() => {
         const fetchData = async () => {
@@ -39,8 +43,11 @@ const Groups = () => {
                 ]);
 
                 if (allGroupsResponse.success) {
-                    console.log(allGroupsResponse.data);
-                    setGroups(allGroupsResponse.data);
+                    const groupsWithOwnership = allGroupsResponse.data.map(group => ({
+                        ...group,
+                        isOwner: group.owner_id == userId
+                    }));
+                    setGroups(groupsWithOwnership);
                 }
                 
                 setCategories(categoriesResponse.data || []);
@@ -97,18 +104,20 @@ const Groups = () => {
             showToast('Por favor, corrija la URL de la imagen');
             return;
         }
-
-        const accessToken = localStorage.getItem('token');
-
+    
+        
+        const categoryIdsString = newGroup.categoryIds.join(',');
+    
         try {
             const response = await GroupsApi.createGroup(
                 newGroup.name,
                 newGroup.description,
                 newGroup.imageUrl,
                 userId,
-                accessToken
+                accessToken,
+                categoryIdsString
             );
-
+    
             if (response.success) {
                 showToast(`Grupo ${newGroup.name} creado exitosamente`);
                 setShowModal(false);
@@ -117,7 +126,8 @@ const Groups = () => {
                     description: '',
                     imageUrl: '',
                     imagePreview: null,
-                    categories: []
+                    categories: [],
+                    categoryIds: []
                 });
                 
                 const allGroupsResponse = await GroupsApi.getAllGroups();
@@ -184,20 +194,31 @@ const Groups = () => {
         });
     };
 
-    const toggleCategory = (category) => {
+    const toggleCategory = (category, categoryId) => {
+        console.log(category + " [" + categoryId + "]");
         setNewGroup(prev => {
             const categories = prev.categories.includes(category)
                 ? prev.categories.filter(c => c !== category)
                 : [...prev.categories, category];
-            return { ...prev, categories };
+            const categoryIds = prev.categoryIds.includes(categoryId)
+                ? prev.categoryIds.filter(id => id !== categoryId)
+                : [...prev.categoryIds, categoryId];
+            return { ...prev, categories, categoryIds };
         });
     };
 
     const removeCategory = (categoryToRemove) => {
-        setNewGroup(prev => ({
-            ...prev,
-            categories: prev.categories.filter(category => category !== categoryToRemove)
-        }));
+        console.log(categoryToRemove);
+        setNewGroup(prev => {
+            const categoryIndex = prev.categories.indexOf(categoryToRemove);
+            const newCategories = prev.categories.filter(category => category !== categoryToRemove);
+            const newCategoryIds = prev.categoryIds.filter((_, index) => index !== categoryIndex);
+            return {
+                ...prev,
+                categories: newCategories,
+                categoryIds: newCategoryIds
+            };
+        });
     };
 
     const showToast = (message) => {
@@ -223,6 +244,32 @@ const Groups = () => {
 
         return matchesSearch && matchesCategories;
     });
+
+    const handleDeleteGroup = (group) => {
+        setSelectedGroupToDelete(group);
+        setShowDeleteModal(true);
+    };
+
+    const confirmDeleteGroup = async () => {
+        try {
+            const response = await GroupsApi.deleteGroup(selectedGroupToDelete.id, accessToken);
+            if (response.success) {
+                const updatedGroups = groups.filter(g => g.id_group !== selectedGroupToDelete.id);
+                setGroups(updatedGroups);
+                
+                const updatedMyGroups = myGroups.filter(id => id !== selectedGroupToDelete.id);
+                setMyGroups(updatedMyGroups);
+                
+                showToast(`Grupo ${selectedGroupToDelete.name} eliminado exitosamente`);
+            } else {
+                showToast(response.message || 'Error al eliminar el grupo');
+            }
+        } catch (error) {
+            showToast('Error al eliminar el grupo');
+        }
+        setShowDeleteModal(false);
+        setSelectedGroupToDelete(null);
+    };
 
     return (
         <div className="groups-container">
@@ -314,8 +361,10 @@ const Groups = () => {
                         }}
                         isLoggedIn={isLoggedIn}
                         isMember={myGroups.includes(group.id_group)}
+                        isOwner={group.isOwner}
                         onJoin={handleJoinGroup}
                         onLeave={handleLeaveGroup}
+                        onDelete={handleDeleteGroup}
                         size="default"
                     />
                 ))}
@@ -430,7 +479,7 @@ const Groups = () => {
                                             <div
                                                 key={category.id_category}
                                                 className="category-option"
-                                                onClick={() => toggleCategory(category.nombre)}
+                                                onClick={() => toggleCategory(category.nombre, category.id_category)}
                                             >
                                                 {category.nombre}
                                             </div>
@@ -495,6 +544,48 @@ const Groups = () => {
                                 onClick={confirmLeaveGroup}
                             >
                                 Confirmar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Modal para confirmar eliminación de grupo */}
+            {showDeleteModal && selectedGroupToDelete && (
+                <div className="modal-overlay">
+                    <div className="modal-content" style={{ maxWidth: '400px' }}>
+                        <div className="modal-header">
+                            <h2 className="modal-title">Confirmar Eliminación</h2>
+                            <button
+                                className="modal-close"
+                                onClick={() => {
+                                    setShowDeleteModal(false);
+                                    setSelectedGroupToDelete(null);
+                                }}
+                            >
+                                <X size={24} />
+                            </button>
+                        </div>
+                        <div className="modal-body">
+                            <p>¿Estás seguro que deseas eliminar el grupo "{selectedGroupToDelete.name}"? Esta acción no se puede deshacer.</p>
+                        </div>
+                        <div className="modal-footer">
+                            <button
+                                className="group-button"
+                                style={{ backgroundColor: '#666', maxWidth: '120px' }}
+                                onClick={() => {
+                                    setShowDeleteModal(false);
+                                    setSelectedGroupToDelete(null);
+                                }}
+                            >
+                                Cancelar
+                            </button>
+                            <button
+                                className="group-button"
+                                style={{ backgroundColor: '#dc3545', maxWidth: '120px' }}
+                                onClick={confirmDeleteGroup}
+                            >
+                                Eliminar
                             </button>
                         </div>
                     </div>

@@ -87,5 +87,39 @@ export const UserApi = {
                 message: 'Error al iniciar sesión. Por favor, intente nuevamente.'
             };
         }
-    } 
+    } ,
+
+    editUser: async (userId, nombre, bio, profileIMG, profileBanner, accessToken) => {
+        try {        
+            const response = await axios.put(`${BASE_URL}/getUser/${userId}/edit`, {
+                nombre: nombre,
+                bio: bio,
+                profileIMG: profileIMG,
+                profileBanner: profileBanner
+            }, {
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            if (response.data.success) {
+                return {
+                    success: true,
+                    user: response.data.user,
+                    message: response.data.message
+                };
+            } else {
+                return {
+                    success: false,
+                    message: response.data.message
+                };
+            }
+        } catch (error) {
+            return {
+                success: false,
+                message: error.response?.data?.message || 'Error al actualizar usuario. Por favor, intente nuevamente.'
+            };
+        }
+    }
 };

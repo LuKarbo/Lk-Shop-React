@@ -65,14 +65,34 @@ const Account = () => {
         { id: 3, game: "God of War", date: "28 Sep 2024", price: "$39.99", image: "/api/placeholder/60/60" }
     ];
 
-    const handleProfileUpdate = (updatedProfile) => {
-        setUser(prevUser => ({
-            ...prevUser,           
-            name: updatedProfile.name,
-            bio: updatedProfile.bio,
-            profileImage: updatedProfile.profileImage,
-            bannerImage: updatedProfile.bannerImage
-        }));
+    const handleProfileUpdate = async (updatedProfile) => {
+        try {
+            const result = await UserApi.editUser(
+                userId, 
+                updatedProfile.name, 
+                updatedProfile.bio, 
+                updatedProfile.profileImage, 
+                updatedProfile.bannerImage, 
+                accessToken
+            );
+    
+            if (result.success && result.user) {
+                setUser(prevUser => ({
+                    ...prevUser,
+                    nombre: updatedProfile.name,
+                    bio: updatedProfile.bio,
+                    profileIMG: updatedProfile.profileImage,
+                    profileBanner: updatedProfile.bannerImage
+                }));
+                setIsEditModalOpen(false);
+            } else {
+                console.error('Error updating profile', result.message);
+            }
+    
+            return result;
+        } catch (error) {
+            console.error('Error in profile update', error);
+        }
     };
 
     if (loading) {

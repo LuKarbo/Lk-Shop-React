@@ -7,7 +7,7 @@ const PurchaseModal = ({
     onConfirmPurchase 
 }) => {
     if (!show || !game) return null;
-
+    const price = parseFloat(game.precio_original);
     return (
         <div className="modal-overlay" onClick={onClose}>
             <div className="modal-content" onClick={e => e.stopPropagation()}>
@@ -20,22 +20,31 @@ const PurchaseModal = ({
                 <div className="modal-body">
                     <div className="modal-game-info">
                         <img 
-                            src={game.image} 
-                            alt={game.title} 
+                            src={game.gameBanner || 'https://via.placeholder.com/280x160'}
+                            alt={game.game_name} 
                             className="modal-game-image"
                         />
                         <div className="modal-game-details">
-                            <h3>{game.title}</h3>
-                            <p>{game.description}</p>
-                            <p>Publicador: {game.publisher}</p>
-                            <p>Categoría: {game.category}</p>
+                            <h3>{game.game_name}</h3>
+                            <p>{game.game_description}</p>
+                            <p>Publicador: {game.editor_nombre}</p>
+                            <p>Categoría: {game.categorias}</p>
                             <p className="modal-game-price">
-                                Precio: ${game.price}
-                                {game.discounted && (
-                                    <span className="product-game-original-price"> 
-                                        ${game.originalPrice}
-                                    </span>
-                                )}
+                                Precio: 
+                                {
+                                game.descuento_porcentaje > 0 ? (
+                                        <>
+                                            ${price - (price * (game.descuento_porcentaje / 100))}
+                                            <span className="game-original-price"> 
+                                                ${price}
+                                            </span>
+                                        </>
+                                    ) : (
+                                        <>
+                                            ${price}
+                                        </>
+                                    )
+                                }
                             </p>
                         </div>
                     </div>

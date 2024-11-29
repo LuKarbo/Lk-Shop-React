@@ -20,7 +20,7 @@ const PurchaseModal = ({
                 <div className="modal-body">
                     <div className="modal-game-info">
                         <img 
-                            src={game.gameBanner} 
+                            src={game.gameBanner || 'https://via.placeholder.com/280x160'}
                             alt={game.game_name} 
                             className="modal-game-image"
                         />

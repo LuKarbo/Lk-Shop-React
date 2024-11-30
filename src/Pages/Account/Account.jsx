@@ -5,6 +5,7 @@ import EditProfile from './EditProfile';
 import { UserApi } from '../../BackEnd/API/UserApi';
 import { GamesAPI } from '../../BackEnd/API/GamesAPI';
 import { GroupsApi } from '../../BackEnd/API/GroupsAPI';
+import { PurchaseApi } from '../../BackEnd/API/PurchasesAPI';
 import ProfileHeader from './components/ProfileHeader';
 import UserInfo from './components/UserInfo';
 import UserGroups from './components/UserGroups';
@@ -20,6 +21,7 @@ const Account = () => {
     const [purchasedGames, setPurchasedGames] = useState([]);
     const [userGroups, setUserGroups] = useState([]);
     const [userReviews, setUserReviews] = useState([]);
+    const [userPurchases, setuserPurchases] = useState([]);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -38,12 +40,11 @@ const Account = () => {
                 const userAccount = await UserApi.getCurrentUser(userId, accessToken);
                 const userGames = await GamesAPI.getUserGames(userId);
                 const userGroups = await GroupsApi.getUserGroups(userId, accessToken);
-                console.log(userAccount.user[0]);
-                console.log(userGames.data);
-                console.log(userGroups.data);
+                const userPurchases = await PurchaseApi.getById(userId, accessToken);
                 setUser(userAccount.user[0]);
                 setPurchasedGames(userGames.data);
                 setUserGroups(userGroups.data);
+                setuserPurchases(userPurchases);
 
                 // crear el apartado de reviews
                 // const userReviews = await ReviewApi.getUserReviews(userId);
@@ -58,12 +59,6 @@ const Account = () => {
 
         fetchUserData();
     }, [isLoggedIn, navigate]);
-
-    const purchaseHistory = [
-        { id: 1, game: "Elden Ring", date: "15 Oct 2024", price: "$59.99", image: "/api/placeholder/60/60" },
-        { id: 2, game: "Cyberpunk 2077", date: "1 Oct 2024", price: "$49.99", image: "/api/placeholder/60/60" },
-        { id: 3, game: "God of War", date: "28 Sep 2024", price: "$39.99", image: "/api/placeholder/60/60" }
-    ];
 
     const handleProfileUpdate = async (updatedProfile) => {
         try {
@@ -128,8 +123,8 @@ const Account = () => {
 
             <div className="lg:col-span-2 space-y-6">
                 <PurchaseHistory 
-                purchases={purchaseHistory}
-                onViewAll={() => {/* navigate a FullHystory (crear la view) */}}
+                purchases={userPurchases.data}
+                onViewAll={() => navigate("/mypurchases")}
                 />
                 <UserReviews 
                 reviews={userReviews}

@@ -1,8 +1,8 @@
 import axios from 'axios';
 
-const BASE_URL = 'http://localhost:8888/purchases';
+const BASE_URL = 'http://localhost:8888/review';
 
-export const PurchaseApi = {
+export const ReviewApi = {
     getAll: async (accessToken) => {
         try {
             const response = await axios.get(`${BASE_URL}`, {
@@ -25,7 +25,7 @@ export const PurchaseApi = {
 
     getById: async (id, accessToken) => {
         try {
-            const response = await axios.get(`${BASE_URL}/${id}`, {
+            const response = await axios.get(`${BASE_URL}/user/${id}`, {
                 headers: {
                     'Authorization': `Bearer ${accessToken}`
                 }
@@ -39,6 +39,21 @@ export const PurchaseApi = {
                 success: false,
                 message: 'Error al obtener consulta',
                 data: []
+            };
+        }
+    },
+
+    createGroup: async (userId, gameId, content, score, accessToken) => {
+        try {
+            const response = await axios.post(`${BASE_URL}`, 
+                { userId, gameId, content, score },
+                { headers: { 'Authorization': `Bearer ${accessToken}` } }
+            );
+            return response.data;
+        } catch (error) {
+            return {
+                success: false,
+                message: 'Error al crear el grupo'
             };
         }
     }

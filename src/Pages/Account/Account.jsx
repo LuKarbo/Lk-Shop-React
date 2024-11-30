@@ -6,6 +6,7 @@ import { UserApi } from '../../BackEnd/API/UserApi';
 import { GamesAPI } from '../../BackEnd/API/GamesAPI';
 import { GroupsApi } from '../../BackEnd/API/GroupsAPI';
 import { PurchaseApi } from '../../BackEnd/API/PurchasesAPI';
+import { ReviewApi } from '../../BackEnd/API/ReviewAPI';
 import ProfileHeader from './components/ProfileHeader';
 import UserInfo from './components/UserInfo';
 import UserGroups from './components/UserGroups';
@@ -28,7 +29,7 @@ const Account = () => {
 
     const userId = localStorage.getItem('user');
     const accessToken = localStorage.getItem('token');
-    
+
     useEffect(() => {
         const fetchUserData = async () => {
             if (!isLoggedIn) {
@@ -41,14 +42,14 @@ const Account = () => {
                 const userGames = await GamesAPI.getUserGames(userId);
                 const userGroups = await GroupsApi.getUserGroups(userId, accessToken);
                 const userPurchases = await PurchaseApi.getById(userId, accessToken);
+                const userReviews = await ReviewApi.getById(userId,accessToken);
+
                 setUser(userAccount.user[0]);
                 setPurchasedGames(userGames.data);
                 setUserGroups(userGroups.data);
                 setuserPurchases(userPurchases);
+                setUserReviews(userReviews);
 
-                // crear el apartado de reviews
-                // const userReviews = await ReviewApi.getUserReviews(userId);
-                // setUserReviews(userReviews);
             } catch (error) {
                 console.error('Error fetching user data:', error);
                 navigate('/login');
@@ -95,9 +96,9 @@ const Account = () => {
     }
 
     const stats = {
-        games: purchasedGames.length,
-        reviews: userReviews.length,
-        groups: userGroups.length
+        games: purchasedGames.length || 0,
+        reviews: userReviews.length || 0,
+        groups: userGroups.length || 0
     };
 
     return (
@@ -127,7 +128,7 @@ const Account = () => {
                 onViewAll={() => navigate("/mypurchases")}
                 />
                 <UserReviews 
-                reviews={userReviews}
+                reviews={userReviews.data}
                 onViewAll={() => navigate("/myreviews")}
                 />
             </div>

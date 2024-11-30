@@ -11,7 +11,8 @@ export const GroupsApi = {
         } catch (error) {
             return {
                 success: false,
-                message: 'Error al obtener grupos'
+                message: 'Error al obtener grupos',
+                data: []
             };
         }
     },
@@ -25,7 +26,8 @@ export const GroupsApi = {
         } catch (error) {
             return {
                 success: false,
-                message: 'Error al obtener grupos del usuario'
+                message: 'Error al obtener grupos del usuario',
+                data: []
             };
         }
     },
@@ -39,7 +41,8 @@ export const GroupsApi = {
         } catch (error) {
             return {
                 success: false,
-                message: 'Error al obtener mensajes del grupo'
+                message: 'Error al obtener mensajes del grupo',
+                data: []
             };
         }
     },

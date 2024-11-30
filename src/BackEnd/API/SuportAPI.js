@@ -17,7 +17,8 @@ export const SupportApi = {
         } catch (error) {
             return {
                 success: false,
-                message: 'Error al obtener consultas'
+                message: 'Error al obtener consultas',
+                data: []
             };
         }
     },
@@ -36,7 +37,8 @@ export const SupportApi = {
         } catch (error) {
             return {
                 success: false,
-                message: 'Error al obtener consulta'
+                message: 'Error al obtener consulta',
+                data: []
             };
         }
     },

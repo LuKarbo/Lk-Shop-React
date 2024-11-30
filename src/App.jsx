@@ -12,6 +12,7 @@ import Admin from './Pages/Admin/Admin';
 import Game from './Pages/Game/Game';
 import MyGroups from './Pages/MyGroups/MyGroups';
 import MyLibrary from './Pages/MyLibrary/MyLibrary';
+import MySupport from './Pages/MySupport/MySupport';
 import { AuthProvider } from './BackEnd/Auth/AuthContext';
 import './App.css';
 
@@ -34,7 +35,7 @@ const App = () => {
               <Route path="/mygroups" element={<MyGroups />} />
               <Route path="/mylibrary" element={<MyLibrary/>} />
               <Route path="/myreviews" element={<></>} />
-              <Route path="/mysupport" element={<></>} />
+              <Route path="/mysupport" element={<MySupport/>} />
               <Route path="/mypurchases" element={<></>} />
               <Route path="/admin" element={<Admin/>} />
               <Route path="/game/:id" element={<Game/>} />

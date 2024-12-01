@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { Info, Play, Download, Trash2, RefreshCcw } from 'lucide-react';
+import { Info, Play, Download, Trash2, RefreshCcw, Star } from 'lucide-react';
 
 const PurchasedGamesSection = ({
     purchasedGames,
@@ -12,7 +12,16 @@ const PurchasedGamesSection = ({
     const navigate = useNavigate();
     return (
         <>
-            <h2 className="text-2xl font-bold mb-6">Mis Juegos</h2>
+            <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold">Mis Juegos</h2>
+                <button
+                    onClick={() => navigate('/myreviews')}
+                    className="flex items-center justify-center px-3 py-2 bg-green-100 hover:bg-green-200 rounded-md transition-colors text-sm"
+                >
+                    <Star size={16} className="mr-1" />
+                    Mis Reseñas
+                </button>
+            </div>
             {purchasedGames.length === 0 ? (
                 <div className="text-center p-8 bg-gray-50 rounded-lg mb-12">
                     <p className="text-gray-600 text-lg">No tienes juegos comprados todavía.</p>

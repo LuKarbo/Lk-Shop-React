@@ -6,7 +6,6 @@ export const GroupsApi = {
     getAllGroups: async () => {
         try {
             const response = await axios.get(`${BASE_URL}/groups`);
-            console.log(response.data);
             return response.data;
         } catch (error) {
             return {
@@ -92,10 +91,10 @@ export const GroupsApi = {
         }
     },
 
-    editGroup: async (groupId, name, groupImg, groupBanner, accessToken) => {
+    editGroup: async (groupId, name, description, groupBanner, categories = '', accessToken) => {
         try {
             const response = await axios.put(`${BASE_URL}/groups/${groupId}`, 
-                { name, groupImg, groupBanner },
+                { name, description, groupBanner, categories },
                 { headers: { 'Authorization': `Bearer ${accessToken}` } }
             );
             return response.data;

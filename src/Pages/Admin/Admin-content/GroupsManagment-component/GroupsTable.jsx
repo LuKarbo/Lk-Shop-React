@@ -40,27 +40,27 @@ const GroupsTable = ({
                     <thead className="bg-gray-50">
                         <tr>
                             <th className="px-6 py-3 text-left text-gray-600">ID</th>
-                            <SortableHeader column="name" label="Nombre" sortConfig={sortConfig} onSort={onSort} />
-                            <SortableHeader column="description" label="Descripción" sortConfig={sortConfig} onSort={onSort} />
-                            <SortableHeader column="members" label="Miembros" sortConfig={sortConfig} onSort={onSort} />
+                            <SortableHeader column="group_name" label="Nombre" sortConfig={sortConfig} onSort={onSort} />
+                            <SortableHeader column="group_description" label="Descripción" sortConfig={sortConfig} onSort={onSort} />
+                            <SortableHeader column="member_count" label="Miembros" sortConfig={sortConfig} onSort={onSort} />
                             <th className="px-6 py-3 text-left text-gray-600">Categorías</th>
                             <th className="px-6 py-3 text-left text-gray-600">Acciones</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200">
                         {paginatedGroups.map((group) => (
-                            <tr key={group.id} className="hover:bg-gray-50">
-                                <td className="px-6 py-4">{group.id}</td>
-                                <td className="px-6 py-4">{group.name}</td>
+                            <tr key={group.id_group} className="hover:bg-gray-50">
+                                <td className="px-6 py-4">{group.id_group}</td>
+                                <td className="px-6 py-4">{group.group_name}</td>
                                 <td className="px-6 py-4">
                                     <div className="max-w-md truncate">
-                                        {group.description}
+                                        {group.group_description}
                                     </div>
                                 </td>
-                                <td className="px-6 py-4">{group.members}</td>
+                                <td className="px-6 py-4">{group.member_count}</td>
                                 <td className="px-6 py-4">
                                     <div className="flex flex-wrap gap-1">
-                                        {group.categories.map((category, index) => (
+                                        {group.categories && group.categories.split(', ').map((category, index) => (
                                             <span 
                                                 key={index}
                                                 className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-sm"

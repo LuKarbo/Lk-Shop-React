@@ -58,7 +58,6 @@ export const GamesAPI = {
     getEditors: async () => {
         try {
             const response = await axios.get(`${BASE_URL}/editors`);
-            console.log(response.data);
             return response.data;
         } catch (error) {
             console.error('Error fetching all editors:', error);
@@ -132,7 +131,6 @@ export const GamesAPI = {
 
     addToFavorites: async (userId, gameId) => {
         try {
-            console.log("Mando: " + userId);
             const response = await axios.post(`${BASE_URL}/favorites`, { userId, gameId }, {
                 headers: { 
                     'Authorization': `Bearer ${localStorage.getItem('token')}`,

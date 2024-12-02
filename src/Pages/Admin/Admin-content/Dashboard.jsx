@@ -54,7 +54,6 @@ const Dashboard = () => {
                 setPurchaseData(purchaseTotal.data);
                 setGamesData(gamesTotal.data);
                 setCategories(allCategories.data);
-                console.log(categories);
 
                 setStatsData([
                     {

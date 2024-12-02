@@ -69,7 +69,6 @@ export const GamesAPI = {
     getCategories: async () => {
         try {
             const response = await axios.get(`${BASE_URL}/categories`);
-            console.log(response.data);
             return response.data;
         } catch (error) {
             console.error('Error fetching all categories:', error);

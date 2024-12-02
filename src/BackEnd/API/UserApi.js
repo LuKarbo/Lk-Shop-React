@@ -121,5 +121,24 @@ export const UserApi = {
                 message: error.response?.data?.message || 'Error al actualizar usuario. Por favor, intente nuevamente.'
             };
         }
+    },
+
+    getUsers: async(accessToken) => {
+        try {
+            const response = await axios.get(`${BASE_URL}/getUser`, {
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`
+                }
+            });
+            return {
+                success: true,
+                user: response.data
+            };
+        } catch (error) {
+            return {
+                success: false,
+                message: 'Error al obtener información del usuario'
+            };
+        }
     }
 };

@@ -1,12 +1,14 @@
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ChevronUp, ChevronDown, Download } from 'lucide-react';
 import { Pagination } from './Functions/Pagination';
-import { purchases } from '../../../BackEnd/Data/purchases';
+import { PurchaseApi } from '../../../BackEnd/API/PurchasesAPI';
 import PurchaseTable from './SalesManagment-component/PurchaseTable';
 
 const SalesManagement = () => {
+    const [purchaseData, setPurchaseData] = useState([]);
+    const [loading, setLoading] = useState(true);
     const [purchaseSearch, setPurchaseSearch] = useState('');
     const [sortConfig, setSortConfig] = useState({
         key: null,
@@ -14,6 +16,23 @@ const SalesManagement = () => {
     });
     const [purchasePage, setPurchasePage] = useState(1);
     const ITEMS_PER_PAGE = 10;
+
+    useEffect(() => {
+        const fetchPurchases = async () => {
+            try {
+                const accessToken = localStorage.getItem('token');
+                const data = await PurchaseApi.getAll(accessToken);
+                console.log(data.data)
+                setPurchaseData(data.data);
+            } catch (error) {
+                console.error('Error fetching purchases:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchPurchases();
+    }, []);
 
     const handleSort = (key) => {
         let direction = 'asc';
@@ -50,11 +69,11 @@ const SalesManagement = () => {
     };
 
     const filteredPurchases = sortPurchases(
-        purchases.filter(purchase => 
-            purchase.userName.toLowerCase().includes(purchaseSearch.toLowerCase()) ||
-            purchase.userEmail.toLowerCase().includes(purchaseSearch.toLowerCase()) ||
-            purchase.gameName.toLowerCase().includes(purchaseSearch.toLowerCase()) ||
-            purchase.status.toLowerCase().includes(purchaseSearch.toLowerCase())
+        purchaseData.filter(purchase => 
+            purchase.nombre_usuario.toLowerCase().includes(purchaseSearch.toLowerCase()) ||
+            purchase.nombre_juego.toLowerCase().includes(purchaseSearch.toLowerCase()) ||
+            purchase.fecha.toLowerCase().includes(purchaseSearch.toLowerCase()) ||
+            purchase.precio.toLowerCase().includes(purchaseSearch.toLowerCase())
         )
     );
 
@@ -63,14 +82,11 @@ const SalesManagement = () => {
         const worksheet = workbook.addWorksheet('Historial de Compras');
 
         worksheet.columns = [
-            { header: 'ID', key: 'id', width: 10 },
-            { header: 'Fecha', key: 'date', width: 15 },
-            { header: 'Usuario', key: 'userName', width: 20 },
-            { header: 'Email', key: 'userEmail', width: 30 },
-            { header: 'Juego', key: 'gameName', width: 20 },
-            { header: 'Monto', key: 'amount', width: 15 },
-            { header: 'Método de Pago', key: 'paymentMethod', width: 20 },
-            { header: 'Estado', key: 'status', width: 15 }
+            { header: 'ID', key: 'id_purchase', width: 10 },
+            { header: 'Fecha', key: 'fecha', width: 15 },
+            { header: 'Usuario', key: 'nombre_usuario', width: 20 },
+            { header: 'Juego', key: 'nombre_juego', width: 20 },
+            { header: 'Precio', key: 'precio', width: 15 }
         ];
 
         worksheet.getRow(1).font = { bold: true };
@@ -78,18 +94,15 @@ const SalesManagement = () => {
 
         filteredPurchases.forEach(purchase => {
             worksheet.addRow({
-                id: purchase.id,
-                date: purchase.date,
-                userName: purchase.userName,
-                userEmail: purchase.userEmail,
-                gameName: purchase.gameName,
-                amount: purchase.amount,
-                paymentMethod: translatePaymentMethod(purchase.paymentMethod),
-                status: translateStatus(purchase.status)
+                id_purchase: purchase.id_purchase,
+                fecha: new Date(purchase.fecha).toLocaleString(),
+                nombre_usuario: purchase.nombre_usuario,
+                nombre_juego: purchase.nombre_juego,
+                precio: purchase.precio
             });
         });
 
-        worksheet.getColumn('amount').numFmt = '"$"#,##0.00';
+        worksheet.getColumn('precio').numFmt = '"$"#,##0.00';
         
         worksheet.eachRow((row) => {
             row.eachCell((cell) => {
@@ -106,24 +119,6 @@ const SalesManagement = () => {
         } catch (error) {
             console.error('Error al exportar el Excel:', error);
         }
-    };
-
-    const translatePaymentMethod = (method) => {
-        const translations = {
-            credit_card: 'Tarjeta de Crédito',
-            paypal: 'PayPal',
-            debit_card: 'Tarjeta de Débito'
-        };
-        return translations[method] || method;
-    };
-
-    const translateStatus = (status) => {
-        const translations = {
-            completed: 'Completado',
-            pending: 'Pendiente',
-            refunded: 'Reembolsado'
-        };
-        return translations[status] || status;
     };
 
     const SortIndicator = ({ columnKey }) => {
@@ -151,6 +146,10 @@ const SalesManagement = () => {
         (purchasePage - 1) * ITEMS_PER_PAGE,
         purchasePage * ITEMS_PER_PAGE
     );
+
+    if (loading) {
+        return <div className="text-center py-4">Cargando...</div>;
+    }
 
     return (
         <div className="">

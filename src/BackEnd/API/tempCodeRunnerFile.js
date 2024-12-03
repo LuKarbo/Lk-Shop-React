@@ -75,12 +75,9 @@ export const GamesAPI = {
         }
     },
 
-    createGame: async (titulo, descripcion, banner, fecha, precio, discount_id, puntaje, 
-        editor_id, copias_disponibles, total_copias, categorias) => {
+    createGame: async (gameData) => {
         try {
-            const response = await axios.post(`${BASE_URL}/games`,
-                {titulo, descripcion, banner, fecha, precio, discount_id, puntaje, 
-                    editor_id, copias_disponibles, total_copias, categorias}, {
+            const response = await axios.post(`${BASE_URL}/games`, gameData, {
                 headers: { 
                     'Authorization': `Bearer ${localStorage.getItem('token')}`,
                     'Content-Type': 'application/json'

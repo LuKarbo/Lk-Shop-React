@@ -2,9 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
     Star, 
-    Plus, 
-    Search,
-    Filter
+    Plus,
 } from 'lucide-react';
 
 import { GamesAPI } from '../../BackEnd/API/GamesAPI';
@@ -77,7 +75,7 @@ const MyReviews = () => {
         }
 
         try {
-            const response = await ReviewApi.createGroup(
+            const response = await ReviewApi.createReview(
                 userId, 
                 selectedGame.id_game, 
                 reviewContent, 

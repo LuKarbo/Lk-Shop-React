@@ -22,7 +22,7 @@ const SalesManagement = () => {
             try {
                 const accessToken = localStorage.getItem('token');
                 const data = await PurchaseApi.getAll(accessToken);
-                console.log(data.data)
+                
                 setPurchaseData(data.data);
             } catch (error) {
                 console.error('Error fetching purchases:', error);

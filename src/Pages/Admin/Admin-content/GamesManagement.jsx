@@ -4,6 +4,9 @@ import { DiscountApi } from '../../../BackEnd/API/DiscountAPI';
 import GamesTable from './Games-content/GamesTable';
 import DiscountManagement from './Games-content/DiscountManagement';
 import AddGameModal from './Games-content/AddGameModal';
+import DeleteGameModal from './Games-content/DeleteGameModal';
+import EditGameModal from './Games-content/EditGameModal';
+import ReviewsTable from './Games-content/ReviewsTable';
 
 
 const GamesManagement = () => {
@@ -13,9 +16,16 @@ const GamesManagement = () => {
     const [categories, setCategories] = useState([]);
     const [gameSearch, setGameSearch] = useState('');
     const [gamePage, setGamePage] = useState(1);
+    
     const ITEMS_PER_PAGE = 8;
 
     const [isAddGameModalOpen, setIsAddGameModalOpen] = useState(false);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [gameToDelete, setGameToDelete] = useState(null);
+    const [isEditGameModalOpen, setIsEditGameModalOpen] = useState(false);
+    const [gameToEdit, setGameToEdit] = useState(null);
+
+    const accessToken = localStorage.getItem('token');
 
     useEffect(() => {
         const fetchData = async () => {
@@ -29,8 +39,6 @@ const GamesManagement = () => {
                 setDiscounts(discountsResponse.data);
                 setEditors(gamesEditors.data);
                 setCategories(gamesCategories.data);
-                console.log(gamesEditors.data);
-                console.log(gamesCategories.data);
             } catch (err) {
                 console.error('Error fetching data:', err);
             }
@@ -49,7 +57,7 @@ const GamesManagement = () => {
     };
     
     const getDiscountBadgeStyle = (discountId) => {
-        console.log(discounts);
+
         if (!discounts || !discountId) return 'bg-gray-100 text-gray-800';
         
         const discount = discounts.find(d => d.id_discount_code === discountId);
@@ -65,12 +73,14 @@ const GamesManagement = () => {
         }
     };
 
-    const refreshDiscounts = async () => {
+    const refreshData = async () => {
         try {
             const discountsResponse = await DiscountApi.getAll();
+            const gamesResponse = await GamesAPI.getAllGames();
             setDiscounts(discountsResponse.data);
+            setGames(gamesResponse.data);
         } catch (error) {
-            console.error('Error refreshing discounts:', error);
+            console.error('Error refreshing:', error);
         }
     };
 
@@ -84,11 +94,51 @@ const paginatedGames = filteredGames.slice(
 );
 
 const handleOpenEditModal = (game) => {
-    console.log('Edit game:', game);
+    setGameToEdit(game);
+    setIsEditGameModalOpen(true);
+};
+
+const handleUpdateGame = async (updatedGameData) => {
+    try {
+        const result = await GamesAPI.editGame(updatedGameData.id_game,
+            updatedGameData.game_name,
+            updatedGameData.game_description,
+            updatedGameData.gameBanner,
+            updatedGameData.fecha_lanzamiento,
+            updatedGameData.precio_original,
+            updatedGameData.id_descuento,
+            updatedGameData.puntaje,
+            updatedGameData.editor_id,
+            updatedGameData.copias_disponibles,
+            updatedGameData.copias_cantidad,
+            updatedGameData.categorias
+        )
+        if (result.success) {
+            setIsEditGameModalOpen(false);
+            setGameToEdit(false);
+            refreshData();
+        }
+    } catch (error) {
+        console.error('Error updating game:', error);
+    }
 };
 
 const handleOpenDeleteModal = (game) => {
-    console.log('Delete game:', game);
+    setGameToDelete(game);
+    setIsDeleteModalOpen(true);
+};
+
+const handleConfirmDelete = async (gameId) => {
+    try {
+        const deleteGame = await GamesAPI.deleteGame(gameId);
+        if(deleteGame.success){
+            setIsDeleteModalOpen(false);
+            setGameToDelete(null);
+            refreshData();
+        }
+    } catch (error) {
+        console.error("Error deleting game:", error);
+    }
 };
 
     const handleAddGame = async (gameData) => {
@@ -108,13 +158,11 @@ const handleOpenDeleteModal = (game) => {
             if (result.success) {
                 const gamesResponse = await GamesAPI.getAllGames();
                 setGames(gamesResponse.data);
-                console.log("Juego añadido correctamente:", result.data);
             }
         } catch (error) {
             console.error('Error:', error);
         }
 
-        console.log('New game data:', gameData);
         setIsAddGameModalOpen(false);
     };
 
@@ -154,13 +202,32 @@ const handleOpenDeleteModal = (game) => {
             <DiscountManagement 
                 discounts={discounts}
                 setDiscounts={setDiscounts}
-                refreshDiscounts={refreshDiscounts}
+                refreshData={refreshData}
             />
+
+            <ReviewsTable />
 
             <AddGameModal 
                 isOpen={isAddGameModalOpen}
                 onClose={() => setIsAddGameModalOpen(false)}
                 onSubmit={handleAddGame}
+                discounts={discounts}
+                editors={editors}
+                categories={categories}
+            />
+
+            <DeleteGameModal
+                isOpen={isDeleteModalOpen}
+                onClose={() => setIsDeleteModalOpen(false)}
+                onConfirmDelete={handleConfirmDelete}
+                game={gameToDelete}
+            />
+
+            <EditGameModal 
+                isOpen={isEditGameModalOpen}
+                onClose={() => setIsEditGameModalOpen(false)}
+                onSubmit={handleUpdateGame}
+                game={gameToEdit}
                 discounts={discounts}
                 editors={editors}
                 categories={categories}

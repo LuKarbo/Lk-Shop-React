@@ -40,7 +40,45 @@ const AddGameModal = ({
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
-        setGameData(prev => ({ ...prev, [name]: value }));
+        setGameData(prev => {
+            const updatedData = { ...prev, [name]: value };
+            
+            if (name === 'precio_original' && prev.id_descuento !== 0) {
+                const selectedDiscount = activeDiscounts.find(
+                    d => d.id_discount_code === prev.id_descuento
+                );
+                
+                if (selectedDiscount) {
+                    updatedData.precio_con_descuento = (
+                        value * (1 - selectedDiscount.procentaje / 100)
+                    ).toFixed(2);
+                }
+            }
+            
+            return updatedData;
+        });
+    };
+
+    const handleCopyCountChange = (e) => {
+        const { name, value } = e.target;
+        setGameData(prev => {
+            if (name === 'copias_cantidad') {
+                const newTotal = Number(value);
+                const newAvailable = Math.min(prev.copias_disponibles, newTotal);
+                return { 
+                    ...prev, 
+                    copias_cantidad: newTotal,
+                    copias_disponibles: newAvailable
+                };
+            } else if (name === 'copias_disponibles') {
+                const newAvailable = Math.min(Number(value), prev.copias_cantidad);
+                return { 
+                    ...prev, 
+                    copias_disponibles: newAvailable 
+                };
+            }
+            return prev;
+        });
     };
 
     const handleEditorChange = (e) => {
@@ -76,7 +114,6 @@ const AddGameModal = ({
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        console.log('Game Data to Submit:', gameData);
         onSubmit(gameData);
     };
 
@@ -119,6 +156,7 @@ const AddGameModal = ({
                         value={gameData.puntaje}
                         onChange={handleInputChange}
                         className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"
+                        required
                         />
                     </div>
                     </div>
@@ -135,12 +173,54 @@ const AddGameModal = ({
                         />
                     </div>
 
+                    <div className="col-span-2">
+                        <label className="block text-sm font-medium text-gray-700">
+                            Fecha de Lanzamiento
+                        </label>
+                        <input
+                            type="date"
+                            name="fecha_lanzamiento"
+                            value={gameData.fecha_lanzamiento}
+                            onChange={handleInputChange}
+                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"
+                            required
+                        />
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">Copias Totales</label>
+                        <input
+                            type="number"
+                            name="copias_cantidad"
+                            min="0"
+                            value={gameData.copias_cantidad}
+                            onChange={handleCopyCountChange}
+                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"
+                            required
+                        />
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">Copias Disponibles</label>
+                        <input
+                            type="number"
+                            name="copias_disponibles"
+                            min="0"
+                            max={gameData.copias_cantidad}
+                            value={gameData.copias_disponibles}
+                            onChange={handleCopyCountChange}
+                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"
+                            required
+                        />
+                    </div>
+
                     <div>
                         <label className="block text-sm font-medium text-gray-700">Editorial</label>
                         <select
                             onChange={handleEditorChange}
                             className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"
                             value={gameData.editor_id || ''}
+                            required
                         >
                             <option value="">Seleccionar Editorial</option>
                             {editors.map(editor => (
@@ -204,6 +284,7 @@ const AddGameModal = ({
                             value={gameData.precio_original}
                             onChange={handleInputChange}
                             className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"
+                            required
                         />
                     </div>
 

@@ -38,10 +38,10 @@ const GamesTable = ({
                     <td className="px-6 py-4">{game.game_name}</td>
                     <td className="px-6 py-4">${game.precio_con_descuento || game.precio_original}</td>
                     <td className="px-6 py-4">${game.precio_original}</td>
-                    <td className="px-6 py-4">{game.puntaje}/5</td>
+                    <td className="px-6 py-4">{game.puntaje}/10</td>
                     <td className="px-6 py-4">{game.categorias}</td>
                     <td className="px-6 py-4">{game.editor_nombre}</td>
-                    <td className="px-6 py-4">{game.copias_disponibles}</td>
+                    <td className="px-6 py-4">{game.copias_disponibles}/{game.copias_cantidad}</td>
                     <td className="px-6 py-4">
                       {game.id_descuento ? (
                         <span className={`px-2 py-1 rounded-full text-sm font-medium ${getDiscountBadgeStyle(game.id_descuento)}`}>

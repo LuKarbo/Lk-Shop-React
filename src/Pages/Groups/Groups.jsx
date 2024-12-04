@@ -195,7 +195,7 @@ const Groups = () => {
     };
 
     const toggleCategory = (category, categoryId) => {
-        console.log(category + " [" + categoryId + "]");
+        
         setNewGroup(prev => {
             const categories = prev.categories.includes(category)
                 ? prev.categories.filter(c => c !== category)
@@ -208,7 +208,7 @@ const Groups = () => {
     };
 
     const removeCategory = (categoryToRemove) => {
-        console.log(categoryToRemove);
+        
         setNewGroup(prev => {
             const categoryIndex = prev.categories.indexOf(categoryToRemove);
             const newCategories = prev.categories.filter(category => category !== categoryToRemove);

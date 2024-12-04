@@ -2,7 +2,7 @@ import { X } from 'lucide-react';
 
 const PurchaseInfoModal = ({ game, onClose }) => {
   if (!game) return null;
-  console.log(game.id_game);
+  
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content" onClick={e => e.stopPropagation()}>

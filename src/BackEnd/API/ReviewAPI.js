@@ -43,7 +43,7 @@ export const ReviewApi = {
         }
     },
 
-    createGroup: async (userId, gameId, content, score, accessToken) => {
+    createReview: async (userId, gameId, content, score, accessToken) => {
         try {
             const response = await axios.post(`${BASE_URL}`, 
                 { userId, gameId, content, score },

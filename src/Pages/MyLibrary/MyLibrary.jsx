@@ -144,7 +144,7 @@ const MyLibrary = () => {
             showToast('Error al procesar el reembolso');
         }
     };
-    console.log(purchasedGames);
+    
     return (
         <div className="product-container">
             <div>

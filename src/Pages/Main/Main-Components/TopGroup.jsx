@@ -48,7 +48,7 @@ const TopGroups = () => {
             showToast('Debe estar logeado para unirse');
             return;
         }
-        console.log(group);
+        
         try {
             const response = await GroupsApi.joinGroup(group.id, userId);
             

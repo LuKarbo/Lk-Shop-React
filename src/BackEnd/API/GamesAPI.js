@@ -93,9 +93,11 @@ export const GamesAPI = {
         }
     },
 
-    editGame: async (gameId, gameData) => {
+    editGame: async (gameId, titulo, descripcion, banner, fecha, precio, discount_id, puntaje, editor_id, copias_disponibles, total_copias, categorias) => {
         try {
-            const response = await axios.put(`${BASE_URL}/games/${gameId}`, gameData, {
+            const response = await axios.put(`${BASE_URL}/games/${gameId}`, 
+                {titulo, descripcion, banner, fecha, precio, discount_id, puntaje, 
+                    editor_id, copias_disponibles, total_copias, categorias}, {
                 headers: { 
                     'Authorization': `Bearer ${localStorage.getItem('token')}`,
                     'Content-Type': 'application/json'

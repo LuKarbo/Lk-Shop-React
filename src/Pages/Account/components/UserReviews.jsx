@@ -13,7 +13,7 @@ const formatDate = (dateString) => {
 
 const UserReviews = ({ reviews, onViewAll }) => {
     const hasReviews = reviews && reviews.length > 0;
-    
+
     return (
         <div className="bg-white rounded-xl shadow-md p-6">
             <div className="flex justify-between items-center mb-4">
@@ -32,7 +32,7 @@ const UserReviews = ({ reviews, onViewAll }) => {
             ) : (
                 <div className="space-y-4">
                     {reviews.slice(0, 3).map(review => (
-                        <ReviewItem key={review.id} review={review} />
+                        <ReviewItem key={review.id_review} review={review} />
                     ))}
                 </div>
             )}

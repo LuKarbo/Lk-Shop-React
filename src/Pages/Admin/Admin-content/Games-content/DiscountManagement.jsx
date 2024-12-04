@@ -4,12 +4,12 @@ import { DiscountApi } from '../../../../BackEnd/API/DiscountAPI';
 import { Pagination } from '../Functions/Pagination';
 import DiscountModal from './DiscountModal';
 
-const DiscountManagement = ({ discounts = [], setDiscounts, refreshDiscounts }) => {
+const DiscountManagement = ({ discounts = [], setDiscounts, refreshData }) => {
   const [discountSearch, setDiscountSearch] = useState('');
   const [discountPage, setDiscountPage] = useState(1);
   const [isAddDiscountModalOpen, setIsAddDiscountModalOpen] = useState(false);
   const [currentDiscount, setCurrentDiscount] = useState(null);
-  const ITEMS_PER_PAGE = 10;
+  const ITEMS_PER_PAGE = 8;
 
   const handleSubmit = async (formData) => {
       const accessToken = localStorage.getItem('token');
@@ -33,7 +33,7 @@ const DiscountManagement = ({ discounts = [], setDiscounts, refreshDiscounts }) 
                   accessToken
               );
           }
-          await refreshDiscounts();
+          await refreshData();
           setIsAddDiscountModalOpen(false);
       } catch (error) {
           console.error('Error:', error);

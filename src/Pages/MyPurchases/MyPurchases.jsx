@@ -33,7 +33,7 @@ const MyPurchases = () => {
         const fetchPurchases = async () => {
             try {
                 const purchaseData = await PurchaseApi.getById(userId, accessToken);
-                console.log(purchaseData.data);
+                
                 setPurchases(purchaseData.data || []);
                 setFilteredPurchases(purchaseData.data || []);
             } catch (error) {

@@ -1,219 +1,148 @@
-import { useState } from 'react';
-import { users } from './Data/userData';
-import { pendingTickets, answeredTickets } from './Data/ticketsData';
-import { ViewTicketModal, ReplyTicketModal } from './Modals/TicketModals';
-import { EditUserModal, DeleteUserModal } from './Modals/UserModal';
-import TicketList from './Lists/TicketList';
-import UserList from './Lists/UserList';
-
+import { useState, useEffect, useCallback } from 'react';
+import { UserApi } from '../../../BackEnd/API/UserApi';
+import UserTable from './UserManagement-content/UserTable';
+import EditModal from './UserManagement-content/EditModal';
+import DeleteModal from './UserManagement-content/DeleteModal';
 
 const UserManagement = () => {
-    const [isViewTicketOpen, setIsViewTicketOpen] = useState(false);
-    const [isReplyTicketOpen, setIsReplyTicketOpen] = useState(false);
-    const [selectedTicket, setSelectedTicket] = useState(null);
-    const [replyContent, setReplyContent] = useState('');
+    const [users, setUsers] = useState([]);
+    const [statuses, setStatuses] = useState([]);
+    const [permissions, setPermissions] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState(null);
     const [userSearch, setUserSearch] = useState('');
-    const [pendingSearch, setPendingSearch] = useState('');
-    const [answeredSearch, setAnsweredSearch] = useState('');
+    const [currentPage, setCurrentPage] = useState(1);
+    const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [selectedUser, setSelectedUser] = useState(null);
 
-    const [sortConfig, setSortConfig] = useState({
-        key: null,
-        direction: 'asc'
-    });
-
-    const [userPage, setUserPage] = useState(1);
-    const [pendingPage, setPendingPage] = useState(1);
-    const [answeredPage, setAnsweredPage] = useState(1);
     const ITEMS_PER_PAGE = 8;
+    const accessToken = localStorage.getItem('token');
 
-    const [editForm, setEditForm] = useState({
-        name: '',
-        email: '',
-        role: ''
+    const fetchUsers = useCallback(async () => {
+        setIsLoading(true);
+        try {
+            const responseUser = await UserApi.getUsers(accessToken);
+            const responsePermisos = await UserApi.getPermissions(accessToken);
+            const responseStatus = await UserApi.getStatus(accessToken);
+            setUsers(responseUser.user[0]);
+            setPermissions(responsePermisos.user[0]);
+            setStatuses(responseStatus.user[0]);
+        } catch (err) {
+            setError(err);
+        } finally {
+            setIsLoading(false);
+        }
+    }, [accessToken]);
+
+    useEffect(() => {
+        fetchUsers();
+    }, [fetchUsers]);
+
+    const handleSort = (key) => {
+        let direction = 'asc';
+        if (sortConfig.key === key && sortConfig.direction === 'asc') {
+            direction = 'desc';
+        }
+        setSortConfig({ key, direction });
+        setCurrentPage(1);
+    };
+
+    const sortedUsers = [...users].sort((a, b) => {
+        if (!sortConfig.key) return 0;
+        const aValue = a[sortConfig.key];
+        const bValue = b[sortConfig.key];
+        return (sortConfig.direction === 'asc' ? 1 : -1) * (aValue > bValue ? 1 : -1);
     });
 
-    // filtro de header
-    const sortUsers = (usersToSort) => {
-        if (!sortConfig.key) return usersToSort;
-
-        return [...usersToSort].sort((a, b) => {
-            if (a[sortConfig.key] === null) return 1;
-            if (b[sortConfig.key] === null) return -1;
-
-            let aValue = a[sortConfig.key];
-            let bValue = b[sortConfig.key];
-
-            if (typeof aValue === 'string') {
-                aValue = aValue.toLowerCase();
-                bValue = bValue.toLowerCase();
-            }
-
-            if (aValue < bValue) {
-                return sortConfig.direction === 'asc' ? -1 : 1;
-            }
-            if (aValue > bValue) {
-                return sortConfig.direction === 'asc' ? 1 : -1;
-            }
-            return 0;
-        });
-    };
-
-    // Filtros
-    const filteredUsers = sortUsers(
-        users.filter(user =>
-            user.name.toLowerCase().includes(userSearch.toLowerCase()) ||
-            user.email.toLowerCase().includes(userSearch.toLowerCase()) ||
-            user.role.toLowerCase().includes(userSearch.toLowerCase()) ||
-            user.status.toLowerCase().includes(userSearch.toLowerCase())
-        )
-    );
-    
-    const filteredPendingTickets = pendingTickets.filter(ticket =>
-        ticket.userName.toLowerCase().includes(pendingSearch.toLowerCase())
-    );
-    
-    const filteredAnsweredTickets = answeredTickets.filter(ticket =>
-        ticket.userName.toLowerCase().includes(answeredSearch.toLowerCase())
+    const filteredUsers = sortedUsers.filter(user =>
+        user.nombre.toLowerCase().includes(userSearch.toLowerCase()) ||
+        user.email.toLowerCase().includes(userSearch.toLowerCase())
     );
 
-    // handlers
-    const handleOpenEditModal = (user) => {
-        setSelectedUser(user);
-        setEditForm({
-            name: user.name,
-            email: user.email,
-            role: user.role
-        });
-        setIsEditModalOpen(true);
-    };
-    
-    const handleOpenDeleteModal = (user) => {
-        setSelectedUser(user);
-        setIsDeleteModalOpen(true);
-    };
-    
-    const handleEditSubmit = () => {
-        console.log('Usuario editado:', { ...selectedUser, ...editForm });
-        setIsEditModalOpen(false);
-    };
-    
-    const handleDeleteSubmit = () => {
-        console.log('Usuario eliminado:', selectedUser);
-        setIsDeleteModalOpen(false);
-    };
-
-    const handleOpenViewTicket = (ticket) => {
-        setSelectedTicket(ticket);
-        setIsViewTicketOpen(true);
-    };
-
-    const handleOpenReplyTicket = (ticket) => {
-        setSelectedTicket(ticket);
-        setIsReplyTicketOpen(true);
-    };
-
-    const handleReplySubmit = () => {
-        console.log('Respuesta enviada:', replyContent);
-        setReplyContent('');
-        setIsReplyTicketOpen(false);
-    };
-    
     const paginatedUsers = filteredUsers.slice(
-        (userPage - 1) * ITEMS_PER_PAGE,
-        userPage * ITEMS_PER_PAGE
+        (currentPage - 1) * ITEMS_PER_PAGE,
+        currentPage * ITEMS_PER_PAGE
     );
-    
-    const paginatedPendingTickets = filteredPendingTickets.slice(
-        (pendingPage - 1) * ITEMS_PER_PAGE,
-        pendingPage * ITEMS_PER_PAGE
-    );
-    
-    const paginatedAnsweredTickets = filteredAnsweredTickets.slice(
-        (answeredPage - 1) * ITEMS_PER_PAGE,
-        answeredPage * ITEMS_PER_PAGE
-    );
+
+    const handleEditSubmit = async (editedUser) => {
+        try {
+            const response = await UserApi.adminUserEdit(editedUser.user_id,editedUser.nombre,editedUser.email,editedUser.id_permissions,editedUser.id_status,accessToken);
+            
+            if (response.success) {
+                await fetchUsers();
+                setIsEditModalOpen(false);
+            } else {
+                console.error('Error updating user:', response.message || 'Unknown error');
+            }
+        } catch (err) {
+            console.error('Error updating user:', err.message);
+        }
+    };
+
+    const handleDeleteSubmit = async (userToDelete) => {
+        try {
+            await UserApi.deleteUser(userToDelete,accessToken);
+            await fetchUsers();
+            setIsDeleteModalOpen(false);
+        } catch (err) {
+            console.error('Error deleting user:', err);
+        }
+    };
+
+    if (isLoading) return <div>Loading...</div>;
+    if (error) return <div>Error loading users: {error.message}</div>;
 
     return (
-        <div className="">
-            <h2 className="text-2xl font-bold mb-6 sectionTitle">Gestión de Usuarios</h2>
+        <div className="p-4">
+            <div className="flex justify-between items-center mb-4">
+                <h3 className="text-xl font-semibold">Usuarios</h3>
+                <input
+                    type="text"
+                    placeholder="Buscar usuarios..."
+                    value={userSearch}
+                    onChange={(e) => setUserSearch(e.target.value)}
+                    className="px-4 py-2 border rounded-lg w-72 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+            </div>
 
-                {/* LISTAS */}
+            <div className="bg-white rounded-lg shadow overflow-hidden">
+                <div className="overflow-x-auto">
+                    <UserTable
+                        users={paginatedUsers}
+                        sortConfig={sortConfig}
+                        onSort={handleSort}
+                        onEdit={(user) => {
+                            setSelectedUser(user);
+                            setIsEditModalOpen(true);
+                        }}
+                        onDelete={(user) => {
+                            setSelectedUser(user);
+                            setIsDeleteModalOpen(true);
+                        }}
+                        currentPage={currentPage}
+                        totalItems={filteredUsers.length}
+                        setPage={setCurrentPage}
+                        itemsPerPage={ITEMS_PER_PAGE}
+                    />
+                </div>
+            </div>
 
-            {/* Lista de Usuarios */}
-            <UserList
-                users={paginatedUsers}
-                searchValue={userSearch}
-                onSearchChange={setUserSearch}
-                currentPage={userPage}
-                totalItems={filteredUsers.length}
-                setPage={setUserPage}
-                sortConfig={sortConfig}
-                onSort={sortUsers}
-                onEditUser={handleOpenEditModal}
-                onDeleteUser={handleOpenDeleteModal}
-            />
-
-            {/* Consultas Pendientes */}
-            <TicketList
-                title="Consultas Pendientes"
-                tickets={paginatedPendingTickets}
-                searchValue={pendingSearch}
-                onSearchChange={setPendingSearch}
-                currentPage={pendingPage}
-                totalItems={filteredPendingTickets.length}
-                setPage={setPendingPage}
-                onViewTicket={handleOpenViewTicket}
-                onReplyTicket={handleOpenReplyTicket}
-                showReplyButton={true}
-            />
-
-            {/* Consultas Respondidas */}
-            <TicketList
-                title="Consultas Respondidas"
-                tickets={paginatedAnsweredTickets}
-                searchValue={answeredSearch}
-                onSearchChange={setAnsweredSearch}
-                currentPage={answeredPage}
-                totalItems={filteredAnsweredTickets.length}
-                setPage={setAnsweredPage}
-                onViewTicket={handleOpenViewTicket}
-                showAnsweredInfo={true}
-            />
-
-            {/* MODALS */}
-            <ViewTicketModal 
-                isOpen={isViewTicketOpen}
-                onClose={() => setIsViewTicketOpen(false)}
-                ticket={selectedTicket}
-            />
-            <ReplyTicketModal 
-                isOpen={isReplyTicketOpen}
-                onClose={() => setIsReplyTicketOpen(false)}
-                ticket={selectedTicket}
-                replyContent={replyContent}
-                setReplyContent={setReplyContent}
-                onSubmit={handleReplySubmit}
-            />
-
-            {/* Modal de editar usuario */}
-            <EditUserModal 
+            <EditModal 
                 isOpen={isEditModalOpen}
                 onClose={() => setIsEditModalOpen(false)}
                 user={selectedUser}
-                editForm={editForm}
-                setEditForm={setEditForm}
+                statuses={statuses}
+                permissions={permissions}
                 onSubmit={handleEditSubmit}
             />
 
-            {/* Modal de eliminar usuario */}
-            <DeleteUserModal 
+            <DeleteModal 
                 isOpen={isDeleteModalOpen}
                 onClose={() => setIsDeleteModalOpen(false)}
                 user={selectedUser}
-                onSubmit={handleDeleteSubmit}
+                onConfirm={handleDeleteSubmit}
             />
         </div>
     );

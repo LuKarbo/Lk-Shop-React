@@ -21,7 +21,8 @@ export const UserApi = {
                         id: response.data.user.id_user,
                         email: response.data.user.email,
                         nombre: response.data.user.nombre,
-                        permisos: response.data.user.id_permissions
+                        permisos: response.data.user.id_permissions,
+                        status: response.data.user.id_status
                     },
                     accessToken: response.data.accessToken,
                     refreshToken: response.data.refreshToken
@@ -138,6 +139,89 @@ export const UserApi = {
             return {
                 success: false,
                 message: 'Error al obtener información del usuario'
+            };
+        }
+    },
+
+    getPermissions: async(accessToken) => {
+        try {
+            const response = await axios.get(`${BASE_URL}/permissions`, {
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`
+                }
+            });
+            return {
+                success: true,
+                user: response.data
+            };
+        } catch (error) {
+            return {
+                success: false,
+                message: 'Error al obtener los permisos'
+            };
+        }
+    },
+
+    getStatus: async(accessToken) => {
+        try {
+            const response = await axios.get(`${BASE_URL}/status`, {
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`
+                }
+            });
+            return {
+                success: true,
+                user: response.data
+            };
+        } catch (error) {
+            return {
+                success: false,
+                message: 'Error al obtener los status'
+            };
+        }
+    },
+
+    deleteUser: async (userId, accessToken) => {
+        try {
+            const response = await axios.delete(`${BASE_URL}/getUser/${userId}/delete`, {
+                headers: { 'Authorization': `Bearer ${accessToken}` }
+            });
+            return response.data;
+        } catch (error) {
+            return {
+                success: false,
+                message: 'Error al eliminar el usuario'
+            };
+        }
+    },
+
+    adminUserEdit: async (id, nombre, email, id_permissions, id_status, accessToken) => {
+        try {        
+            const response = await axios.put(`${BASE_URL}/getUser/${id}/adminEdit`, {
+                nombre, email, id_permissions, id_status
+            }, {
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            if (response.data.success) {
+                return {
+                    success: true,
+                    user: response.data.user,
+                    message: response.data.message
+                };
+            } else {
+                return {
+                    success: false,
+                    message: response.data.message
+                };
+            }
+        } catch (error) {
+            return {
+                success: false,
+                message: error.response?.data?.message || 'Error al actualizar usuario. Por favor, intente nuevamente.'
             };
         }
     }

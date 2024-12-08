@@ -2,6 +2,7 @@ import { useState } from 'react';
 import Sidebar from './Admin-content/Sidebar';
 import Dashboard from './Admin-content/Dashboard';
 import UserManagement from './Admin-content/UserManagement';
+import SupportManagement from './Admin-content/SupportManagement';
 import GamesManagement from './Admin-content/GamesManagement';
 import GroupsManagement from './Admin-content/GroupsManagement';
 import SalesManagement from './Admin-content/SalesManagement';
@@ -16,6 +17,8 @@ const Admin = () => {
                 return <Dashboard />;
             case 'users':
                 return <UserManagement />;
+            case 'support':
+                return <SupportManagement />;
             case 'games':
                 return <GamesManagement />;
             case 'groups':

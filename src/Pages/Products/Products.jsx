@@ -272,7 +272,7 @@ const Products = () => {
                                     <div className="product-game-price-container">
                                         {game.descuento_porcentaje > 0 ? (
                                             <>
-                                                <span className={`product-game-price`}>${parseFloat(game.precio_original) - (parseFloat(game.precio_original) * (game.descuento_porcentaje / 100))}</span>
+                                                <span className={`product-game-price`}>${(parseFloat(game.precio_original) - (parseFloat(game.precio_original) * (game.descuento_porcentaje / 100))).toFixed(2)}</span>
                                                 <span className={`product-game-original-price`}>${parseFloat(game.precio_original)}</span>
                                             </>
                                         ) : (

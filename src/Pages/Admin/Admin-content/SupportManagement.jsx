@@ -80,8 +80,11 @@ const SupportManagement = () => {
     };
 
     const filterTickets = (tickets, filterValue) => {
+        const normalizedFilter = filterValue.toLowerCase();
         return tickets.filter(ticket => 
-            ticket.user_name.toLowerCase().includes(filterValue.toLowerCase())
+            (ticket.user_name && ticket.user_name.toLowerCase().includes(normalizedFilter)) ||
+            (ticket.titulo && ticket.titulo.toLowerCase().includes(normalizedFilter)) ||
+            (ticket.contenido && ticket.contenido.toLowerCase().includes(normalizedFilter))
         );
     };
 

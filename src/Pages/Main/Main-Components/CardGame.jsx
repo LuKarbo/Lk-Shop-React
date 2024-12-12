@@ -59,7 +59,7 @@ const CardGame = ({
                     {
                         variant === 'descuento' ? (
                             <>
-                                <span className={`${variant}-game-price`}>${price - (price * (game.descuento_porcentaje / 100))}</span>
+                                <span className={`${variant}-game-price`}>${(price - (price * (game.descuento_porcentaje / 100))).toFixed(2)}</span>
                                 <span className={`${variant}-game-original-price`}>${price}</span>
                             </>
                         ) : (

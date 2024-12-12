@@ -97,7 +97,7 @@ const Account = () => {
 
     const stats = {
         games: purchasedGames.length || 0,
-        reviews: userReviews.length || 0,
+        reviews: userReviews.data.length || 0,
         groups: userGroups.length || 0
     };
 

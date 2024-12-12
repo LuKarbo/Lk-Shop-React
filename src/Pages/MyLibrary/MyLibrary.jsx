@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../BackEnd/Auth/AuthContext';
 import { GamesAPI } from '../../BackEnd/API/GamesAPI';
 import Toast from '../../components/Toast/Toast';
 import PurchasedGamesSection from './components/PurchasedGamesSection';
@@ -10,6 +12,8 @@ import UninstallConfirmModal  from './components/UninstallConfirmModal';
 import UninstallProgressModal  from './components/UninstallProgressModal';
 
 const MyLibrary = () => {
+    const { isLoggedIn } = useAuth();
+    const navigate = useNavigate();
     const [favorites, setFavorites] = useState([]);
     const [purchasedGames, setPurchasedGames] = useState([]);
     const [allGames, setAllGames] = useState([]);
@@ -22,6 +26,11 @@ const MyLibrary = () => {
     const [toast, setToast] = useState(null);
 
     useEffect(() => {
+        if (!isLoggedIn) {
+            navigate('/login');
+            return;
+        }
+
         const fetchUserData = async () => {
             try {
                 const user = localStorage.getItem('user');

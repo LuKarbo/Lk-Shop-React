@@ -15,6 +15,7 @@ const Admin = () => {
     const { isLoggedIn, isAdmin } = useAuth();
     const navigate = useNavigate();
 
+
     useEffect(() => {
         if (!isLoggedIn || !isAdmin) {
             navigate('/');

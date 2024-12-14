@@ -7,7 +7,7 @@ const DownloadModal = ({ game, onClose }) => {
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content" onClick={e => e.stopPropagation()}>
         <div className="modal-header">
-          <h2 className="modal-title">Descargando {game.title}</h2>
+          <h2 className="modal-title">Descargando {game.game_name}</h2>
           <button className="modal-close" onClick={onClose}>
             <X size={24} />
           </button>

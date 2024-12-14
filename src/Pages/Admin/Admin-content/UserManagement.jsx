@@ -109,23 +109,23 @@ const UserManagement = () => {
 
             <div className="bg-white rounded-lg shadow overflow-hidden">
                 <div className="overflow-x-auto">
-                    <UserTable
-                        users={paginatedUsers}
-                        sortConfig={sortConfig}
-                        onSort={handleSort}
-                        onEdit={(user) => {
-                            setSelectedUser(user);
-                            setIsEditModalOpen(true);
-                        }}
-                        onDelete={(user) => {
-                            setSelectedUser(user);
-                            setIsDeleteModalOpen(true);
-                        }}
-                        currentPage={currentPage}
-                        totalItems={filteredUsers.length}
-                        setPage={setCurrentPage}
-                        itemsPerPage={ITEMS_PER_PAGE}
-                    />
+                <UserTable
+                    users={paginatedUsers}
+                    sortConfig={sortConfig}
+                    onSort={handleSort}
+                    onEdit={(user) => {
+                        setSelectedUser(user);
+                        setIsEditModalOpen(true);
+                    }}
+                    onDelete={(user) => {
+                        setSelectedUser(user);
+                        setIsDeleteModalOpen(true);
+                    }}
+                    currentPage={currentPage}
+                    totalItems={filteredUsers.length}
+                    setPage={setCurrentPage}
+                    itemsPerPage={ITEMS_PER_PAGE}
+                />
                 </div>
             </div>
 

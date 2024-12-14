@@ -18,7 +18,6 @@ const Login = () => {
         const loginResult = await UserApi.login(email, password);
 
         if (loginResult.success) {
-            console.log(loginResult.user)
             if (loginResult.user.status == 3) {
                 setShowBannedModal(true);
                 logout();

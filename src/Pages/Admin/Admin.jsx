@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import Sidebar from './Admin-content/Sidebar';
 import Dashboard from './Admin-content/Dashboard';
 import UserManagement from './Admin-content/UserManagement';
+import SupportManagement from './Admin-content/SupportManagement';
 import GamesManagement from './Admin-content/GamesManagement';
 import GroupsManagement from './Admin-content/GroupsManagement';
 import SalesManagement from './Admin-content/SalesManagement';
@@ -13,6 +14,15 @@ const Admin = () => {
     const { isLoggedIn, isAdmin } = useAuth();
     const navigate = useNavigate();
     const [activeSection, setActiveSection] = useState('dashboard');
+    const { isLoggedIn, isAdmin } = useAuth();
+    const navigate = useNavigate();
+
+
+    useEffect(() => {
+        if (!isLoggedIn || !isAdmin) {
+            navigate('/');
+        }
+    }, [isLoggedIn, isAdmin, navigate]);
 
     useEffect(() => {
         if (!isLoggedIn || !isAdmin) {
@@ -30,6 +40,8 @@ const Admin = () => {
                 return <Dashboard />;
             case 'users':
                 return <UserManagement />;
+            case 'support':
+                return <SupportManagement />;
             case 'games':
                 return <GamesManagement />;
             case 'groups':

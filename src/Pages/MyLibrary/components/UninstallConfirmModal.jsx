@@ -17,22 +17,17 @@ const UninstallConfirmModal = ({ game, onClose, onConfirm }) => {
             <div className="flex">
               <div className="ml-3">
                 <p className="text-sm text-yellow-700">
-                  ¿Estás seguro que deseas desinstalar {game.title}? Podrás volver a instalarlo cuando quieras.
+                  ¿Estás seguro que deseas desinstalar {game.game_name}? Podrás volver a instalarlo cuando quieras.
                 </p>
               </div>
             </div>
           </div>
           <div className="modal-game-info">
             <img 
-              src={game.image} 
-              alt={game.title} 
+              src={game.gameBanner || 'https://via.placeholder.com/280x160'}
+              alt={game.game_name} 
               className="modal-game-image"
             />
-            <div className="modal-game-details">
-              <h3>{game.title}</h3>
-              <p><strong>Espacio en disco:</strong> 45 GB</p>
-              <p><strong>Ubicación:</strong> C:/Games/{game.title}</p>
-            </div>
           </div>
         </div>
         <div className="modal-footer">

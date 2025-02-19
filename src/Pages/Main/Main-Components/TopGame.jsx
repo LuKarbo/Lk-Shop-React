@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate} from 'react-router-dom';
 import { useAuth } from '../../../BackEnd/Auth/AuthContext';
-import { games_list } from '../../../BackEnd/Data/games';
+import { GamesAPI } from '../../../BackEnd/API/GamesAPI';
 import CardGame from './CardGame';
 import PurchaseModal from './PurchaseModal'; 
 import './CardsStyle.css';
@@ -10,22 +10,63 @@ const TopGame = () => {
     const { isLoggedIn } = useAuth();
     const [favorites, setFavorites] = useState([]);
     const [purchases, setPurchases] = useState([]);
+    const [topGames, setTopGames] = useState([]);
     const [selectedGame, setSelectedGame] = useState(null);
     const [showModal, setShowModal] = useState(false);
     const [toast, setToast] = useState(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState(null);
     const navigate = useNavigate();
 
-    const topGames = games_list
-    .sort((a, b) => b.copies - a.copies)
-    .slice(0, 5);
-
     useEffect(() => {
-        const savedFavorites = localStorage.getItem('gameFavorites');
+        const fetchTopGames = async () => {
+            try {
+                const allGames = await GamesAPI.getAllGames();
+                
+                let userGamesFav = [];
+                let userGames = [];
+
+                const userId = localStorage.getItem('user');
+                if (userId) {
+                    try {
+                        userGamesFav = await GamesAPI.getUserFavorites(userId);
+                    } catch (favError) {
+                        console.error('Error fetching user favorites:', favError);
+                        userGamesFav = [];
+                    }
+                    try {
+                        userGames = await GamesAPI.getUserGames(userId);
+                    } catch (userGamesError) {
+                        console.error('Error fetching user games:', userGamesError);
+                        userGames = [];
+                    }
+                }
+    
+                const userFavoriteIds = userGamesFav.data 
+                    ? userGamesFav.data.map(fav => fav.id_game) 
+                    : [];
+
+                const userGamesIds = userGames.data 
+                    ? userGames.data.map(game => game.id_game) 
+                    : [];
+    
+                const sortedTopGames = allGames.data
+                    .sort((a, b) => b.copias_cantidad - a.copias_disponibles)
+                    .slice(0, 5);
+    
+                setTopGames(sortedTopGames);
+                setFavorites(userFavoriteIds);
+                setPurchases(userGamesIds);
+                setIsLoading(false);
+            } catch (err) {
+                console.error('Error fetching top games:', err);
+                setError('No se pudieron cargar los juegos');
+                setIsLoading(false);
+            }
+        };
+    
         const savedPurchases = localStorage.getItem('gameBuy');
         
-        if (savedFavorites) {
-            setFavorites(JSON.parse(savedFavorites));
-        }
         if (savedPurchases) {
             try {
                 const parsedPurchases = JSON.parse(savedPurchases);
@@ -34,6 +75,8 @@ const TopGame = () => {
                 setPurchases([]);
             }
         }
+    
+        fetchTopGames();
     }, []);
 
     const showToast = (message) => {
@@ -41,17 +84,25 @@ const TopGame = () => {
         setTimeout(() => setToast(null), 3000);
     };
 
-    const toggleFavorite = (gameId) => {
-        const game = topGames.find(g => g.id === gameId);
-        const newFavorites = favorites.includes(gameId)
-            ? favorites.filter(id => id !== gameId)
-            : [...favorites, gameId];
-        
-        setFavorites(newFavorites);
-        localStorage.setItem('gameFavorites', JSON.stringify(newFavorites));
-        
-        if (!favorites.includes(gameId)) {
-            showToast(`${game.title} se agregó a favoritos`);
+    const toggleFavorite = async (gameId) => {
+        const game = topGames.find(g => g.id_game === gameId);
+        try {
+            if (favorites.includes(gameId)) {
+                await GamesAPI.removeFromFavorites(localStorage.getItem('user'), gameId);
+                const newFavorites = favorites.filter(id => id !== gameId);
+                setFavorites(newFavorites);
+                localStorage.setItem('gameFavorites', JSON.stringify(newFavorites));
+                showToast(`${game.game_name} se elimino de favoritos`);
+            } else {
+                await GamesAPI.addToFavorites(localStorage.getItem('user'), gameId);
+                const newFavorites = [...favorites, gameId];
+                setFavorites(newFavorites);
+                localStorage.setItem('gameFavorites', JSON.stringify(newFavorites));
+                showToast(`${game.game_name} se agregó a favoritos`);
+            }
+        } catch (error) {
+            console.error('Error updating favorites:', error);
+            showToast('No se pudo actualizar favoritos');
         }
     };
 
@@ -60,31 +111,25 @@ const TopGame = () => {
         setShowModal(true);
     };
 
-    const handlePurchaseConfirmation = () => {
+    const handlePurchaseConfirmation = async () => {
         try {
-            let existingPurchases = [];
-            const savedPurchases = localStorage.getItem('gameBuy');
-            
-            if (savedPurchases) {
-                try {
-                    const parsed = JSON.parse(savedPurchases);
-                    existingPurchases = Array.isArray(parsed) ? parsed : [];
-                } catch (e) {
-                    existingPurchases = [];
-                }
-            }
-    
-            if (!existingPurchases.includes(selectedGame.id)) {
-                existingPurchases.push(selectedGame.id);
-                
-                localStorage.setItem('gameBuy', JSON.stringify(existingPurchases));
-                
-                showToast('¡Compra confirmada!');
-                navigate(`/mylibrary`);
-            } else {
+            const userId = localStorage.getItem('user');
+            const gameId = selectedGame.id_game;
+
+            if (purchases.includes(gameId)) {
                 showToast('¡Ya has comprado este juego!');
+                setShowModal(false);
+                return;
             }
-            
+
+            await GamesAPI.purchaseGame(userId, gameId);
+
+            const newPurchases = [...purchases, gameId];
+            setPurchases(newPurchases);
+            localStorage.setItem('gameBuy', JSON.stringify(newPurchases));
+
+            showToast('¡Compra confirmada!');
+            navigate('/mylibrary');
             setShowModal(false);
         } catch (error) {
             console.error('Error al procesar la compra:', error);
@@ -93,13 +138,21 @@ const TopGame = () => {
         }
     };
 
+    if (isLoading) {
+        return <div>Cargando juegos...</div>;
+    }
+
+    if (error) {
+        return <div>{error}</div>;
+    }
+
     return (
         <div className="topgame-container">
             <h2>Juegos Más Comprados</h2>
             <div className="topgame-games-grid">
                 {topGames.map((game) => (
                     <CardGame
-                        key={game.id}
+                        key={`topgame-${game.id_game}`}
                         game={game}
                         variant="topgame"
                         isLoggedIn={isLoggedIn}

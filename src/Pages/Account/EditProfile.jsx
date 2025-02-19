@@ -1,25 +1,19 @@
 import { useState } from 'react';
-import { Camera, Upload, Check, X } from 'lucide-react';
-import { useAuth } from '../../BackEnd/Auth/AuthContext';
+import { Check, X } from 'lucide-react';
 
 const EditProfile = ({ user, onSave, onClose }) => {
-    const { updateUserProfile } = useAuth();
-    const [profileImage, setProfileImage] = useState(user.profileImage);
-    const [bannerImage, setBannerImage] = useState(user.bannerImage);
-    const [name, setName] = useState(user.name);
+    const [profileImage, setProfileImage] = useState(user.profileIMG || "https://via.placeholder.com/150x150");
+    const [bannerImage, setBannerImage] = useState(user.profileBanner || "https://via.placeholder.com/2100x300");
+    const [name, setName] = useState(user.nombre);
     const [bio, setBio] = useState(user.bio);
+    const [profileImageUrl, setProfileImageUrl] = useState(user.profileIMG || "");
+    const [bannerImageUrl, setBannerImageUrl] = useState(user.profileBanner || "");
 
     const handleSaveProfile = async () => {
         try {
-            await updateUserProfile({
-                profileImage,
-                bannerImage,
-                name,
-                bio
-            });
             onSave({
-                profileImage,
-                bannerImage,
+                profileImage: profileImageUrl || profileImage,
+                bannerImage: bannerImageUrl || bannerImage,
                 name,
                 bio
             });
@@ -30,67 +24,75 @@ const EditProfile = ({ user, onSave, onClose }) => {
     };
 
     const handleCancelEdit = () => {
-        setProfileImage(user.profileImage);
-        setBannerImage(user.bannerImage);
-        setName(user.name);
+        setProfileImage(user.profileIMG || "https://via.placeholder.com/150x150");
+        setBannerImage(user.profileBanner || "https://via.placeholder.com/2100x300");
+        setProfileImageUrl("");
+        setBannerImageUrl("");
+        setName(user.nombre);
         setBio(user.bio);
         onClose();
     };
 
+    const handleProfileImageUrlChange = (e) => {
+        const url = e.target.value;
+        setProfileImageUrl(url);
+        setProfileImage(url || "https://via.placeholder.com/150x150");
+    };
+
+    const handleBannerImageUrlChange = (e) => {
+        const url = e.target.value;
+        setBannerImageUrl(url);
+        setBannerImage(url || "https://via.placeholder.com/2100x300");
+    };
+
     return (
-        <div className="bg-white rounded-xl shadow-lg p-8 w-full max-w-md">
-            <h2 className="text-2xl font-bold mb-6">Editar Perfil</h2>
-            <div className="mb-6">
-                <label htmlFor="banner" className="block font-medium mb-2">
-                    Banner
+        <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6 md:p-8 w-full max-w-md mx-auto my-4 sm:my-8 md:my-12 overflow-y-auto max-h-[80vh]">
+            <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6">Editar Perfil</h2>
+            
+            <div className="mb-4 sm:mb-6">
+                <label htmlFor="banner" className="block font-medium mb-2 text-sm sm:text-base">
+                    Banner Image URL
                 </label>
-                <div className="relative">
+                <input
+                    id="banner-url"
+                    type="text"
+                    value={bannerImageUrl}
+                    onChange={handleBannerImageUrlChange}
+                    placeholder="Enter banner image URL"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 mb-2 sm:mb-4"
+                />
+                <div className="relative w-full">
                     <img
                         src={bannerImage}
                         alt="Banner"
-                        className="w-full h-40 object-cover rounded-lg"
+                        className="w-full h-24 sm:h-40 object-cover rounded-lg"
                     />
-                    <label
-                        htmlFor="banner-upload"
-                        className="absolute bottom-3 right-3 bg-blue-500 p-2 rounded-full text-white hover:bg-blue-600 cursor-pointer"
-                    >
-                        <Upload size={16} />
-                        <input
-                            id="banner-upload"
-                            type="file"
-                            className="hidden"
-                            onChange={(e) => setBannerImage(URL.createObjectURL(e.target.files[0]))}
-                        />
-                    </label>
                 </div>
             </div>
-            <div className="mb-6">
-                <label htmlFor="profile" className="block font-medium mb-2">
-                    Avatar
+
+            <div className="mb-4 sm:mb-6">
+                <label htmlFor="profile" className="block font-medium mb-2 text-sm sm:text-base">
+                    Avatar Image URL
                 </label>
-                <div className="relative">
+                <input
+                    id="profile-url"
+                    type="text"
+                    value={profileImageUrl}
+                    onChange={handleProfileImageUrlChange}
+                    placeholder="Enter avatar image URL"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 mb-2 sm:mb-4"
+                />
+                <div className="relative flex justify-center">
                     <img
                         src={profileImage}
                         alt="Profile"
-                        className="w-28 h-28 object-cover rounded-full"
+                        className="w-20 h-20 sm:w-28 sm:h-28 object-cover rounded-full"
                     />
-                    <label
-                            htmlFor="profile-upload"
-                            style={{ marginRight: '270px' }}
-                            className="absolute bottom-0 right-0 bg-blue-500 p-2 rounded-full text-white hover:bg-blue-600 cursor-pointer"
-                        >
-                        <Camera size={16} />
-                        <input
-                            id="profile-upload"
-                            type="file"
-                            className="hidden"
-                            onChange={(e) => setProfileImage(URL.createObjectURL(e.target.files[0]))}
-                        />
-                    </label>
                 </div>
             </div>
-            <div className="mb-6">
-                <label htmlFor="name" className="block font-medium mb-2">
+
+            <div className="mb-4 sm:mb-6">
+                <label htmlFor="name" className="block font-medium mb-2 text-sm sm:text-base">
                     Nombre
                 </label>
                 <input
@@ -98,30 +100,32 @@ const EditProfile = ({ user, onSave, onClose }) => {
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="w-full border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
             </div>
-            <div className="mb-8">
-                <label htmlFor="bio" className="block font-medium mb-2">
+
+            <div className="mb-4 sm:mb-8">
+                <label htmlFor="bio" className="block font-medium mb-2 text-sm sm:text-base">
                     Descripción
                 </label>
                 <textarea
                     id="bio"
                     value={bio}
                     onChange={(e) => setBio(e.target.value)}
-                    className="w-full border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                     rows={3}
                 ></textarea>
             </div>
-            <div className="flex justify-end space-x-4">
+
+            <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-4">
                 <button
-                    className="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors"
+                    className="w-full sm:w-auto px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors text-sm"
                     onClick={handleCancelEdit}
                 >
                     <X size={16} className="inline-block mr-2" /> Cancelar
                 </button>
                 <button
-                    className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                    className="w-full sm:w-auto px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors text-sm"
                     onClick={handleSaveProfile}
                 >
                     <Check size={16} className="inline-block mr-2" /> Guardar

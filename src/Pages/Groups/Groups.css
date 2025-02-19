@@ -401,3 +401,47 @@
     background-color: #666;
     color: white;
 }
+
+.image-url-input-container {
+    display: flex;
+    align-items: center;
+    position: relative;
+    margin-bottom: 10px;
+}
+
+.url-input-icon {
+    position: absolute;
+    left: 10px;
+    color: #666;
+}
+
+.image-url-input {
+    padding-left: 40px;
+    width: 100%;
+}
+
+.image-url-error {
+    color: #dc3545;
+    font-size: 0.875rem;
+    margin-bottom: 10px;
+}
+
+.image-preview-container {
+    position: relative;
+}
+
+.remove-image-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(0,0,0,0.5);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}

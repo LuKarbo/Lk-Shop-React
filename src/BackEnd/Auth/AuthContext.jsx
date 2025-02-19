@@ -1,61 +1,124 @@
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useState, useEffect} from 'react';
+import {UserApi} from '../API/UserApi'
 import User from '../Model/User';
+import axios from 'axios';
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-    const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem('email'));
+    const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem('token'));
+    const [token, setToken] = useState(null);
+    const [loading, setLoading] = useState(true);
     const [isAdmin, setIsAdmin] = useState(!!localStorage.getItem('isAdmin'));
+    const [user, setUser] = useState(!!localStorage.getItem('user'));
 
-    const checkIfAdmin = (email) => {
-        const adminEmails = ['asd@gmail.com'];
-        return adminEmails.includes(email);
+    useEffect(() => {
+        doRefreshToken();
+    }, []);
+
+    const doRefreshToken = async() => {
+
+        if(localStorage.getItem("token")){
+
+            try{
+
+                const response = await axios.get("http://localhost:8888/user/refresh-token", {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem("token")}`
+                    }
+                });
+    
+                if(response.data.success){
+                    const userData = await UserApi.getCurrentUser(localStorage.getItem('user'),response.data.accessToken);
+                    if(userData.success){
+                        setIsAdmin(checkIfAdmin(userData.user[0]));
+                    }
+                    setUser(localStorage.getItem('user'))
+                    setIsLoggedIn(true);
+                    setToken(response.data.accessToken);
+                }
+
+            }catch(error){
+                console.log(error);
+            }finally{
+                setLoading(false);
+            }
+
+        }else{
+            setLoading(false);
+        }
+
+    }
+
+    const checkIfAdmin = (user) => {
+        const adminRols = ['Admin','Support'];
+        if(adminRols.includes(user.permissions_name)){
+            setIsAdmin(true);
+            return true;
+        }
+        else{
+            setIsAdmin(false);
+            return false;
+        }
     };
 
-    const login = (email, password) => {
-        localStorage.setItem('email', email);
-        localStorage.setItem('password', password);
+    const login = (user, accessToken, refreshToken) => {
         
-        const userIsAdmin = checkIfAdmin(email);
-        if (userIsAdmin) {
-            localStorage.setItem('isAdmin', 'true');
-            setIsAdmin(true);
-        }
-        
-        User.createInstance({
-            email,
-            isAdmin: userIsAdmin
-        });
-        
+        const userData = Array.isArray(user) && user.length > 0 ? user[0] : user;
+    
+        const userIsAdmin = checkIfAdmin(userData);
+
+        const userInstanceData = {
+            id: userData.id_user,
+            email: userData.email,
+            name: userData.nombre,
+            id_permissions: userData.permissions_name,
+            profileIMG: userData.profileIMG,
+            profileBanner: userData.profileBanner,
+            isAdmin: userIsAdmin,
+            status_name: userData.status_name
+        };
+    
+        User.createInstance(userInstanceData);
+
         setIsLoggedIn(true);
+        setToken(accessToken);
+        localStorage.setItem("token", refreshToken);
+        localStorage.setItem("user", userData.id_user);
+        localStorage.setItem("nombre", userData.nombre);
     };
 
     const logout = () => {
         localStorage.clear();
-        
         User.destroyInstance();
-        
         setIsAdmin(false);
         setIsLoggedIn(false);
+        setToken(null);
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
     };
 
-    const updateUserProfile = (updatedProfile) => {
-        localStorage.setItem('profileImage', updatedProfile.profileImage);
-        localStorage.setItem('bannerImage', updatedProfile.bannerImage);
-        localStorage.setItem('name', updatedProfile.name);
-        localStorage.setItem('bio', updatedProfile.bio);
-    };
+    axios.interceptors.request.use(
+        config => {
+            if (token) {
+                config.headers['Authorization'] = `Bearer ${token}`;
+            }
+            return config;
+        },
+        error => {
+            return Promise.reject(error);
+        }
+    );
 
     return (
-        <AuthContext.Provider value={{ 
-            isLoggedIn, 
-            isAdmin, 
-            login, 
-            logout,
-            currentUser: User.getInstance(),
-            updateUserProfile
-        }}>
-            {children}
+        <AuthContext.Provider value={{ isLoggedIn, isAdmin, login, logout, token }}>
+            {
+                (loading)
+                ?
+                    <div> Cargando... </div>
+                :
+                    children
+            }
         </AuthContext.Provider>
     );
 };

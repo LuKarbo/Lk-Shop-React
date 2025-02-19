@@ -6,7 +6,7 @@ const PurchaseGameModal = ({
     onConfirm 
   }) => {
     if (!show) return null;
-  
+    const price = parseFloat(game.precio_original);
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
             <div className="bg-white rounded-lg max-w-2xl w-full p-6">
@@ -20,16 +20,30 @@ const PurchaseGameModal = ({
             </div>
             <div className="mb-6">
                 <div className="flex gap-4">
-                <img src={game.image} alt={game.title} className="w-32 h-32 object-cover rounded" />
+                <img src={game.gameBanner || 'https://via.placeholder.com/280x160'} 
+                    alt={game.game_name} className="w-32 h-32 object-cover rounded" />
                 <div>
-                    <h3 className="font-bold">{game.title}</h3>
-                    <p className="text-gray-600">{game.description}</p>
-                    <p className="mt-2">
-                    <span className="font-bold">${game.price}</span>
-                    {game.discounted && (
-                        <span className="ml-2 text-gray-500 line-through">${game.originalPrice}</span>
-                    )}
-                    </p>
+                    <h3 className="font-bold">{game.game_name}</h3>
+                    <p className="text-gray-600">{game.game_description}</p>
+                    <p>Publicador: {game.editor_nombre}</p>
+                    <p>Categoría: {game.categorias}</p>
+                    <p className="modal-game-price">
+                                Precio: 
+                                {
+                                game.descuento_porcentaje > 0 ? (
+                                        <>
+                                            ${price - (price * (game.descuento_porcentaje / 100))}
+                                            <span className="game-original-price"> 
+                                                ${price}
+                                            </span>
+                                        </>
+                                    ) : (
+                                        <>
+                                            ${price}
+                                        </>
+                                    )
+                                }
+                            </p>
                 </div>
                 </div>
             </div>

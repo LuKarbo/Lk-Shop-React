@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import { games_list } from '../../BackEnd/Data/games';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../BackEnd/Auth/AuthContext';
+import { GamesAPI } from '../../BackEnd/API/GamesAPI';
 import Toast from '../../components/Toast/Toast';
 import PurchasedGamesSection from './components/PurchasedGamesSection';
 import FavoriteGamesSection from './components/FavoriteGamesSection';
@@ -12,8 +12,11 @@ import UninstallConfirmModal  from './components/UninstallConfirmModal';
 import UninstallProgressModal  from './components/UninstallProgressModal';
 
 const MyLibrary = () => {
+    const { isLoggedIn } = useAuth();
+    const navigate = useNavigate();
     const [favorites, setFavorites] = useState([]);
     const [purchasedGames, setPurchasedGames] = useState([]);
+    const [allGames, setAllGames] = useState([]);
     const [showPurchaseModal, setShowPurchaseModal] = useState(false);
     const [showDownloadModal, setShowDownloadModal] = useState(false);
     const [showRefundModal, setShowRefundModal] = useState(false);
@@ -25,41 +28,41 @@ const MyLibrary = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
-            if (!isLoggedIn) {
-                navigate('/login');
-            }
-
-        const savedFavorites = localStorage.getItem('gameFavorites');
-        if (savedFavorites) {
-            try {
-                const parsedFavorites = JSON.parse(savedFavorites);
-                setFavorites(Array.isArray(parsedFavorites) ? parsedFavorites : []);
-            } catch (error) {
-                console.error('Error parsing favorites:', error);
-                setFavorites([]);
-            }
+        if (!isLoggedIn) {
+            navigate('/login');
+            return;
         }
 
-        const savedBuy = localStorage.getItem('gameBuy');
-        const savedInstalled = localStorage.getItem('gameInstalled') || '{}';
-        
-        if (savedBuy) {
+        const fetchUserData = async () => {
             try {
-                const parsedPurchases = JSON.parse(savedBuy);
-                const installedGames = JSON.parse(savedInstalled);
+                const user = localStorage.getItem('user');
+                const gamesResponse = await GamesAPI.getAllGames();
+                const userGames = await GamesAPI.getUserGames(user);
+                const userGamesFav = await GamesAPI.getUserFavorites(user);
+                
+                setAllGames(gamesResponse.data);
+                setFavorites(userGamesFav);
 
-                const purchasedGamesFull = games_list
-                    .filter(game => Array.isArray(parsedPurchases) && parsedPurchases.includes(game.id))
-                    .map(game => ({
-                        ...game,
-                        installed: installedGames[game.id] || false
-                    }));
+                const purchasedGamesFull = userGames.data.map(userGame => {
+                    const gameDetails = gamesResponse.data.find(game => game.id_game === userGame.id_game);
+                    return {
+                        ...gameDetails,
+                        installed: false,
+                        purchaseId: 0,
+                        purchaseDate: null
+                    };
+                });
+
                 setPurchasedGames(purchasedGamesFull);
             } catch (error) {
-                console.error('Error parsing purchased games:', error);
+                console.error('Error fetching user data:', error);
+                setFavorites([]);
                 setPurchasedGames([]);
+                showToast('No se pudieron cargar los juegos');
             }
-        }
+        };
+
+        fetchUserData();
     }, []);
 
     const showToast = (message) => {
@@ -80,18 +83,19 @@ const MyLibrary = () => {
     const handleDownload = (game) => {
         setSelectedGame(game);
         setShowDownloadModal(true);
+        
         setTimeout(() => {
             setShowDownloadModal(false);
             const updatedGames = purchasedGames.map(g => 
-                g.id === game.id ? { ...g, installed: true } : g
+                g.id_game === game.id_game ? { ...g, installed: true } : g
             );
             setPurchasedGames(updatedGames);
             
             const installedGames = JSON.parse(localStorage.getItem('gameInstalled') || '{}');
-            installedGames[game.id] = true;
+            installedGames[game.id_game] = true;
             localStorage.setItem('gameInstalled', JSON.stringify(installedGames));
             
-            showToast(`${game.title} se ha instalado correctamente`);
+            showToast(`${game.game_name} se ha instalado correctamente`);
         }, 3000);
     };
 
@@ -108,21 +112,21 @@ const MyLibrary = () => {
             setShowUninstallProgressModal(false);
             
             const updatedGames = purchasedGames.map(g => 
-                g.id === selectedGame.id ? { ...g, installed: false } : g
+                g.id_game === selectedGame.id_game ? { ...g, installed: false } : g
             );
             setPurchasedGames(updatedGames);
             
             const installedGames = JSON.parse(localStorage.getItem('gameInstalled') || '{}');
-            installedGames[selectedGame.id] = false;
+            installedGames[selectedGame.id_game] = false;
             localStorage.setItem('gameInstalled', JSON.stringify(installedGames));
             
-            showToast(`${selectedGame.title} se ha desinstalado correctamente`);
+            showToast(`${selectedGame.game_name} se ha desinstalado correctamente`);
             setSelectedGame(null);
         }, 3000);
     };
 
     const handlePlay = (game) => {
-        showToast(`Iniciando ${game.title}...`);
+        showToast(`Iniciando ${game.game_name}...`);
     };
 
     const handleRefund = (game) => {
@@ -134,23 +138,24 @@ const MyLibrary = () => {
         setShowRefundModal(true);
     };
 
-    const processRefund = () => {
-        const updatedPurchasedGames = purchasedGames.filter(
-            game => game.id !== selectedGame.id
-        );
-        setPurchasedGames(updatedPurchasedGames);
+    const processRefund = async () => {
+        try {
+            await GamesAPI.refoundGame(localStorage.getItem('user'), selectedGame.id_game);
+            
+            const updatedPurchasedGames = purchasedGames.filter(
+                game => game.id_game !== selectedGame.id_game
+            );
+            setPurchasedGames(updatedPurchasedGames);
 
-        const installedGames = JSON.parse(localStorage.getItem('gameInstalled') || '{}');
-        delete installedGames[selectedGame.id];
-        localStorage.setItem('gameInstalled', JSON.stringify(installedGames));
-        
-        localStorage.setItem('gameBuy', JSON.stringify(updatedPurchasedGames.map(game => game.id)));
-
-        setShowRefundModal(false);
-        showToast(`${selectedGame.title} ha sido reembolsado exitosamente`);
-        setSelectedGame(null);
+            setShowRefundModal(false);
+            showToast(`${selectedGame.game_name} ha sido reembolsado exitosamente`);
+            setSelectedGame(null);
+        } catch (error) {
+            console.error('Refund error:', error);
+            showToast('Error al procesar el reembolso');
+        }
     };
-
+    
     return (
         <div className="product-container">
             <div>
@@ -167,7 +172,7 @@ const MyLibrary = () => {
             <div>
                 <FavoriteGamesSection 
                     favorites={favorites}
-                    games_list={games_list}
+                    games_list={allGames}
                     purchasedGames={purchasedGames}
                 />
             </div>

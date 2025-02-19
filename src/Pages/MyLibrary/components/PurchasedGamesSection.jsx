@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { Info, Play, Download, Trash2, RefreshCcw } from 'lucide-react';
+import { Info, Play, Download, Trash2, RefreshCcw, Star } from 'lucide-react';
 
 const PurchasedGamesSection = ({
     purchasedGames,
@@ -10,10 +10,18 @@ const PurchasedGamesSection = ({
     onRefund
 }) => {
     const navigate = useNavigate();
-
     return (
         <>
-            <h2 className="text-2xl font-bold mb-6">Mis Juegos</h2>
+            <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold">Mis Juegos</h2>
+                <button
+                    onClick={() => navigate('/myreviews')}
+                    className="flex items-center justify-center px-3 py-2 bg-green-100 hover:bg-green-200 rounded-md transition-colors text-sm"
+                >
+                    <Star size={16} className="mr-1" />
+                    Mis Reseñas
+                </button>
+            </div>
             {purchasedGames.length === 0 ? (
                 <div className="text-center p-8 bg-gray-50 rounded-lg mb-12">
                     <p className="text-gray-600 text-lg">No tienes juegos comprados todavía.</p>
@@ -30,20 +38,20 @@ const PurchasedGamesSection = ({
                         <div key={game.id} className="flex flex-col bg-white rounded-lg shadow-md overflow-hidden h-full">
                             <div className="relative w-full pt-[56.25%]">
                                 <img
-                                    src={game.image}
-                                    alt={game.title}
+                                    src={game.gameBanner || 'https://via.placeholder.com/280x160'}
+                                    alt={game.game_name}
                                     className="absolute top-0 left-0 w-full h-full object-cover"
                                 />
                             </div>
                             <div className="flex flex-col flex-grow p-4">
                                 <div className="flex justify-between items-start mb-2">
-                                    <h3 className="text-lg font-semibold truncate">{game.title}</h3>
-                                    <span className="text-yellow-500 font-medium">★ {game.rating}</span>
+                                    <h3 className="text-lg font-semibold truncate">{game.game_name}</h3>
+                                    <span className="text-yellow-500 font-medium">★ {parseFloat(game.puntaje)}</span>
                                 </div>
-                                <p className="text-gray-600 text-sm mb-3 line-clamp-2">{game.description}</p>
+                                <p className="text-gray-600 text-sm mb-3 line-clamp-2">{game.game_description}</p>
                                 <div className="flex justify-between text-sm text-gray-500 mb-4">
-                                    <span>{game.publisher}</span>
-                                    <span>{game.category}</span>
+                                    <span>{game.editor_nombre}</span>
+                                    <span>{game.categorias}</span>
                                 </div>
                                 <div className="mt-auto space-y-2">
                                     <div className="grid grid-cols-2 gap-2">

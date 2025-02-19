@@ -1,21 +1,52 @@
 import { useState, useEffect } from 'react';
 
-const EditGroupModal = ({ isOpen, onClose, group, onSubmit }) => {
+const EditGroupModal = ({ isOpen, onClose, group, categories, onSubmit }) => {
     const [editForm, setEditForm] = useState({
+        id: '',
         name: '',
         description: '',
         categories: []
     });
 
     useEffect(() => {
-        if (group) {
+        if (group && categories) {
+            const mappedCategories = group.categories
+                ?.split(', ')
+                .map(catName => {
+                    const category = categories.find(c => c.nombre === catName);
+                    return category ? category.id_category : null;
+                })
+                .filter(Boolean);
+    
             setEditForm({
-                name: group.name || '',
-                description: group.description || '',
-                categories: group.categories || []
+                id: group.id_group || '',
+                name: group.group_name || '',
+                description: group.group_description || '',
+                categories: mappedCategories
             });
         }
-    }, [group]);
+    }, [group, categories]);
+    
+
+    const toggleCategory = (categoryId) => {
+        setEditForm((prev) => ({
+            ...prev,
+            categories: Array.isArray(prev.categories)
+                ? prev.categories.includes(categoryId)
+                    ? prev.categories.filter((cat) => cat !== categoryId)
+                    : [...prev.categories, categoryId]
+                : [categoryId],
+        }));
+    };
+    
+
+    const isCategorySelected = (categoryName) => {
+        if (!categories || !editForm.categories) return false;
+    
+        const category = categories.find(cat => cat.nombre === categoryName);
+        return category ? editForm.categories.includes(category.id_category) : false;
+    };
+    
 
     if (!isOpen || !group) return null;
 
@@ -58,17 +89,23 @@ const EditGroupModal = ({ isOpen, onClose, group, onSubmit }) => {
                             </div>
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Categorías (separadas por coma)
+                                    Categorías
                                 </label>
-                                <input
-                                    type="text"
-                                    value={editForm.categories.join(', ')}
-                                    onChange={(e) => setEditForm({
-                                        ...editForm, 
-                                        categories: e.target.value.split(',').map(cat => cat.trim()).filter(Boolean)
-                                    })}
-                                    className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                />
+                                <div className="flex flex-wrap gap-2">
+                                    {categories.map(category => (
+                                        <button
+                                            key={category.id_category}
+                                            onClick={() => toggleCategory(category.id_category)}
+                                            className={`px-3 py-1 rounded-full text-sm ${
+                                                isCategorySelected(category.nombre)
+                                                    ? 'bg-blue-500 text-white'
+                                                    : 'bg-gray-200 text-gray-700'
+                                            }`}
+                                        >
+                                            {category.nombre}
+                                        </button>
+                                    ))}
+                                </div>
                             </div>
                         </div>
                     </div>

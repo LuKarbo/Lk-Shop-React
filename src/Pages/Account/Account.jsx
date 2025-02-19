@@ -2,90 +2,103 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../BackEnd/Auth/AuthContext';
 import EditProfile from './EditProfile';
-import { games_list } from '../../BackEnd/Data/games';
-import { reviews } from '../../BackEnd/Data/reviews';
-import { groups } from '../../BackEnd/Data/groups';
+import { UserApi } from '../../BackEnd/API/UserApi';
+import { GamesAPI } from '../../BackEnd/API/GamesAPI';
+import { GroupsApi } from '../../BackEnd/API/GroupsAPI';
+import { PurchaseApi } from '../../BackEnd/API/PurchasesAPI';
+import { ReviewApi } from '../../BackEnd/API/ReviewAPI';
 import ProfileHeader from './components/ProfileHeader';
 import UserInfo from './components/UserInfo';
 import UserGroups from './components/UserGroups';
 import UserGames from './components/UserGames';
 import PurchaseHistory from './components/PurchaseHistory';
 import UserReviews from './components/UserReviews';
+
 import './Account.css';
 
 const Account = () => {
+    const { isLoggedIn } = useAuth();
+    const navigate = useNavigate();
     const [purchasedGames, setPurchasedGames] = useState([]);
     const [userGroups, setUserGroups] = useState([]);
     const [userReviews, setUserReviews] = useState([]);
+    const [userPurchases, setuserPurchases] = useState([]);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-    const [user, setUser] = useState({
-        id: 1,
-        name: "Alex González",
-        username: "@alexgonzalez",
-        joined: "Miembro desde 2023",
-        bio: "Apasionado gamer | Streamer ocasional | Coleccionista de juegos retro",
-        profileImage: "https://via.placeholder.com/150x150",
-        bannerImage: "https://via.placeholder.com/2100x300"
-    });
+    const [user, setUser] = useState(null);
+    const [loading, setLoading] = useState(true);
 
-    const { isLoggedIn } = useAuth();
-    const navigate = useNavigate();
+    const userId = localStorage.getItem('user');
+    const accessToken = localStorage.getItem('token');
 
     useEffect(() => {
-        if (!isLoggedIn) {
-        navigate('/login');
-        }
+        const fetchUserData = async () => {
+            if (!isLoggedIn) {
+                navigate('/login');
+                return;
+            }
 
-        const savedBuy = localStorage.getItem('gameBuy');
-        if (savedBuy) {
+            try {
+                const userAccount = await UserApi.getCurrentUser(userId, accessToken);
+                const userGames = await GamesAPI.getUserGames(userId);
+                const userGroups = await GroupsApi.getUserGroups(userId, accessToken);
+                const userPurchases = await PurchaseApi.getById(userId, accessToken);
+                const userReviews = await ReviewApi.getById(userId,accessToken);
+
+                setUser(userAccount.user[0]);
+                setPurchasedGames(userGames.data);
+                setUserGroups(userGroups.data);
+                setuserPurchases(userPurchases);
+                setUserReviews(userReviews);
+
+            } catch (error) {
+                console.error('Error fetching user data:', error);
+                navigate('/login');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchUserData();
+    }, [isLoggedIn, navigate]);
+
+    const handleProfileUpdate = async (updatedProfile) => {
         try {
-            const parsedPurchases = JSON.parse(savedBuy);
-            const purchasedGamesFull = games_list.filter(game => 
-            Array.isArray(parsedPurchases) && parsedPurchases.includes(game.id)
+            const result = await UserApi.editUser(
+                userId, 
+                updatedProfile.name, 
+                updatedProfile.bio, 
+                updatedProfile.profileImage, 
+                updatedProfile.bannerImage, 
+                accessToken
             );
-            setPurchasedGames(purchasedGamesFull);
+    
+            if (result.success && result.user) {
+                setUser(prevUser => ({
+                    ...prevUser,
+                    nombre: updatedProfile.name,
+                    bio: updatedProfile.bio,
+                    profileIMG: updatedProfile.profileImage,
+                    profileBanner: updatedProfile.bannerImage
+                }));
+                setIsEditModalOpen(false);
+            } else {
+                console.error('Error updating profile', result.message);
+            }
+    
+            return result;
         } catch (error) {
-            console.error('Error parsing purchased games:', error);
-            setPurchasedGames([]);
+            console.error('Error in profile update', error);
         }
-        }
-
-        const savedGroups = localStorage.getItem('MisGrupos');
-        if (savedGroups) {
-        try {
-            const parsedGroups = JSON.parse(savedGroups);
-            const userGroupsFull = groups.filter(group => parsedGroups.includes(group.id));
-            setUserGroups(userGroupsFull);
-        } catch (error) {
-            console.error('Error parsing user groups:', error);
-            setUserGroups([]);
-        }
-        }
-
-        const userReviews = reviews.filter(review => review.userId === user.id);
-        setUserReviews(userReviews);
-    }, [isLoggedIn, navigate, user.id]);
-
-    const purchaseHistory = [
-        { id: 1, game: "Elden Ring", date: "15 Oct 2024", price: "$59.99", image: "/api/placeholder/60/60" },
-        { id: 2, game: "Cyberpunk 2077", date: "1 Oct 2024", price: "$49.99", image: "/api/placeholder/60/60" },
-        { id: 3, game: "God of War", date: "28 Sep 2024", price: "$39.99", image: "/api/placeholder/60/60" }
-    ];
-
-    const handleProfileUpdate = (updatedProfile) => {
-        setUser(prevUser => ({
-            ...prevUser,           
-            name: updatedProfile.name,
-            bio: updatedProfile.bio,
-            profileImage: updatedProfile.profileImage,
-            bannerImage: updatedProfile.bannerImage
-        }));
     };
 
+    if (loading) {
+        return <div>Loading...</div>;
+    }
+
     const stats = {
-        games: purchasedGames.length,
-        reviews: userReviews.length,
-        groups: userGroups.length
+        games: purchasedGames.length || 0,
+        reviews: userReviews.data.length || 0,
+        groups: userGroups.length || 0
     };
 
     return (
@@ -104,18 +117,18 @@ const Account = () => {
                 onViewAll={() => navigate("/mygroups")} 
                 />
                 <UserGames 
-                games={purchasedGames}
-                onViewAll={() => navigate("/mylibrary")}
+                    games={purchasedGames}
+                    onViewAll={() => navigate("/mylibrary")}
                 />
             </div>
 
             <div className="lg:col-span-2 space-y-6">
                 <PurchaseHistory 
-                purchases={purchaseHistory}
-                onViewAll={() => {/* navigate a FullHystory (crear la view) */}}
+                purchases={userPurchases.data}
+                onViewAll={() => navigate("/mypurchases")}
                 />
                 <UserReviews 
-                reviews={userReviews}
+                reviews={userReviews.data}
                 onViewAll={() => navigate("/myreviews")}
                 />
             </div>

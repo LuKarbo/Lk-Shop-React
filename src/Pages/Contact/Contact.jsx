@@ -1,32 +1,36 @@
 import { useState } from 'react';
-import { Send, Loader2 } from 'lucide-react';
+import { Send, Loader2, Ticket } from 'lucide-react';
+import { useAuth } from '../../BackEnd/Auth/AuthContext';
+import { SupportApi } from '../../BackEnd/API/SuportAPI';
+import { useNavigate } from 'react-router-dom';
 import './Contact.css';
 
 const Contact = () => {
     const [formData, setFormData] = useState({
-        name: '',
-        email: '',
-        message: ''
+        title: '',
+        content: ''
     });
     const [errors, setErrors] = useState({});
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [toast, setToast] = useState(null);
+    const { isLoggedIn } = useAuth();
+    const userId = localStorage.getItem('user');
+    const accessToken = localStorage.getItem('token');
+    const navigate = useNavigate();
+
+    const handleViewTickets = () => {
+        navigate('/mysupport');
+    };
 
     const validateForm = () => {
         const newErrors = {};
         
-        if (!formData.name.trim()) {
-            newErrors.name = 'El nombre es requerido';
+        if (!formData.title.trim()) {
+            newErrors.title = 'El título es requerido';
         }
         
-        if (!formData.email.trim()) {
-            newErrors.email = 'El correo electrónico es requerido';
-        } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-            newErrors.email = 'El correo electrónico no es válido';
-        }
-        
-        if (!formData.message.trim()) {
-            newErrors.message = 'El mensaje es requerido';
+        if (!formData.content.trim()) {
+            newErrors.content = 'La descripción es requerida';
         }
         
         setErrors(newErrors);
@@ -55,26 +59,31 @@ const Contact = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         
-        if (!validateForm()) {
+        if (!isLoggedIn) {
+            showToast('Debe iniciar sesión para poder consultar');
             return;
         }
+        
+        if (!validateForm()) return;
         
         setIsSubmitting(true);
         
         try {
-            // Simulo el envío del formulario
-            await new Promise(resolve => setTimeout(resolve, 1500));
-            
-            // Limpio el formulario
-            setFormData({
-                name: '',
-                email: '',
-                message: ''
-            });
-            
-            showToast('¡Mensaje enviado con éxito!');
+            const response = await SupportApi.create(
+                userId,
+                formData.title,
+                formData.content,
+                accessToken
+            );
+
+            if (response.success) {
+                setFormData({ title: '', content: '' });
+                showToast('¡Ticket creado con éxito!');
+            } else {
+                showToast(response.message || 'Error al crear el ticket');
+            }
         } catch (error) {
-            showToast('Error al enviar el mensaje. Por favor, intente nuevamente.');
+            showToast('Error al crear el ticket. Por favor, intente nuevamente.');
         } finally {
             setIsSubmitting(false);
         }
@@ -83,7 +92,7 @@ const Contact = () => {
     return (
         <div className="contact-container">
             <div className="contact-header">
-                <h1 className="contact-title">Contáctanos</h1>
+                <h1 className="contact-title">Crear Ticket de Soporte</h1>
                 <p className="contact-subtitle">
                     ¿Tienes alguna pregunta? Estaremos encantados de ayudarte.
                 </p>
@@ -92,63 +101,61 @@ const Contact = () => {
             <div className="contact-form-container">
                 <form onSubmit={handleSubmit}>
                     <div className="contact-form-group">
-                        <label htmlFor="name" className="contact-label">Nombre</label>
+                        <label htmlFor="title" className="contact-label">Título</label>
                         <input
                             type="text"
-                            id="name"
-                            name="name"
+                            id="title"
+                            name="title"
                             className="contact-input"
-                            value={formData.name}
+                            value={formData.title}
                             onChange={handleChange}
-                            placeholder="Tu nombre"
+                            placeholder="Título de tu consulta"
                         />
-                        {errors.name && <span className="contact-error">{errors.name}</span>}
+                        {errors.title && <span className="contact-error">{errors.title}</span>}
                     </div>
 
                     <div className="contact-form-group">
-                        <label htmlFor="email" className="contact-label">Correo electrónico</label>
-                        <input
-                            type="email"
-                            id="email"
-                            name="email"
-                            className="contact-input"
-                            value={formData.email}
-                            onChange={handleChange}
-                            placeholder="tu@email.com"
-                        />
-                        {errors.email && <span className="contact-error">{errors.email}</span>}
-                    </div>
-
-                    <div className="contact-form-group">
-                        <label htmlFor="message" className="contact-label">Mensaje</label>
+                        <label htmlFor="content" className="contact-label">Descripción</label>
                         <textarea
-                            id="message"
-                            name="message"
+                            id="content"
+                            name="content"
                             className="contact-textarea"
-                            value={formData.message}
+                            value={formData.content}
                             onChange={handleChange}
-                            placeholder="¿En qué podemos ayudarte?"
+                            placeholder="Describe tu consulta"
                         />
-                        {errors.message && <span className="contact-error">{errors.message}</span>}
+                        {errors.content && <span className="contact-error">{errors.content}</span>}
                     </div>
 
-                    <button 
-                        type="submit" 
-                        className="contact-button"
-                        disabled={isSubmitting}
-                    >
-                        {isSubmitting ? (
-                            <>
-                                <Loader2 className="animate-spin" size={20} />
-                                <span>Enviando...</span>
-                            </>
-                        ) : (
-                            <>
-                                <Send size={20} />
-                                <span>Enviar Ticket</span>
-                            </>
+                    <div className="contact-button-container">
+                        <button 
+                            type="submit" 
+                            className="contact-button"
+                            disabled={isSubmitting}
+                        >
+                            {isSubmitting ? (
+                                <>
+                                    <Loader2 className="animate-spin" size={20} />
+                                    <span>Enviando...</span>
+                                </>
+                            ) : (
+                                <>
+                                    <Send size={20} />
+                                    <span>Enviar Ticket</span>
+                                </>
+                            )}
+                        </button>
+                        {isLoggedIn && (
+                            <button 
+                                onClick={handleViewTickets}
+                                className="contact-button view-tickets-button"
+                            >
+                                <Ticket size={20} />
+                                <span>Ver Mis Consultas</span>
+                            </button>
                         )}
-                    </button>
+                    </div>
+
                 </form>
             </div>
 

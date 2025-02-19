@@ -7,7 +7,7 @@ const UninstallProgressModal = ({ game }) => {
     <div className="modal-overlay" onClick={(e) => e.stopPropagation()}>
       <div className="modal-content">
         <div className="modal-header">
-          <h2 className="modal-title">Desinstalando {game.title}</h2>
+          <h2 className="modal-title">Desinstalando {game.game_name}</h2>
         </div>
         <div className="modal-body">
           <div className="text-center p-6">

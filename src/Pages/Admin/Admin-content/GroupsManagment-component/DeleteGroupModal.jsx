@@ -17,7 +17,7 @@ const DeleteGroupModal = ({ isOpen, onClose, group, onSubmit }) => {
                     </div>
                     <div className="p-6">
                         <p className="text-gray-700">
-                            ¿Estás seguro de que deseas eliminar el grupo `{group?.name}`? 
+                            ¿Estás seguro de que deseas eliminar el grupo `{group?.group_name}`? 
                             Esta acción no se puede deshacer.
                         </p>
                     </div>
@@ -29,7 +29,7 @@ const DeleteGroupModal = ({ isOpen, onClose, group, onSubmit }) => {
                             Cancelar
                         </button>
                         <button 
-                            onClick={() => onSubmit(group)}
+                            onClick={() => onSubmit(group.id_group)}
                             className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
                         >
                             Eliminar

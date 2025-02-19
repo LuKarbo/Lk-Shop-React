@@ -1,10 +1,14 @@
-import { useState } from 'react';
-import { groups } from '../../../BackEnd/Data/groups';
+import { useState, useEffect, useCallback } from 'react';
+import { GroupsApi } from '../../../BackEnd/API/GroupsAPI';
+import { GamesAPI } from '../../../BackEnd/API/GamesAPI';
 import GroupsTable from './GroupsManagment-component/GroupsTable';
 import EditGroupModal from './GroupsManagment-component/EditGroupModal';
 import DeleteGroupModal from './GroupsManagment-component/DeleteGroupModal';
 
 const GroupsManagement = () => {
+    const [groups, setGroups] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState(null);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [selectedGroup, setSelectedGroup] = useState(null);
@@ -14,7 +18,27 @@ const GroupsManagement = () => {
         direction: 'asc'
     });
     const [groupPage, setGroupPage] = useState(1);
+    const [categories, setCategories] = useState([]);
     const ITEMS_PER_PAGE = 10;
+
+    const fetchGroups = useCallback(async () => {
+        setIsLoading(true);
+        try {
+            const accessToken = localStorage.getItem('token');
+            const groupsData = await GroupsApi.getAllGroups(accessToken);
+            const allCategories = await GamesAPI.getCategories();
+            setCategories(allCategories.data);
+            setGroups(groupsData.data);
+        } catch (err) {
+            setError(err);
+        } finally {
+            setIsLoading(false);
+        }
+    }, []);
+
+    useEffect(() => {
+        fetchGroups();
+    }, [fetchGroups]);
 
     const handleSort = (key) => {
         let direction = 'asc';
@@ -51,29 +75,61 @@ const GroupsManagement = () => {
     };
 
     const filteredGroups = sortGroups(
-        groups.filter(group => 
-            group.name.toLowerCase().includes(groupSearch.toLowerCase()) ||
-            group.description.toLowerCase().includes(groupSearch.toLowerCase()) ||
-            group.categories.some(category => 
-                category.toLowerCase().includes(groupSearch.toLowerCase())
-            )
-        )
+        groups.filter((group) => {
+            const groupName = group.group_name?.toLowerCase() || '';
+            const groupDescription = group.group_description?.toLowerCase() || '';
+            const groupCategories = Array.isArray(group.categories) 
+                ? group.categories.some((category) =>
+                    category.toLowerCase().includes(groupSearch.toLowerCase())
+                ) 
+                : false;
+    
+            return (
+                groupName.includes(groupSearch.toLowerCase()) ||
+                groupDescription.includes(groupSearch.toLowerCase()) ||
+                groupCategories
+            );
+        })
     );
+    
+    
 
     const paginatedGroups = filteredGroups.slice(
         (groupPage - 1) * ITEMS_PER_PAGE,
         groupPage * ITEMS_PER_PAGE
     );
 
-    const handleEditSubmit = (editedGroup) => {
-        console.log('Grupo editado:', { ...selectedGroup, ...editedGroup });
-        setIsEditModalOpen(false);
+    const handleEditSubmit = async (editedGroup) => {
+        try {
+            const categoriesString = editedGroup.categories.join(',');
+            const accessToken = localStorage.getItem('token');
+    
+            const updatedGroup = await GroupsApi.editGroup(editedGroup.id, editedGroup.name, editedGroup.description, '', categoriesString , accessToken);
+    
+            if (updatedGroup.success) {
+                await fetchGroups();
+                setIsEditModalOpen(false);
+            } else {
+                console.error('Error updating group:', updatedGroup.message || 'Unknown error');
+            }
+        } catch (err) {
+            console.error('Error updating group:', err.message);
+        }
     };
 
-    const handleDeleteSubmit = (groupToDelete) => {
-        console.log('Grupo eliminado:', groupToDelete);
-        setIsDeleteModalOpen(false);
+    const handleDeleteSubmit = async (groupToDelete) => {
+        try {
+            const accessToken = localStorage.getItem('token');
+            await GroupsApi.deleteGroup(groupToDelete, accessToken);
+            await fetchGroups();
+            setIsDeleteModalOpen(false);
+        } catch (err) {
+            console.error('Error deleting group:', err);
+        }
     };
+
+    if (isLoading) return <div>Loading...</div>;
+    if (error) return <div>Error loading groups: {error.message}</div>;
 
     return (
         <div className="p-6">
@@ -114,6 +170,7 @@ const GroupsManagement = () => {
                 isOpen={isEditModalOpen}
                 onClose={() => setIsEditModalOpen(false)}
                 group={selectedGroup}
+                categories={categories}
                 onSubmit={handleEditSubmit}
             />
 

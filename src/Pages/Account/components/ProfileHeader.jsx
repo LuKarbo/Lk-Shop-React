@@ -5,7 +5,7 @@ const ProfileHeader = ({ user, onEditClick }) => {
         <div className="relative">
             <div className="h-64 overflow-hidden fondo-banner">
                 <img 
-                src={user.bannerImage} 
+                src={user.profileBanner || "https://via.placeholder.com/2100x300"}
                 alt="Banner" 
                 className="w-full h-full object-cover"
                 />
@@ -13,7 +13,7 @@ const ProfileHeader = ({ user, onEditClick }) => {
             <div className="absolute -bottom-16 left-8 user-avatar user-avatar-margin">
                 <div className="relative">
                 <img 
-                    src={user.profileImage} 
+                    src={user.profileIMG || "https://via.placeholder.com/150x150"} 
                     alt={user.name} 
                     className="w-32 h-32 rounded-full border-4 border-white shadow-lg"
                 />

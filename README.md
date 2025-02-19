@@ -12,7 +12,7 @@ El objetivo principal es construir una plataforma web con **React**, donde los u
    - Comprar.  
    - Solicitar reembolso.  
    - Dejar reseñas.  
-   - Agregar a favoritos.  
+   - Agregar a favoritos.
 ✅ Creación y gestión de grupos:  
    - Crear, eliminar o salir de un grupo.  
    - Sistema de chat integrado para miembros del grupo.  

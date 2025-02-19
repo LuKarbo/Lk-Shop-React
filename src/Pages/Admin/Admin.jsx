@@ -11,6 +11,8 @@ import SalesManagement from './Admin-content/SalesManagement';
 import './Admin.css';
 
 const Admin = () => {
+    const { isLoggedIn, isAdmin } = useAuth();
+    const navigate = useNavigate();
     const [activeSection, setActiveSection] = useState('dashboard');
     const { isLoggedIn, isAdmin } = useAuth();
     const navigate = useNavigate();
@@ -21,6 +23,16 @@ const Admin = () => {
             navigate('/');
         }
     }, [isLoggedIn, isAdmin, navigate]);
+
+    useEffect(() => {
+        if (!isLoggedIn || !isAdmin) {
+            navigate('/login');
+        }
+    }, [isLoggedIn, isAdmin, navigate]);
+
+    if (!isLoggedIn || !isAdmin) {
+        return null;
+    }
 
     const renderContent = () => {
         switch (activeSection) {

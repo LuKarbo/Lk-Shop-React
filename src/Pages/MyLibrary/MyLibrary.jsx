@@ -24,6 +24,8 @@ const MyLibrary = () => {
     const [showUninstallProgressModal, setShowUninstallProgressModal] = useState(false);
     const [selectedGame, setSelectedGame] = useState(null);
     const [toast, setToast] = useState(null);
+    const { isLoggedIn } = useAuth();
+    const navigate = useNavigate();
 
     useEffect(() => {
         if (!isLoggedIn) {
